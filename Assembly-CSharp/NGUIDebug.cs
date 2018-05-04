@@ -71,6 +71,23 @@ public class NGUIDebug : MonoBehaviour
 		NGUIDebug.LogString(text);
 	}
 
+	public static void Log(string s)
+	{
+		if (!string.IsNullOrEmpty(s))
+		{
+			string[] array = s.Split(new char[]
+			{
+				'\n'
+			});
+			string[] array2 = array;
+			for (int i = 0; i < array2.Length; i++)
+			{
+				string text = array2[i];
+				NGUIDebug.LogString(text);
+			}
+		}
+	}
+
 	public static void Clear()
 	{
 		NGUIDebug.mLines.Clear();
@@ -133,6 +150,10 @@ public class NGUIDebug : MonoBehaviour
 			if (UICamera.disableController)
 			{
 				text += ", disabled controller";
+			}
+			if (UICamera.ignoreControllerInput)
+			{
+				text += ", ignore controller";
 			}
 			if (UICamera.inputHasFocus)
 			{

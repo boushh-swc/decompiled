@@ -1,5 +1,6 @@
 using Net.RichardLord.Ash.Core;
 using StaRTS.Main.Models;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.Entities.Nodes;
 using StaRTS.Main.Models.ValueObjects;
 using StaRTS.Main.Utils;
@@ -88,7 +89,7 @@ namespace StaRTS.Main.Controllers.VictoryConditions
 			NodeList<BuildingNode> nodeList = entityController.GetNodeList<BuildingNode>();
 			for (BuildingNode buildingNode = nodeList.Head; buildingNode != null; buildingNode = buildingNode.Next)
 			{
-				if (!ContractUtils.IsBuildingConstructing(buildingNode.Entity))
+				if (!ContractUtils.IsBuildingConstructing((SmartEntity)buildingNode.Entity))
 				{
 					BuildingTypeVO vo = staticDataController.Get<BuildingTypeVO>(buildingNode.BuildingComp.BuildingTO.Uid);
 					if (this.IsBuildingValid(vo))
@@ -119,13 +120,17 @@ namespace StaRTS.Main.Controllers.VictoryConditions
 			}
 			if (vo.Lvl >= this.level)
 			{
-				switch (this.matchType)
+				ConditionMatchType conditionMatchType = this.matchType;
+				if (conditionMatchType == ConditionMatchType.Uid)
 				{
-				case ConditionMatchType.Uid:
 					return vo.Uid == this.buildingId;
-				case ConditionMatchType.Id:
+				}
+				if (conditionMatchType == ConditionMatchType.Id)
+				{
 					return vo.UpgradeGroup == this.buildingId;
-				case ConditionMatchType.Type:
+				}
+				if (conditionMatchType == ConditionMatchType.Type)
+				{
 					return vo.Type == StringUtils.ParseEnum<BuildingType>(this.buildingId);
 				}
 			}

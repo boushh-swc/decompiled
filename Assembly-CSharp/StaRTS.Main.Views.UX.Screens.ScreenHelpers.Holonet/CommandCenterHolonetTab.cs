@@ -23,7 +23,7 @@ using UnityEngine;
 
 namespace StaRTS.Main.Views.UX.Screens.ScreenHelpers.Holonet
 {
-	public class CommandCenterHolonetTab : AbstractHolonetTab, IEventObserver, IViewClockTimeObserver, IViewFrameTimeObserver
+	public class CommandCenterHolonetTab : AbstractHolonetTab, IViewFrameTimeObserver, IEventObserver, IViewClockTimeObserver
 	{
 		private const int devNoteLength = 120;
 
@@ -32,6 +32,8 @@ namespace StaRTS.Main.Views.UX.Screens.ScreenHelpers.Holonet
 		private const float DAILY_CRATE_PARTICLE_DELAY = 1.5f;
 
 		private const int MAX_SHARD_SHOP_ITEMS = 3;
+
+		private ScreenParticleFXCookie dailyParticleFx;
 
 		private const string FRAGMENT_STORE_GROUP = "FragmentStoreGroup";
 
@@ -231,8 +233,6 @@ namespace StaRTS.Main.Views.UX.Screens.ScreenHelpers.Holonet
 
 		private const string ICON_QUALITY_INT = "Quality";
 
-		private ScreenParticleFXCookie dailyParticleFx;
-
 		private UXElement notesGroup;
 
 		private UXElement squadWarGroup;
@@ -327,6 +327,8 @@ namespace StaRTS.Main.Views.UX.Screens.ScreenHelpers.Holonet
 
 		private ScreenParticleHandler particleHandler;
 
+		private List<GeometryProjector> projectorCleanupList;
+
 		private int bottomRightViewType;
 
 		public CommandCenterHolonetTab(HolonetScreen screen, HolonetControllerType holonetControllerType) : base(screen, holonetControllerType)
@@ -336,6 +338,7 @@ namespace StaRTS.Main.Views.UX.Screens.ScreenHelpers.Holonet
 			this.dailyCrate = crates.GetDailyCrateIfAvailable();
 			this.ctaButtonList = new Dictionary<string, List<UXButton>>();
 			this.ctaLabelList = new Dictionary<string, List<UXLabel>>();
+			this.projectorCleanupList = new List<GeometryProjector>();
 			this.HideUnusedVideoUI();
 			this.dailyCratePanel = screen.GetElement<UXElement>("PanelGroupDailyCrate");
 			this.dailyCratePanelBG = screen.GetElement<UXElement>("PanelBgDailyCrate");
@@ -815,6 +818,7 @@ namespace StaRTS.Main.Views.UX.Screens.ScreenHelpers.Holonet
 			countdownControl.SetOffsetMinutes((int)currentShopData.OffsetMinutes);
 			this.gridFragmentContainer = this.screen.GetElement<UXGrid>("GridFragmentContainer");
 			this.gridFragmentContainer.Clear();
+			this.CleanupProjectors();
 			this.gridFragmentContainer.SetTemplateItem("TemplateFragmentCard");
 			this.screen.GetElement<UXElement>("TemplateFragmentCard").Visible = true;
 			for (int i = 0; i < num; i++)
@@ -823,12 +827,16 @@ namespace StaRTS.Main.Views.UX.Screens.ScreenHelpers.Holonet
 				CrateSupplyVO crateSupplyVO = currentShopData.ShardOffers[shardSlotId];
 				UXElement uXElement = this.gridFragmentContainer.CloneTemplateItem(shardSlotId);
 				UXSprite subElement = this.gridFragmentContainer.GetSubElement<UXSprite>(shardSlotId, "SpriteFragmentImage");
-				IGeometryVO iconVOFromCrateSupply = GameUtils.GetIconVOFromCrateSupply(crateSupplyVO, playerHq);
-				if (iconVOFromCrateSupply != null)
+				IGeometryVO geometryVO = GameUtils.GetIconVOFromCrateSupply(crateSupplyVO, playerHq);
+				if (geometryVO != null)
 				{
-					ProjectorConfig projectorConfig = ProjectorUtils.GenerateGeometryConfig(iconVOFromCrateSupply, subElement, true);
-					projectorConfig.AnimPreference = AnimationPreference.AnimationPreferred;
-					ProjectorUtils.GenerateProjector(projectorConfig);
+					if (crateSupplyVO.Type == SupplyType.Shard)
+					{
+						geometryVO = ProjectorUtils.DetermineVOForEquipment((EquipmentVO)geometryVO);
+					}
+					ProjectorConfig config = ProjectorUtils.GenerateGeometryConfig(geometryVO, subElement);
+					GeometryProjector item = ProjectorUtils.GenerateProjector(config);
+					this.projectorCleanupList.Add(item);
 				}
 				else
 				{
@@ -859,6 +867,7 @@ namespace StaRTS.Main.Views.UX.Screens.ScreenHelpers.Holonet
 		private void OnFragmentStoreClicked(UXButton btn)
 		{
 			this.screen.Close(null);
+			Service.EventManager.SendEvent(EventId.GoToShardShopClickedFromHolonet, null);
 			GameUtils.OpenStoreWithTab(StoreTab.Fragments);
 		}
 
@@ -964,11 +973,26 @@ namespace StaRTS.Main.Views.UX.Screens.ScreenHelpers.Holonet
 			this.screen.OpenTab(HolonetControllerType.DevNotes);
 		}
 
+		private void CleanupProjectors()
+		{
+			int count = this.projectorCleanupList.Count;
+			for (int i = 0; i < count; i++)
+			{
+				this.projectorCleanupList[i].Destroy();
+			}
+			this.projectorCleanupList.Clear();
+		}
+
 		public override void OnDestroyTab()
 		{
 			if (this.particleHandler != null)
 			{
 				this.particleHandler.Destroy();
+			}
+			if (this.gridFragmentContainer != null)
+			{
+				this.gridFragmentContainer.Clear();
+				this.gridFragmentContainer = null;
 			}
 			if (this.ctaButtonList != null)
 			{
@@ -976,8 +1000,8 @@ namespace StaRTS.Main.Views.UX.Screens.ScreenHelpers.Holonet
 				{
 					current.Value.Clear();
 				}
+				this.ctaButtonList.Clear();
 			}
-			this.ctaButtonList.Clear();
 			this.ctaButtonList = null;
 			if (this.ctaLabelList != null)
 			{
@@ -985,8 +1009,8 @@ namespace StaRTS.Main.Views.UX.Screens.ScreenHelpers.Holonet
 				{
 					current2.Value.Clear();
 				}
+				this.ctaLabelList.Clear();
 			}
-			this.ctaLabelList.Clear();
 			this.ctaLabelList = null;
 			if (this.featureGrid != null)
 			{
@@ -998,6 +1022,7 @@ namespace StaRTS.Main.Views.UX.Screens.ScreenHelpers.Holonet
 				this.pageDotGrid.Clear();
 				this.pageDotGrid = null;
 			}
+			this.CleanupProjectors();
 			Service.ViewTimeEngine.UnregisterFrameTimeObserver(this);
 			this.eventManager.UnregisterObserver(this, EventId.CrateInventoryUpdated);
 			this.eventManager.UnregisterObserver(this, EventId.ShardOfferChanged);
@@ -1091,18 +1116,18 @@ namespace StaRTS.Main.Views.UX.Screens.ScreenHelpers.Holonet
 
 		public EatResponse OnEvent(EventId id, object cookie)
 		{
-			if (id != EventId.ShardOfferChanged)
+			if (id != EventId.CrateInventoryUpdated)
 			{
-				if (id == EventId.CrateInventoryUpdated)
+				if (id == EventId.ShardOfferChanged)
 				{
-					InventoryCrates crates = Service.CurrentPlayer.Prizes.Crates;
-					this.dailyCrate = crates.GetDailyCrateIfAvailable();
-					this.SetupDailyCratePanel();
+					this.SetupBottomRightPanel();
 				}
 			}
 			else
 			{
-				this.SetupBottomRightPanel();
+				InventoryCrates crates = Service.CurrentPlayer.Prizes.Crates;
+				this.dailyCrate = crates.GetDailyCrateIfAvailable();
+				this.SetupDailyCratePanel();
 			}
 			return EatResponse.NotEaten;
 		}

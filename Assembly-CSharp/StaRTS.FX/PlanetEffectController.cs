@@ -82,12 +82,13 @@ namespace StaRTS.FX
 			}
 			AssetManager assetManager = Service.AssetManager;
 			assetManager.RegisterPreloadableAsset(assetName);
-			switch (planetUid)
+			if (planetUid != null)
 			{
-			case "planet21":
-				assetManager.Load(ref this.fxHandle, assetName, new AssetSuccessDelegate(this.OnLoadHothFx), null, gameObject);
-				return;
-				break;
+				if (planetUid == "planet21")
+				{
+					assetManager.Load(ref this.fxHandle, assetName, new AssetSuccessDelegate(this.OnLoadHothFx), null, gameObject);
+					return;
+				}
 			}
 			assetManager.Load(ref this.fxHandle, assetName, new AssetSuccessDelegate(this.OnLoadPlanetFX), null, gameObject);
 		}

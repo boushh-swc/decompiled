@@ -11,13 +11,13 @@ namespace DCPI.Platforms.SwrveManager
 {
 	public class SwrveManager : MonoBehaviour, ISwrveManager
 	{
+		private HashSet<string> EventsSent = new HashSet<string>();
+
 		private const int SWRVE_MAX_PAYLOAD = 500;
 
 		private const int SWRVE_MAX_EVENT_NAMES = 1000;
 
 		private const string SWRVE_MANAGER_LIBVERSION = "1.1.8";
-
-		private HashSet<string> EventsSent = new HashSet<string>();
 
 		public static SwrveManager instance;
 

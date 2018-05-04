@@ -1,8 +1,8 @@
-using Net.RichardLord.Ash.Core;
 using StaRTS.Externals.Manimal;
 using StaRTS.Main.Controllers;
 using StaRTS.Main.Models;
 using StaRTS.Main.Models.Commands.Player;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.Player;
 using StaRTS.Main.Models.Static;
 using StaRTS.Main.Models.ValueObjects;
@@ -20,7 +20,7 @@ using System.Collections.Generic;
 
 namespace StaRTS.Main.Views.UX.Screens
 {
-	public class PrizeInventoryScreen : ClosableScreen, IEventObserver, IViewClockTimeObserver
+	public class PrizeInventoryScreen : ClosableScreen, IViewClockTimeObserver, IEventObserver
 	{
 		private const string GO_TO_STORE_ITEM_ID = "Id_Store";
 
@@ -228,7 +228,7 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		private void OnTabCheckboxSelected(UXCheckbox checkbox, bool selected)
 		{
-			InventoryTab inventoryTab = (InventoryTab)((int)checkbox.Tag);
+			InventoryTab inventoryTab = (InventoryTab)checkbox.Tag;
 			if (!selected)
 			{
 				return;
@@ -256,7 +256,7 @@ namespace StaRTS.Main.Views.UX.Screens
 			while (i < count)
 			{
 				UXCheckbox uXCheckbox = this.tabs[i];
-				uXCheckbox.Selected = (this.curTab == (InventoryTab)((int)uXCheckbox.Tag));
+				uXCheckbox.Selected = (this.curTab == (InventoryTab)uXCheckbox.Tag);
 				i++;
 			}
 			this.SetupCurTabElements();
@@ -359,17 +359,24 @@ namespace StaRTS.Main.Views.UX.Screens
 				{
 					PrizeType prizeType = PrizeType.Infantry;
 					TroopTypeVO minLevel = troopUpgradeCatalog.GetMinLevel(current.Key);
-					switch (minLevel.Type)
+					TroopType type = minLevel.Type;
+					if (type != TroopType.Vehicle)
 					{
-					case TroopType.Vehicle:
+						if (type != TroopType.Mercenary)
+						{
+							if (type == TroopType.Hero)
+							{
+								prizeType = PrizeType.Hero;
+							}
+						}
+						else
+						{
+							prizeType = PrizeType.Mercenary;
+						}
+					}
+					else
+					{
 						prizeType = PrizeType.Vehicle;
-						break;
-					case TroopType.Mercenary:
-						prizeType = PrizeType.Mercenary;
-						break;
-					case TroopType.Hero:
-						prizeType = PrizeType.Hero;
-						break;
 					}
 					UXElement item = this.CreateTileWithPrizeInfo(current.Key, current.Value, prizeType);
 					list.Add(item);
@@ -679,7 +686,7 @@ namespace StaRTS.Main.Views.UX.Screens
 			IUpgradeableVO finalUnitFromPrize = TimedEventPrizeUtils.GetFinalUnitFromPrize(prizeInventoryItemTag.PrizeType, prizeInventoryItemTag.PrizeID);
 			if (finalUnitFromPrize != null)
 			{
-				Entity availableTroopResearchLab = Service.BuildingLookupController.GetAvailableTroopResearchLab();
+				SmartEntity availableTroopResearchLab = Service.BuildingLookupController.GetAvailableTroopResearchLab();
 				TroopUpgradeTag troopUpgradeTag = new TroopUpgradeTag(finalUnitFromPrize as IDeployableVO, true);
 				bool showUpgradeControls = !string.IsNullOrEmpty(troopUpgradeTag.Troop.UpgradeShardUid);
 				Service.ScreenController.AddScreen(new DeployableInfoScreen(troopUpgradeTag, null, showUpgradeControls, availableTroopResearchLab));
@@ -717,7 +724,7 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		public override EatResponse OnEvent(EventId id, object cookie)
 		{
-			if (id == EventId.InventoryCrateOpenedAndGranted || id == EventId.CrateInventoryUpdated || id == EventId.InventoryCrateCollectionClosed)
+			if (id == EventId.InventoryCrateCollectionClosed || id == EventId.InventoryCrateOpenedAndGranted || id == EventId.CrateInventoryUpdated)
 			{
 				if (this.curTab == InventoryTab.Crate)
 				{

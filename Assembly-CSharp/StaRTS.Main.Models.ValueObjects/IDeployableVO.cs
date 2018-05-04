@@ -2,7 +2,7 @@ using System;
 
 namespace StaRTS.Main.Models.ValueObjects
 {
-	public interface IDeployableVO : IAssetVO, IGeometryVO, IUnlockableVO, IUpgradeableVO, IValueObject
+	public interface IDeployableVO : IUpgradeableVO, IValueObject, IAssetVO, IGeometryVO, IUnlockableVO
 	{
 		FactionType Faction
 		{

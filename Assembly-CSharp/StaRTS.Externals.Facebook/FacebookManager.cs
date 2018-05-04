@@ -1,6 +1,8 @@
 using Facebook.Unity;
 using StaRTS.Utils.Core;
 using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace StaRTS.Externals.Facebook
@@ -14,6 +16,15 @@ namespace StaRTS.Externals.Facebook
 		private static FacebookDelegate<IShareResult> OnPostCallback;
 
 		private static bool mFacebookIsInitialized;
+
+		[CompilerGenerated]
+		private static FacebookDelegate<ILoginResult> <>f__mg$cache0;
+
+		[CompilerGenerated]
+		private static FacebookDelegate<IAppRequestResult> <>f__mg$cache1;
+
+		[CompilerGenerated]
+		private static FacebookDelegate<IShareResult> <>f__mg$cache2;
 
 		public static FacebookLoggedInDelegate OnFacebookLoggedIn
 		{
@@ -50,10 +61,15 @@ namespace StaRTS.Externals.Facebook
 				Service.GameIdleController.Enabled = false;
 			}
 			string text = "public_profile,user_friends,email";
-			FB.LogInWithReadPermissions(text.Split(new char[]
+			IEnumerable<string> arg_49_0 = text.Split(new char[]
 			{
 				','
-			}), new FacebookDelegate<ILoginResult>(FacebookManager.OnFacebookLogin));
+			});
+			if (FacebookManager.<>f__mg$cache0 == null)
+			{
+				FacebookManager.<>f__mg$cache0 = new FacebookDelegate<ILoginResult>(FacebookManager.OnFacebookLogin);
+			}
+			FB.LogInWithReadPermissions(arg_49_0, FacebookManager.<>f__mg$cache0);
 		}
 
 		public static void Logout()
@@ -78,7 +94,16 @@ namespace StaRTS.Externals.Facebook
 			{
 				Service.GameIdleController.Enabled = false;
 			}
-			FB.AppRequest(message, null, null, null, null, "InviteRequest", title, new FacebookDelegate<IAppRequestResult>(FacebookManager.OnInviteFriends));
+			IEnumerable<string> arg_4B_1 = null;
+			IEnumerable<object> arg_4B_2 = null;
+			IEnumerable<string> arg_4B_3 = null;
+			int? arg_4B_4 = null;
+			string arg_4B_5 = "InviteRequest";
+			if (FacebookManager.<>f__mg$cache1 == null)
+			{
+				FacebookManager.<>f__mg$cache1 = new FacebookDelegate<IAppRequestResult>(FacebookManager.OnInviteFriends);
+			}
+			FB.AppRequest(message, arg_4B_1, arg_4B_2, arg_4B_3, arg_4B_4, arg_4B_5, title, FacebookManager.<>f__mg$cache1);
 		}
 
 		public static void Post(FacebookPostParameters param, FacebookDelegate<IShareResult> callback)
@@ -88,7 +113,18 @@ namespace StaRTS.Externals.Facebook
 			{
 				Service.GameIdleController.Enabled = false;
 			}
-			FB.FeedShare(string.Empty, param.Link, param.LinkName, param.LinkCaption, param.LinkDescription, param.Picture, param.MediaSource, new FacebookDelegate<IShareResult>(FacebookManager.OnPost));
+			string arg_61_0 = string.Empty;
+			Uri arg_61_1 = param.Link;
+			string arg_61_2 = param.LinkName;
+			string arg_61_3 = param.LinkCaption;
+			string arg_61_4 = param.LinkDescription;
+			Uri arg_61_5 = param.Picture;
+			string arg_61_6 = param.MediaSource;
+			if (FacebookManager.<>f__mg$cache2 == null)
+			{
+				FacebookManager.<>f__mg$cache2 = new FacebookDelegate<IShareResult>(FacebookManager.OnPost);
+			}
+			FB.FeedShare(arg_61_0, arg_61_1, arg_61_2, arg_61_3, arg_61_4, arg_61_5, arg_61_6, FacebookManager.<>f__mg$cache2);
 		}
 
 		private void Start()

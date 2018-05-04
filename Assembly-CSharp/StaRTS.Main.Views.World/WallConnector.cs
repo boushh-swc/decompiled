@@ -1,5 +1,6 @@
 using Net.RichardLord.Ash.Core;
 using StaRTS.GameBoard;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.Entities.Components;
 using StaRTS.Main.Models.ValueObjects;
 using StaRTS.Main.Utils;
@@ -29,20 +30,20 @@ namespace StaRTS.Main.Views.World
 			switch (id)
 			{
 			case EventId.UserLoweredBuilding:
-				goto IL_66;
+				goto IL_64;
 			case EventId.UserLoweredBuildingAudio:
-				IL_1A:
+				IL_18:
 				if (id == EventId.BuildingPurchaseSuccess)
 				{
-					goto IL_66;
+					goto IL_64;
 				}
 				if (id == EventId.PreEntityKilled)
 				{
-					goto IL_42;
+					goto IL_40;
 				}
 				if (id == EventId.BuildingReplaced)
 				{
-					goto IL_66;
+					goto IL_64;
 				}
 				if (id != EventId.UserLiftedBuilding)
 				{
@@ -51,13 +52,13 @@ namespace StaRTS.Main.Views.World
 				this.DisconnectAllNeighbors(cookie as Entity, false);
 				return EatResponse.NotEaten;
 			case EventId.UserStashedBuilding:
-				goto IL_42;
+				goto IL_40;
 			}
-			goto IL_1A;
-			IL_42:
+			goto IL_18;
+			IL_40:
 			this.DisconnectAllNeighbors(cookie as Entity, true);
 			return EatResponse.NotEaten;
-			IL_66:
+			IL_64:
 			this.ConnectAllNeighbors(cookie as Entity);
 			return EatResponse.NotEaten;
 		}
@@ -148,14 +149,14 @@ namespace StaRTS.Main.Views.World
 			}
 		}
 
-		private Entity GetNeighborFromTransform(Entity wall, List<Entity> wallList, int x, int z)
+		private SmartEntity GetNeighborFromTransform(SmartEntity wall, List<SmartEntity> wallList, int x, int z)
 		{
-			int x2 = wall.Get<TransformComponent>().X;
-			int z2 = wall.Get<TransformComponent>().Z;
+			int x2 = wall.TransformComp.X;
+			int z2 = wall.TransformComp.Z;
 			for (int i = 0; i < wallList.Count; i++)
 			{
-				int x3 = wallList[i].Get<TransformComponent>().X;
-				int z3 = wallList[i].Get<TransformComponent>().Z;
+				int x3 = wallList[i].TransformComp.X;
+				int z3 = wallList[i].TransformComp.Z;
 				if (x2 + x == x3 && z2 + z == z3)
 				{
 					return wallList[i];
@@ -164,11 +165,11 @@ namespace StaRTS.Main.Views.World
 			return null;
 		}
 
-		public void ConnectWallsInExclusiveSet(List<Entity> wallList, bool connectWithSetOnly)
+		public void ConnectWallsInExclusiveSet(List<SmartEntity> wallList, bool connectWithSetOnly)
 		{
 			for (int i = 0; i < wallList.Count; i++)
 			{
-				Entity wall = wallList[i];
+				SmartEntity wall = wallList[i];
 				BoardCell boardCell = this.CanConnect(wall);
 				if (boardCell != null)
 				{
@@ -183,8 +184,8 @@ namespace StaRTS.Main.Views.World
 						bool ignoreNE2 = !wallList.Contains(this.GetWallGridNeighbor(boardCell, 1, 0));
 						bool ignoreNW2 = !wallList.Contains(this.GetWallGridNeighbor(boardCell, 0, 1));
 						this.LoadWallAsset(wall, ignoreNE2, ignoreNW2);
-						Entity wallGridNeighbor = this.GetWallGridNeighbor(boardCell, -1, 0);
-						Entity wallGridNeighbor2 = this.GetWallGridNeighbor(boardCell, 0, -1);
+						SmartEntity wallGridNeighbor = this.GetWallGridNeighbor(boardCell, -1, 0);
+						SmartEntity wallGridNeighbor2 = this.GetWallGridNeighbor(boardCell, 0, -1);
 						bool flag = wallGridNeighbor == null || wallList.Contains(wallGridNeighbor);
 						bool flag2 = wallGridNeighbor2 == null || wallList.Contains(wallGridNeighbor2);
 						if (!flag)
@@ -231,7 +232,7 @@ namespace StaRTS.Main.Views.World
 			this.LoadWallAsset(wallGridNeighbor2, false, true);
 		}
 
-		private Entity GetWallGridNeighbor(BoardCell cell, int gridDeltaX, int gridDeltaZ)
+		private SmartEntity GetWallGridNeighbor(BoardCell cell, int gridDeltaX, int gridDeltaZ)
 		{
 			int num = Units.GridToBoardX(gridDeltaX);
 			int num2 = Units.GridToBoardZ(gridDeltaZ);
@@ -240,31 +241,31 @@ namespace StaRTS.Main.Views.World
 			{
 				foreach (BoardItem current in cellAt.Children)
 				{
-					Entity data = current.Data;
-					BuildingComponent buildingComponent = data.Get<BuildingComponent>();
-					if (buildingComponent != null && buildingComponent.BuildingType.Connectors != null)
+					SmartEntity smartEntity = (SmartEntity)current.Data;
+					BuildingComponent buildingComp = smartEntity.BuildingComp;
+					if (buildingComp != null && buildingComp.BuildingType.Connectors != null)
 					{
-						return current.Data;
+						return smartEntity;
 					}
 				}
 			}
 			return null;
 		}
 
-		public List<Entity> GetWallChains(Entity rootWall, int xDir, int zDir)
+		public List<SmartEntity> GetWallChains(SmartEntity rootWall, int xDir, int zDir)
 		{
-			List<Entity> list = new List<Entity>();
+			List<SmartEntity> list = new List<SmartEntity>();
 			BoardCell boardCell = this.CanConnect(rootWall);
 			BoardCell cell = boardCell;
-			Entity entity = rootWall;
+			SmartEntity smartEntity = rootWall;
 			while (cell != null)
 			{
-				if (entity != rootWall)
+				if (smartEntity != rootWall)
 				{
-					list.Add(entity);
+					list.Add(smartEntity);
 				}
-				entity = this.GetWallGridNeighbor(cell, xDir, zDir);
-				cell = this.CanConnect(entity);
+				smartEntity = this.GetWallGridNeighbor(cell, xDir, zDir);
+				cell = this.CanConnect(smartEntity);
 			}
 			return list;
 		}

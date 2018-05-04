@@ -15,6 +15,10 @@ namespace DCPI.Platforms.SwrveManager.Utils
 {
 	public static class SwrveManagerUtils
 	{
+		private static readonly string ENCRYPTION_ALGORITHM;
+
+		private static readonly string ANDI_TYPE;
+
 		private const int KEY_SIZE = 256;
 
 		private const int ITERATIONS = 32768;
@@ -26,10 +30,6 @@ namespace DCPI.Platforms.SwrveManager.Utils
 		private const string KEY_SPEC_ALOGRITHM = "AES";
 
 		private const string ENCODING = "UTF-8";
-
-		private static readonly string ENCRYPTION_ALGORITHM;
-
-		private static readonly string ANDI_TYPE;
 
 		private static KeyParameter secretKeyParameter;
 

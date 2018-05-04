@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 [AddComponentMenu("NGUI/UI/NGUI Unity2D Sprite"), ExecuteInEditMode]
@@ -6,9 +7,6 @@ public class UI2DSprite : UIBasicSprite
 {
 	[HideInInspector, SerializeField]
 	private Sprite mSprite;
-
-	[HideInInspector, SerializeField]
-	private Material mMat;
 
 	[HideInInspector, SerializeField]
 	private Shader mShader;
@@ -105,6 +103,23 @@ public class UI2DSprite : UIBasicSprite
 				return this.mMat.mainTexture;
 			}
 			return null;
+		}
+	}
+
+	public bool fixedAspect
+	{
+		get
+		{
+			return this.mFixedAspect;
+		}
+		set
+		{
+			if (this.mFixedAspect != value)
+			{
+				this.mFixedAspect = value;
+				this.mDrawRegion = new Vector4(0f, 0f, 1f, 1f);
+				this.MarkAsChanged();
+			}
 		}
 	}
 
@@ -276,8 +291,8 @@ public class UI2DSprite : UIBasicSprite
 		if ((this.mType == UIBasicSprite.Type.Simple || this.mType == UIBasicSprite.Type.Filled || !base.hasBorder) && mainTexture != null)
 		{
 			Rect rect = this.mSprite.rect;
-			int num = Mathf.RoundToInt(rect.width);
-			int num2 = Mathf.RoundToInt(rect.height);
+			int num = Mathf.RoundToInt(this.pixelSize * rect.width);
+			int num2 = Mathf.RoundToInt(this.pixelSize * rect.height);
 			if ((num & 1) == 1)
 			{
 				num++;
@@ -291,7 +306,7 @@ public class UI2DSprite : UIBasicSprite
 		}
 	}
 
-	public override void OnFill(BetterList<Vector3> verts, BetterList<Vector2> uvs, BetterList<Color32> cols)
+	public override void OnFill(List<Vector3> verts, List<Vector2> uvs, List<Color> cols)
 	{
 		Texture mainTexture = this.mainTexture;
 		if (mainTexture == null)
@@ -315,11 +330,11 @@ public class UI2DSprite : UIBasicSprite
 		inner.xMax *= num;
 		inner.yMin *= num2;
 		inner.yMax *= num2;
-		int size = verts.size;
+		int count = verts.Count;
 		base.Fill(verts, uvs, cols, rect, inner);
 		if (this.onPostFill != null)
 		{
-			this.onPostFill(this, size, verts, uvs, cols);
+			this.onPostFill(this, count, verts, uvs, cols);
 		}
 	}
 }

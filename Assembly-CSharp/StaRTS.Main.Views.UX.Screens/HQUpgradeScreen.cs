@@ -1,6 +1,6 @@
-using Net.RichardLord.Ash.Core;
 using StaRTS.Main.Controllers;
 using StaRTS.Main.Models;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.ValueObjects;
 using StaRTS.Main.Views.Projectors;
 using StaRTS.Main.Views.UX.Controls;
@@ -23,7 +23,7 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		private UXGrid itemGrid;
 
-		public HQUpgradeScreen(Entity selectedBuilding) : base(selectedBuilding)
+		public HQUpgradeScreen(SmartEntity selectedBuilding) : base(selectedBuilding)
 		{
 			this.useUpgradeGroup = true;
 		}

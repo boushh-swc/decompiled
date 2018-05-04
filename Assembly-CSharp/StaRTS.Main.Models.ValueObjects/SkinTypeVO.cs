@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace StaRTS.Main.Models.ValueObjects
 {
-	public class SkinTypeVO : IAssetVO, IAudioVO, IGeometryVO, ISpeedVO, IValueObject
+	public class SkinTypeVO : IValueObject, IAssetVO, IAudioVO, IGeometryVO, ISpeedVO
 	{
 		public static int COLUMN_unitID
 		{

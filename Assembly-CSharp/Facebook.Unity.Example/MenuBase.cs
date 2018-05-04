@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Linq;
 using UnityEngine;
 
@@ -125,9 +126,22 @@ namespace Facebook.Unity.Example
 		private void AddDialogModeButtons()
 		{
 			GUILayout.BeginHorizontal(new GUILayoutOption[0]);
-			foreach (object current in Enum.GetValues(typeof(ShareDialogMode)))
+			IEnumerator enumerator = Enum.GetValues(typeof(ShareDialogMode)).GetEnumerator();
+			try
 			{
-				this.AddDialogModeButton((ShareDialogMode)((int)current));
+				while (enumerator.MoveNext())
+				{
+					object current = enumerator.Current;
+					this.AddDialogModeButton((ShareDialogMode)current);
+				}
+			}
+			finally
+			{
+				IDisposable disposable;
+				if ((disposable = (enumerator as IDisposable)) != null)
+				{
+					disposable.Dispose();
+				}
 			}
 			GUILayout.EndHorizontal();
 		}

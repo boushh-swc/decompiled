@@ -921,10 +921,9 @@ namespace StaRTS.Main.Controllers
 			{
 				faction = squadData2.Faction;
 			}
-			FactionType factionType = faction;
-			if (factionType != FactionType.Empire)
+			if (faction != FactionType.Empire)
 			{
-				if (factionType == FactionType.Rebel)
+				if (faction == FactionType.Rebel)
 				{
 					array = warBuffVO.EmpireBattlesByLevel;
 				}
@@ -1204,7 +1203,7 @@ namespace StaRTS.Main.Controllers
 							this.LaunchSquadWarFlow();
 						}
 					}
-					else if ((int)cookie == 0)
+					else if ((SquadWarStatusType)cookie == SquadWarStatusType.PhaseOpen)
 					{
 						this.EndSquadWar();
 					}

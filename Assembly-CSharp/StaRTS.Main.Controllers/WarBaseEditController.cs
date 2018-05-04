@@ -1,7 +1,7 @@
-using Net.RichardLord.Ash.Core;
 using StaRTS.Main.Models;
 using StaRTS.Main.Models.Commands.Player.Building.Move;
 using StaRTS.Main.Models.Commands.TransferObjects;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.Player.World;
 using StaRTS.Main.Models.ValueObjects;
 using StaRTS.Main.Utils;
@@ -68,9 +68,9 @@ namespace StaRTS.Main.Controllers
 						{
 							Building building = buildings[j].Clone();
 							this.mapData.Buildings.Add(building);
-							Entity entity = Service.EntityFactory.CreateBuildingEntity(building, false, true, false);
-							Service.WorldController.AddEntityToWorld(entity);
-							Service.BaseLayoutToolController.StashBuilding(entity, false);
+							SmartEntity smartEntity = Service.EntityFactory.CreateBuildingEntity(building, false, true, false);
+							Service.WorldController.AddEntityToWorld(smartEntity);
+							Service.BaseLayoutToolController.StashBuilding(smartEntity, false);
 							flag = true;
 						}
 					}

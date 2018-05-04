@@ -112,7 +112,7 @@ public class UIButton : UIButtonColor
 			{
 				this.mNormalSprite = value;
 				this.SetSprite(value);
-				NGUITools.SetDirty(this.mSprite);
+				NGUITools.SetDirty(this.mSprite, "last change");
 			}
 			else
 			{
@@ -145,7 +145,7 @@ public class UIButton : UIButtonColor
 			{
 				this.mNormalSprite2D = value;
 				this.SetSprite(value);
-				NGUITools.SetDirty(this.mSprite);
+				NGUITools.SetDirty(this.mSprite, "last change");
 			}
 			else
 			{
@@ -206,7 +206,7 @@ public class UIButton : UIButtonColor
 
 	protected virtual void OnClick()
 	{
-		if (UIButton.current == null && this.isEnabled)
+		if (UIButton.current == null && this.isEnabled && UICamera.currentTouchID != -2 && UICamera.currentTouchID != -3)
 		{
 			UIButton.current = this;
 			EventDelegate.Execute(this.onClick);

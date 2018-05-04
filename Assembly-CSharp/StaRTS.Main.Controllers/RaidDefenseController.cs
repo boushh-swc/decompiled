@@ -441,131 +441,137 @@ namespace StaRTS.Main.Controllers
 		{
 			switch (id)
 			{
-			case EventId.WorldLoadComplete:
+			case EventId.BuildingViewReady:
 			{
-				IState currentState = Service.GameStateMachine.CurrentState;
-				if (currentState is HomeState && this.RaidCompleteDidAwardCrate())
+				EntityViewParams entityViewParams = (EntityViewParams)cookie;
+				if (entityViewParams.Entity.Has<ScoutTowerComponent>())
 				{
-					GameUtils.ShowCrateAwardModal(this.lastAwardedCrateUid);
-					this.lastAwardedCrateUid = null;
-					Service.EventManager.UnregisterObserver(this, EventId.WorldLoadComplete);
+					this.CreateScoutHolo();
 				}
 				return EatResponse.NotEaten;
 			}
-			case EventId.WorldInTransitionComplete:
-			case EventId.WorldOutTransitionComplete:
+			case EventId.BuildingViewFailed:
 			{
-				IL_1D:
-				switch (id)
+				IL_14:
+				if (id == EventId.BuildingConstructed)
 				{
-				case EventId.BuildingViewReady:
-				{
-					EntityViewParams entityViewParams = (EntityViewParams)cookie;
-					if (entityViewParams.Entity.Has<ScoutTowerComponent>())
-					{
-						this.CreateScoutHolo();
-					}
-					return EatResponse.NotEaten;
+					goto IL_A5;
 				}
-				case EventId.BuildingViewFailed:
-					IL_32:
-					if (id == EventId.BuildingConstructed)
+				if (id != EventId.BuildingReplaced)
+				{
+					switch (id)
 					{
-						goto IL_B1;
-					}
-					if (id == EventId.BuildingReplaced)
+					case EventId.WorldLoadComplete:
 					{
-						Entity entity = cookie as Entity;
-						if (entity.Has<ScoutTowerComponent>())
+						IState currentState = Service.GameStateMachine.CurrentState;
+						if (currentState is HomeState && this.RaidCompleteDidAwardCrate())
 						{
-							this.CreateScoutHolo();
+							GameUtils.ShowCrateAwardModal(this.lastAwardedCrateUid);
+							this.lastAwardedCrateUid = null;
+							Service.EventManager.UnregisterObserver(this, EventId.WorldLoadComplete);
 						}
 						return EatResponse.NotEaten;
 					}
-					if (id == EventId.ContractStarted || id == EventId.ContractContinued)
-					{
-						ContractEventData contractEventData = (ContractEventData)cookie;
-						if (contractEventData.BuildingVO.Type == BuildingType.ScoutTower)
+					case EventId.WorldInTransitionComplete:
+					case EventId.WorldOutTransitionComplete:
+						IL_3D:
+						if (id == EventId.ContractStarted || id == EventId.ContractContinued)
 						{
-							this.DestroyScoutHolo();
-						}
-						return EatResponse.NotEaten;
-					}
-					if (id != EventId.EntityKilled)
-					{
-						if (id == EventId.HeroDeployed)
-						{
-							EntityController entityController = Service.EntityController;
-							NodeList<OffensiveTroopNode> nodeList = entityController.GetNodeList<OffensiveTroopNode>();
-							TroopAttackController troopAttackController = Service.TroopAttackController;
-							for (OffensiveTroopNode offensiveTroopNode = nodeList.Head; offensiveTroopNode != null; offensiveTroopNode = offensiveTroopNode.Next)
+							ContractEventData contractEventData = (ContractEventData)cookie;
+							if (contractEventData.BuildingVO.Type == BuildingType.ScoutTower)
 							{
-								troopAttackController.RefreshTarget((SmartEntity)offensiveTroopNode.Entity);
+								this.DestroyScoutHolo();
 							}
 							return EatResponse.NotEaten;
 						}
-						if (id != EventId.PlanetRelocateStarted)
+						if (id != EventId.EntityKilled)
 						{
+							if (id == EventId.HeroDeployed)
+							{
+								EntityController entityController = Service.EntityController;
+								NodeList<OffensiveTroopNode> nodeList = entityController.GetNodeList<OffensiveTroopNode>();
+								TroopAttackController troopAttackController = Service.TroopAttackController;
+								for (OffensiveTroopNode offensiveTroopNode = nodeList.Head; offensiveTroopNode != null; offensiveTroopNode = offensiveTroopNode.Next)
+								{
+									troopAttackController.RefreshTarget((SmartEntity)offensiveTroopNode.Entity);
+								}
+								return EatResponse.NotEaten;
+							}
+							if (id != EventId.PlanetRelocateStarted)
+							{
+								return EatResponse.NotEaten;
+							}
+							if (this.AreRaidsAccessible())
+							{
+								this.SendRaidDefenseUpdate();
+							}
 							return EatResponse.NotEaten;
 						}
-						if (this.AreRaidsAccessible())
+						else
 						{
-							this.SendRaidDefenseUpdate();
+							SmartEntity smartEntity = (SmartEntity)cookie;
+							if (smartEntity.BuildingComp == null)
+							{
+								return EatResponse.NotEaten;
+							}
+							BuildingType type = smartEntity.BuildingComp.BuildingType.Type;
+							if (!this.raidDefenseTrainerBindings.Contains(type))
+							{
+								return EatResponse.NotEaten;
+							}
+							UXController uXController = Service.UXController;
+							Lang lang = Service.Lang;
+							if (type != BuildingType.FleetCommand)
+							{
+								if (type != BuildingType.Squad)
+								{
+									if (type == BuildingType.HeroMobilizer)
+									{
+										Service.DeployerController.HeroDeployer.ExitMode();
+										uXController.HUD.DisableHeroDeploys();
+										uXController.MiscElementsManager.ShowPlayerInstructions(lang.Get("HERO_TRAINER_DESTROYED", new object[0]));
+									}
+								}
+								else
+								{
+									Service.DeployerController.SquadTroopDeployer.ExitMode();
+									uXController.HUD.DisableSquadDeploy();
+									uXController.MiscElementsManager.ShowPlayerInstructions(lang.Get("SQUAD_CENTER_DESTROYED", new object[0]));
+								}
+							}
+							else
+							{
+								Service.DeployerController.SpecialAttackDeployer.ExitMode();
+								uXController.HUD.DisableSpecialAttacks();
+								uXController.MiscElementsManager.ShowPlayerInstructions(lang.Get("STARSHIP_TRAINER_DESTROYED", new object[0]));
+							}
+							return EatResponse.NotEaten;
 						}
+						break;
+					case EventId.WorldReset:
+						this.DestroyScoutHolo();
 						return EatResponse.NotEaten;
 					}
-					else
-					{
-						SmartEntity smartEntity = (SmartEntity)cookie;
-						if (smartEntity.BuildingComp == null)
-						{
-							return EatResponse.NotEaten;
-						}
-						BuildingType type = smartEntity.BuildingComp.BuildingType.Type;
-						if (!this.raidDefenseTrainerBindings.Contains(type))
-						{
-							return EatResponse.NotEaten;
-						}
-						UXController uXController = Service.UXController;
-						Lang lang = Service.Lang;
-						switch (type)
-						{
-						case BuildingType.FleetCommand:
-							Service.DeployerController.SpecialAttackDeployer.ExitMode();
-							uXController.HUD.DisableSpecialAttacks();
-							uXController.MiscElementsManager.ShowPlayerInstructions(lang.Get("STARSHIP_TRAINER_DESTROYED", new object[0]));
-							break;
-						case BuildingType.HeroMobilizer:
-							Service.DeployerController.HeroDeployer.ExitMode();
-							uXController.HUD.DisableHeroDeploys();
-							uXController.MiscElementsManager.ShowPlayerInstructions(lang.Get("HERO_TRAINER_DESTROYED", new object[0]));
-							break;
-						case BuildingType.Squad:
-							Service.DeployerController.SquadTroopDeployer.ExitMode();
-							uXController.HUD.DisableSquadDeploy();
-							uXController.MiscElementsManager.ShowPlayerInstructions(lang.Get("SQUAD_CENTER_DESTROYED", new object[0]));
-							break;
-						}
-						return EatResponse.NotEaten;
-					}
-					break;
-				case EventId.BuildingCancelled:
-					goto IL_B1;
+					goto IL_3D;
 				}
-				goto IL_32;
-				IL_B1:
-				ContractEventData contractEventData2 = (ContractEventData)cookie;
-				if (contractEventData2.BuildingVO.Type == BuildingType.ScoutTower)
+				SmartEntity smartEntity2 = cookie as SmartEntity;
+				if (smartEntity2.ScoutTowerComp != null)
 				{
-					this.SendRaidDefenseUpdate();
+					this.CreateScoutHolo();
 				}
 				return EatResponse.NotEaten;
 			}
-			case EventId.WorldReset:
-				this.DestroyScoutHolo();
-				return EatResponse.NotEaten;
+			case EventId.BuildingCancelled:
+				goto IL_A5;
 			}
-			goto IL_1D;
+			goto IL_14;
+			IL_A5:
+			ContractEventData contractEventData2 = (ContractEventData)cookie;
+			if (contractEventData2.BuildingVO.Type == BuildingType.ScoutTower)
+			{
+				this.SendRaidDefenseUpdate();
+			}
+			return EatResponse.NotEaten;
 		}
 
 		private void RegisterBattleObservers()

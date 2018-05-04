@@ -1,6 +1,6 @@
-using Net.RichardLord.Ash.Core;
 using StaRTS.Main.Controllers;
 using StaRTS.Main.Models;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.Player;
 using StaRTS.Main.Models.ValueObjects;
 using StaRTS.Main.Utils;
@@ -11,7 +11,7 @@ namespace StaRTS.Main.Bot
 {
 	public class BPTrainSoldiers : BotPerformer
 	{
-		private Entity building;
+		private SmartEntity building;
 
 		public override void Perform()
 		{
@@ -29,7 +29,7 @@ namespace StaRTS.Main.Bot
 			string text = (currentPlayer.Faction != FactionType.Empire) ? "Soldier" : "Storm";
 			int level = currentPlayer.UnlockedLevels.Troops.GetLevel(text);
 			TroopTypeVO byLevel = Service.TroopUpgradeCatalog.GetByLevel(text, level);
-			this.building = Service.BuildingLookupController.BarracksNodeList.Head.Entity;
+			this.building = (SmartEntity)Service.BuildingLookupController.BarracksNodeList.Head.Entity;
 			ISupportController iSupportController = Service.ISupportController;
 			for (int i = 0; i < num3; i++)
 			{

@@ -85,9 +85,9 @@ namespace StaRTS.Main.Views.UX.Screens.Leaderboard
 
 		protected const int SEARCH_SCROLL_ARROW_ANCHOR = -175;
 
-		private const string GENERIC_SQUAD_INFO_ISSUE = "GENERIC_SQUAD_INFO_ISSUE";
-
 		private static readonly Vector3 OFFSCREEN_GRID_POSITION = new Vector3(3000f, 0f, 0f);
+
+		private const string GENERIC_SQUAD_INFO_ISSUE = "GENERIC_SQUAD_INFO_ISSUE";
 
 		protected GridLoadHelper gridLoadHelper;
 
@@ -442,8 +442,7 @@ namespace StaRTS.Main.Views.UX.Screens.Leaderboard
 
 		protected string GetSelectedFactionString()
 		{
-			FactionToggle selectedFaction = this.GetSelectedFaction();
-			return selectedFaction.ToString().ToLower();
+			return this.GetSelectedFaction().ToString().ToLower();
 		}
 
 		protected abstract string GetSelectedPlanetId();

@@ -54,7 +54,7 @@ public class TweenFOV : UITweener
 
 	public static TweenFOV Begin(GameObject go, float duration, float to)
 	{
-		TweenFOV tweenFOV = UITweener.Begin<TweenFOV>(go, duration);
+		TweenFOV tweenFOV = UITweener.Begin<TweenFOV>(go, duration, 0f);
 		tweenFOV.from = tweenFOV.value;
 		tweenFOV.to = to;
 		if (duration <= 0f)

@@ -43,10 +43,9 @@ namespace StaRTS.Main.Views.UX.Screens
 			this.InitButtons();
 			UXTexture element = base.GetElement<UXTexture>("SquadImage");
 			FactionType faction = Service.CurrentPlayer.Faction;
-			FactionType factionType = faction;
-			if (factionType != FactionType.Empire)
+			if (faction != FactionType.Empire)
 			{
-				if (factionType == FactionType.Rebel)
+				if (faction == FactionType.Rebel)
 				{
 					element.LoadTexture("SquadIntro_r");
 				}

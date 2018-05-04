@@ -115,7 +115,13 @@ namespace Disney.MobileConnector.Ads
 		{
 		}
 
-		public static void InitializeInterstitialAds(string[] adUnits)
+		[Obsolete("Please use InitializeInterstitialAdSystem instead.")]
+		public static void InitializeInterstitials(string[] adUnits)
+		{
+			MCAdsBinding.InitializeInterstitialAdSystem(adUnits);
+		}
+
+		public static void InitializeInterstitialAdSystem(string[] adUnits)
 		{
 			if (Application.isEditor)
 			{
@@ -132,20 +138,20 @@ namespace Disney.MobileConnector.Ads
 				{
 					text = text + "," + adUnits[i];
 				}
-				MCAdsBinding._plugin.Call("initializeInterstitials", new object[]
+				MCAdsBinding._plugin.Call("initializeInterstitialAdSystem", new object[]
 				{
 					text
 				});
 			}
 		}
 
-		public static void TerminateInterstitialAds()
+		public static void TerminateInterstitialAdSystem()
 		{
 			if (Application.isEditor)
 			{
 				return;
 			}
-			MCAdsBinding._plugin.Call("terminateInterstitialAds", new object[0]);
+			MCAdsBinding._plugin.Call("terminateInterstitialAdSystem", new object[0]);
 		}
 
 		public static void SetInterstitialKeywords(string keywords)
@@ -298,7 +304,13 @@ namespace Disney.MobileConnector.Ads
 			});
 		}
 
+		[Obsolete("Please use InitializeRewardedAdSystem instead.")]
 		public static void InitializeRewardedVideo(string[] adUnits)
+		{
+			MCAdsBinding.InitializeRewardedAdSystem(adUnits);
+		}
+
+		public static void InitializeRewardedAdSystem(string[] adUnits)
 		{
 			if (Application.isEditor)
 			{
@@ -318,20 +330,20 @@ namespace Disney.MobileConnector.Ads
 				{
 					text = text + "," + adUnits[i];
 				}
-				MCAdsBinding._plugin.Call("initializeRewardedVideo", new object[]
+				MCAdsBinding._plugin.Call("initializeRewardedAdSystem", new object[]
 				{
 					text
 				});
 			}
 		}
 
-		public static void TerminateRewardedVideo()
+		public static void TerminateRewardedAdSystem()
 		{
 			if (Application.isEditor)
 			{
 				return;
 			}
-			MCAdsBinding._plugin.Call("terminateRewardedVideo", new object[0]);
+			MCAdsBinding._plugin.Call("terminateRewardedAdSystem", new object[0]);
 		}
 
 		public static void PauseRewardedVideo()
@@ -558,6 +570,12 @@ namespace Disney.MobileConnector.Ads
 			return "2.3.6";
 		}
 
+		[Obsolete("Tapjoy is no longer part of the Mobile Connector Ads SDK")]
+		public static string GetTapjoySDKVersion()
+		{
+			return string.Empty;
+		}
+
 		public static string GetIDFA()
 		{
 			return MCAdsBinding.GetAdvertisingId();
@@ -602,6 +620,15 @@ namespace Disney.MobileConnector.Ads
 			return MCAdsBinding._plugin.Call<string>("getLanguageCode", new object[0]);
 		}
 
+		public static void SetIsGeneralAudienceApp()
+		{
+			if (Application.isEditor)
+			{
+				return;
+			}
+			MCAdsBinding._plugin.Call("setIsGeneralAudienceApp", new object[0]);
+		}
+
 		public static void EnableLocationSupport(bool shouldUseLocation)
 		{
 			if (Application.isEditor)
@@ -616,6 +643,16 @@ namespace Disney.MobileConnector.Ads
 			{
 				return;
 			}
+		}
+
+		[Obsolete("Tapjoy is no longer part of the Mobile Connector Ads SDK")]
+		public static void InitializeTapjoy(string appID, string secretKey)
+		{
+		}
+
+		[Obsolete("Tapjoy is no longer part of the Mobile Connector Ads SDK")]
+		public static void ShowOfferWall(string currencyId = null)
+		{
 		}
 
 		public static void SetLogLevel(MCAdsLogging.LogLevel level)

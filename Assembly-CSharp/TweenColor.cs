@@ -116,7 +116,7 @@ public class TweenColor : UITweener
 
 	public static TweenColor Begin(GameObject go, float duration, Color color)
 	{
-		TweenColor tweenColor = UITweener.Begin<TweenColor>(go, duration);
+		TweenColor tweenColor = UITweener.Begin<TweenColor>(go, duration, 0f);
 		tweenColor.from = tweenColor.value;
 		tweenColor.to = color;
 		if (duration <= 0f)

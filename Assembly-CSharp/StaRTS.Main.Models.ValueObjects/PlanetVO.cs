@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace StaRTS.Main.Models.ValueObjects
 {
-	public class PlanetVO : IAssetVO, IGeometryVO, IValueObject
+	public class PlanetVO : IValueObject, IAssetVO, IGeometryVO
 	{
 		public static int COLUMN_ambientMusic
 		{

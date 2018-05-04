@@ -75,6 +75,10 @@ namespace Midcore.Web
 				{
 					wWW = WWW.LoadFromCacheOrDownload(url, version);
 				}
+				else if (formData == null && headers == null)
+				{
+					wWW = new WWW(url);
+				}
 				else
 				{
 					wWW = new WWW(url, formData, headers);
@@ -83,26 +87,34 @@ namespace Midcore.Web
 				yield return wWW;
 				if (!this.wwws.Remove(wWW))
 				{
-					goto IL_222;
+					goto IL_25B;
 				}
 				text = wWW.error;
 				if (string.IsNullOrEmpty(text))
 				{
-					switch (assetType)
+					if (assetType != WebAssetType.StandaloneText)
 					{
-					case WebAssetType.Bundle:
-						obj = wWW.assetBundle;
-						goto IL_1BB;
-					case WebAssetType.StandaloneText:
-						obj = wWW.text;
-						goto IL_1BB;
-					case WebAssetType.StandaloneBinary:
-						obj = wWW.bytes;
-						goto IL_1BB;
+						if (assetType != WebAssetType.StandaloneBinary)
+						{
+							if (assetType != WebAssetType.Bundle)
+							{
+								obj = null;
+							}
+							else
+							{
+								obj = wWW.assetBundle;
+							}
+						}
+						else
+						{
+							obj = wWW.bytes;
+						}
 					}
-					obj = null;
+					else
+					{
+						obj = wWW.text;
+					}
 				}
-				IL_1BB:
 				wWW.Dispose();
 			}
 			if (object.ReferenceEquals(obj, null))
@@ -114,7 +126,7 @@ namespace Midcore.Web
 				});
 			}
 			onFetch(obj, text, cookie);
-			IL_222:
+			IL_25B:
 			yield break;
 		}
 	}

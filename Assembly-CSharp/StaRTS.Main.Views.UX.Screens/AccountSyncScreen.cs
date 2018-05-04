@@ -274,9 +274,34 @@ namespace StaRTS.Main.Views.UX.Screens
 			medalsLabel = null;
 			factionLabel = null;
 			squadLabel = null;
-			switch (type)
+			if (type != AccountSyncAccountType.SingleAccount)
 			{
-			case AccountSyncAccountType.SingleAccount:
+				if (type != AccountSyncAccountType.MultipleAccountsPrimary)
+				{
+					if (type == AccountSyncAccountType.MultipleAccountsSecondary)
+					{
+						this.groupOneAccount.Visible = false;
+						this.groupTwoAccounts.Visible = true;
+						callsignLabel = base.GetElement<UXLabel>("TwoAccountsLabelCallSignSecondary");
+						hqLevelLabel = base.GetElement<UXLabel>("TwoAccountsLabelHQLevelSecondary");
+						medalsLabel = base.GetElement<UXLabel>("TwoAccountsLabelMedalsSecondary");
+						factionLabel = base.GetElement<UXLabel>("TwoAccountsLabelFactionSecondary");
+						squadLabel = base.GetElement<UXLabel>("TwoAccountsLabelSquadSecondary");
+					}
+				}
+				else
+				{
+					this.groupOneAccount.Visible = false;
+					this.groupTwoAccounts.Visible = true;
+					callsignLabel = base.GetElement<UXLabel>("TwoAccountsLabelCallSignPrimary");
+					hqLevelLabel = base.GetElement<UXLabel>("TwoAccountsLabelHQLevelPrimary");
+					medalsLabel = base.GetElement<UXLabel>("TwoAccountsLabelMedalsPrimary");
+					factionLabel = base.GetElement<UXLabel>("TwoAccountsLabelFactionPrimary");
+					squadLabel = base.GetElement<UXLabel>("TwoAccountsLabelSquadPrimary");
+				}
+			}
+			else
+			{
 				this.groupOneAccount.Visible = true;
 				this.groupTwoAccounts.Visible = false;
 				callsignLabel = base.GetElement<UXLabel>("OneLabelCallSign");
@@ -284,25 +309,6 @@ namespace StaRTS.Main.Views.UX.Screens
 				medalsLabel = base.GetElement<UXLabel>("OneLabelMedals");
 				factionLabel = base.GetElement<UXLabel>("OneLabelFaction");
 				squadLabel = base.GetElement<UXLabel>("OneLabelSquad");
-				break;
-			case AccountSyncAccountType.MultipleAccountsPrimary:
-				this.groupOneAccount.Visible = false;
-				this.groupTwoAccounts.Visible = true;
-				callsignLabel = base.GetElement<UXLabel>("TwoAccountsLabelCallSignPrimary");
-				hqLevelLabel = base.GetElement<UXLabel>("TwoAccountsLabelHQLevelPrimary");
-				medalsLabel = base.GetElement<UXLabel>("TwoAccountsLabelMedalsPrimary");
-				factionLabel = base.GetElement<UXLabel>("TwoAccountsLabelFactionPrimary");
-				squadLabel = base.GetElement<UXLabel>("TwoAccountsLabelSquadPrimary");
-				break;
-			case AccountSyncAccountType.MultipleAccountsSecondary:
-				this.groupOneAccount.Visible = false;
-				this.groupTwoAccounts.Visible = true;
-				callsignLabel = base.GetElement<UXLabel>("TwoAccountsLabelCallSignSecondary");
-				hqLevelLabel = base.GetElement<UXLabel>("TwoAccountsLabelHQLevelSecondary");
-				medalsLabel = base.GetElement<UXLabel>("TwoAccountsLabelMedalsSecondary");
-				factionLabel = base.GetElement<UXLabel>("TwoAccountsLabelFactionSecondary");
-				squadLabel = base.GetElement<UXLabel>("TwoAccountsLabelSquadSecondary");
-				break;
 			}
 		}
 

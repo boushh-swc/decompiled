@@ -1,5 +1,5 @@
-using Net.RichardLord.Ash.Core;
 using StaRTS.Main.Controllers;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.ValueObjects;
 using StaRTS.Main.Utils;
 using StaRTS.Main.Utils.Events;
@@ -18,7 +18,7 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		protected const int STARPORT_SLIDER_COUNT = 2;
 
-		public StarportInfoScreen(Entity starportBuilding) : base(starportBuilding)
+		public StarportInfoScreen(SmartEntity starportBuilding) : base(starportBuilding)
 		{
 			this.useStorageGroup = true;
 		}

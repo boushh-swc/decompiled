@@ -69,13 +69,14 @@ public class TweenVolume : UITweener
 
 	public static TweenVolume Begin(GameObject go, float duration, float targetVolume)
 	{
-		TweenVolume tweenVolume = UITweener.Begin<TweenVolume>(go, duration);
+		TweenVolume tweenVolume = UITweener.Begin<TweenVolume>(go, duration, 0f);
 		tweenVolume.from = tweenVolume.value;
 		tweenVolume.to = targetVolume;
 		if (targetVolume > 0f)
 		{
-			tweenVolume.audioSource.enabled = true;
-			tweenVolume.audioSource.Play();
+			AudioSource audioSource = tweenVolume.audioSource;
+			audioSource.enabled = true;
+			audioSource.Play();
 		}
 		return tweenVolume;
 	}

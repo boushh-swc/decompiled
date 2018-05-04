@@ -34,6 +34,20 @@ namespace StaRTS.Main.Controllers.SquadWar
 
 		private const float CENTERING_ROTATION_OFFSET = -1.72057f;
 
+		private readonly Keyframe[] animationKeys = new Keyframe[]
+		{
+			new Keyframe(0f, 0f, 0f, 0f),
+			new Keyframe(0.5157318f, 0.4470715f, 2.989397f, 2.989397f),
+			new Keyframe(0.6571707f, 0.8017763f, 1.748387f, 1.748387f),
+			new Keyframe(1f, 1f, 0f, 0f)
+		};
+
+		private readonly Keyframe[] easeOutKeys = new Keyframe[]
+		{
+			new Keyframe(0f, 0f, 1f, 1f),
+			new Keyframe(1f, 1f)
+		};
+
 		private const float DRAG_FLYOUT_THRESHOLD = 1f;
 
 		private const float INERTIA_MIN = 0.1f;
@@ -50,23 +64,9 @@ namespace StaRTS.Main.Controllers.SquadWar
 
 		private const string LOCATOR_GROUP = "planet_surface";
 
-		private const string WARBOARD_MASTER_PIVOT_NAME = "MasterWarboardParent";
-
-		private readonly Keyframe[] animationKeys = new Keyframe[]
-		{
-			new Keyframe(0f, 0f, 0f, 0f),
-			new Keyframe(0.5157318f, 0.4470715f, 2.989397f, 2.989397f),
-			new Keyframe(0.6571707f, 0.8017763f, 1.748387f, 1.748387f),
-			new Keyframe(1f, 1f, 0f, 0f)
-		};
-
-		private readonly Keyframe[] easeOutKeys = new Keyframe[]
-		{
-			new Keyframe(0f, 0f, 1f, 1f),
-			new Keyframe(1f, 1f)
-		};
-
 		public static readonly Vector3 WARBOARD_MASTER_START = new Vector3(-10000f, -10000f, 0f);
+
+		private const string WARBOARD_MASTER_PIVOT_NAME = "MasterWarboardParent";
 
 		private GameObject warboardMaster;
 
@@ -297,7 +297,7 @@ namespace StaRTS.Main.Controllers.SquadWar
 				this.warBoardTransform.localRotation = Quaternion.identity;
 				this.warBoard.SetActive(false);
 				this.WarBuildingLocators.Clear();
-				this.locatorGroup = this.warBoard.transform.FindChild("planet_surface");
+				this.locatorGroup = this.warBoard.transform.Find("planet_surface");
 				if (this.locatorGroup != null)
 				{
 					SquadController squadController = Service.SquadController;
@@ -307,7 +307,7 @@ namespace StaRTS.Main.Controllers.SquadWar
 					for (int i = 0; i < numParticipants; i++)
 					{
 						string name = "locator" + i.ToString();
-						transform = this.locatorGroup.FindChild(name);
+						transform = this.locatorGroup.Find(name);
 						this.WarBuildingLocators.Add(transform);
 						if (i == 1)
 						{

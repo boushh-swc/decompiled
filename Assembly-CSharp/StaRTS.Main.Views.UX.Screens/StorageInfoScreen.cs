@@ -1,4 +1,4 @@
-using Net.RichardLord.Ash.Core;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Utils;
 using StaRTS.Main.Views.UX.Elements;
 using System;
@@ -13,7 +13,7 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		protected const int STORAGE_SLIDER_COUNT = 2;
 
-		public StorageInfoScreen(Entity storageBuilding) : base(storageBuilding)
+		public StorageInfoScreen(SmartEntity storageBuilding) : base(storageBuilding)
 		{
 		}
 

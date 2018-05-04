@@ -1,5 +1,5 @@
-using Net.RichardLord.Ash.Core;
 using StaRTS.Main.Controllers;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.Player;
 using StaRTS.Main.Models.ValueObjects;
 using StaRTS.Main.Utils;
@@ -19,7 +19,7 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		private const int STARSHIP_SLIDER_COUNT = 2;
 
-		public StarshipInfoScreen(Entity starshipBuilding) : base(starshipBuilding)
+		public StarshipInfoScreen(SmartEntity starshipBuilding) : base(starshipBuilding)
 		{
 			this.useStorageGroup = true;
 		}

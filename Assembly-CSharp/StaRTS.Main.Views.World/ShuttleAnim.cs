@@ -1,5 +1,5 @@
-using Net.RichardLord.Ash.Core;
 using StaRTS.Assets;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Utils.Events;
 using StaRTS.Main.Views.Entities;
 using StaRTS.Utils.Core;
@@ -45,7 +45,7 @@ namespace StaRTS.Main.Views.World
 
 		private List<uint> outlineTimerIds;
 
-		public Entity Starport
+		public SmartEntity Starport
 		{
 			get;
 			private set;
@@ -119,7 +119,7 @@ namespace StaRTS.Main.Views.World
 			}
 		}
 
-		public ShuttleAnim(Entity starport)
+		public ShuttleAnim(SmartEntity starport)
 		{
 			this.Starport = starport;
 			this.state = ShuttleState.None;
@@ -172,8 +172,8 @@ namespace StaRTS.Main.Views.World
 						}
 						finally
 						{
-							IDisposable disposable = enumerator as IDisposable;
-							if (disposable != null)
+							IDisposable disposable;
+							if ((disposable = (enumerator as IDisposable)) != null)
 							{
 								disposable.Dispose();
 							}

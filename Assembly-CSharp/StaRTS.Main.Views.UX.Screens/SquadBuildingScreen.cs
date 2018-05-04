@@ -1,5 +1,5 @@
-using Net.RichardLord.Ash.Core;
 using StaRTS.Main.Controllers;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.Player;
 using StaRTS.Main.Models.Player.Store;
 using StaRTS.Main.Models.Squads;
@@ -75,7 +75,7 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		private UXElement requestResendCost;
 
-		public SquadBuildingScreen(Entity squadBuilding) : base(squadBuilding)
+		public SquadBuildingScreen(SmartEntity squadBuilding) : base(squadBuilding)
 		{
 			this.useStorageGroup = true;
 			this.inVisitMode = GameUtils.IsVisitingBase();

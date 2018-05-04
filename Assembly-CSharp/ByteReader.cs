@@ -195,6 +195,10 @@ public class ByteReader
 				}
 				ByteReader.mTemp.Add(text.Substring(num, text.Length - num));
 			}
+			else
+			{
+				ByteReader.mTemp.Add(string.Empty);
+			}
 			return ByteReader.mTemp;
 		}
 		return null;

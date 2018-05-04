@@ -27,10 +27,7 @@ namespace StaRTS.Main.Controllers.Goals
 
 		public EatResponse OnEvent(EventId id, object cookie)
 		{
-			switch (id)
-			{
-			case EventId.TroopRecruited:
-			case EventId.HeroMobilized:
+			if (id == EventId.TroopRecruited || id == EventId.HeroMobilized)
 			{
 				ContractEventData contractEventData = cookie as ContractEventData;
 				StaticDataController staticDataController = Service.StaticDataController;
@@ -39,8 +36,6 @@ namespace StaRTS.Main.Controllers.Goals
 				{
 					this.parent.Progress(this, 1);
 				}
-				break;
-			}
 			}
 			return EatResponse.NotEaten;
 		}

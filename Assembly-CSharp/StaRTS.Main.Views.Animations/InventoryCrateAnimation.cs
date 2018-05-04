@@ -22,6 +22,8 @@ namespace StaRTS.Main.Views.Animations
 	{
 		private const float LAND_TO_OPEN_DELAY = 2.1f;
 
+		private static readonly Vector3 RIG_OFFSET = new Vector3(3000f, 1000f, 0f);
+
 		private const int RENDER_WIDTH_HEIGHT = 256;
 
 		private const string CRATE_LOCATOR = "crateHolder";
@@ -97,8 +99,6 @@ namespace StaRTS.Main.Views.Animations
 		private const string DISK_LEVEL3_MESH = "disc_body_03";
 
 		private const string DISK_LEVEL10_MESH = "disc_body_10";
-
-		private static readonly Vector3 RIG_OFFSET = new Vector3(3000f, 1000f, 0f);
 
 		private GameObject crateRayEffect;
 
@@ -468,9 +468,9 @@ namespace StaRTS.Main.Views.Animations
 			Transform transform2 = this.assetMeshDataMonoBehavior.OtherGameObjects[1].transform;
 			this.crateVfxParticles = transform2.gameObject.GetComponent<ParticleSystem>();
 			this.crateBurstParticles = this.assetMeshDataMonoBehavior.OtherGameObjects[2].GetComponent<ParticleSystem>();
-			this.crateRayEffect = transform2.FindChild(this.crateObj.name).gameObject;
-			this.beamsEffect = this.crateRayEffect.transform.FindChild("beams");
-			this.sparkleEffect = this.crateRayEffect.transform.FindChild("sparkles");
+			this.crateRayEffect = transform2.Find(this.crateObj.name).gameObject;
+			this.beamsEffect = this.crateRayEffect.transform.Find("beams");
+			this.sparkleEffect = this.crateRayEffect.transform.Find("sparkles");
 			this.crateRayEffect.SetActive(true);
 			this.crateObj.transform.SetParent(transform);
 			this.crateObj.transform.localPosition = Vector3.zero;
@@ -526,7 +526,7 @@ namespace StaRTS.Main.Views.Animations
 		{
 			string text = string.Empty;
 			text = "reward_node/crate_reward_contraband";
-			this.contrabandCurrencyReward = this.crateController.transform.FindChild(text).gameObject;
+			this.contrabandCurrencyReward = this.crateController.transform.Find(text).gameObject;
 			if (this.contrabandCurrencyReward == null)
 			{
 				Service.Logger.ErrorFormat("Could not find gameObject {0} in crate controller", new object[]
@@ -535,7 +535,7 @@ namespace StaRTS.Main.Views.Animations
 				});
 			}
 			text = "reward_node/crate_reward_reputation";
-			this.reputationReward = this.crateController.transform.FindChild(text).gameObject;
+			this.reputationReward = this.crateController.transform.Find(text).gameObject;
 			if (this.reputationReward == null)
 			{
 				Service.Logger.ErrorFormat("Could not find gameObject {0} in crate controller", new object[]
@@ -544,7 +544,7 @@ namespace StaRTS.Main.Views.Animations
 				});
 			}
 			text = "reward_node/crate_reward_crystal";
-			this.crystalCurrencyReward = this.crateController.transform.FindChild(text).gameObject;
+			this.crystalCurrencyReward = this.crateController.transform.Find(text).gameObject;
 			if (this.crystalCurrencyReward == null)
 			{
 				Service.Logger.ErrorFormat("Could not find gameObject {0} in crate controller", new object[]
@@ -553,7 +553,7 @@ namespace StaRTS.Main.Views.Animations
 				});
 			}
 			text = "reward_node/crate_reward_credit";
-			this.creditCurrencyReward = this.crateController.transform.FindChild(text).gameObject;
+			this.creditCurrencyReward = this.crateController.transform.Find(text).gameObject;
 			if (this.creditCurrencyReward == null)
 			{
 				Service.Logger.ErrorFormat("Could not find gameObject {0} in crate controller", new object[]
@@ -562,7 +562,7 @@ namespace StaRTS.Main.Views.Animations
 				});
 			}
 			text = "reward_node/crate_reward_alloy";
-			this.materialCurrencyReward = this.crateController.transform.FindChild(text).gameObject;
+			this.materialCurrencyReward = this.crateController.transform.Find(text).gameObject;
 			if (this.materialCurrencyReward == null)
 			{
 				Service.Logger.ErrorFormat("Could not find gameObject {0} in crate controller", new object[]
@@ -571,7 +571,7 @@ namespace StaRTS.Main.Views.Animations
 				});
 			}
 			text = "reward_node/crate_reward_unit";
-			this.unitReward = this.crateController.transform.FindChild(text).gameObject;
+			this.unitReward = this.crateController.transform.Find(text).gameObject;
 			if (this.unitReward == null)
 			{
 				Service.Logger.ErrorFormat("Could not find gameObject {0} in crate controller", new object[]
@@ -580,7 +580,7 @@ namespace StaRTS.Main.Views.Animations
 				});
 			}
 			text = "reward_node/crate_reward_shard";
-			this.shardReward = this.crateController.transform.FindChild(text).gameObject;
+			this.shardReward = this.crateController.transform.Find(text).gameObject;
 			if (this.shardReward == null)
 			{
 				Service.Logger.ErrorFormat("Could not find gameObject {0} in crate controller", new object[]
@@ -593,7 +593,7 @@ namespace StaRTS.Main.Views.Animations
 				this.shardRewardAnimator = this.shardReward.GetComponent<Animator>();
 			}
 			text = "reward_vfx_locator/vfx_back_contraband";
-			this.contrabandBackVfx = this.crateController.transform.FindChild(text).gameObject;
+			this.contrabandBackVfx = this.crateController.transform.Find(text).gameObject;
 			if (this.contrabandBackVfx == null)
 			{
 				Service.Logger.ErrorFormat("Could not find gameObject {0} in crate controller", new object[]
@@ -602,7 +602,7 @@ namespace StaRTS.Main.Views.Animations
 				});
 			}
 			text = "reward_vfx_locator/vfx_back_reputation";
-			this.reputationBackVfx = this.crateController.transform.FindChild(text).gameObject;
+			this.reputationBackVfx = this.crateController.transform.Find(text).gameObject;
 			if (this.reputationBackVfx == null)
 			{
 				Service.Logger.ErrorFormat("Could not find gameObject {0} in crate controller", new object[]
@@ -611,7 +611,7 @@ namespace StaRTS.Main.Views.Animations
 				});
 			}
 			text = "reward_vfx_locator/vfx_back_crystal";
-			this.crystalBackVfx = this.crateController.transform.FindChild(text).gameObject;
+			this.crystalBackVfx = this.crateController.transform.Find(text).gameObject;
 			if (this.crystalBackVfx == null)
 			{
 				Service.Logger.ErrorFormat("Could not find gameObject {0} in crate controller", new object[]
@@ -620,7 +620,7 @@ namespace StaRTS.Main.Views.Animations
 				});
 			}
 			text = "reward_vfx_locator/vfx_back_credit";
-			this.creditBackVfx = this.crateController.transform.FindChild(text).gameObject;
+			this.creditBackVfx = this.crateController.transform.Find(text).gameObject;
 			if (this.creditBackVfx == null)
 			{
 				Service.Logger.ErrorFormat("Could not find gameObject {0} in crate controller", new object[]
@@ -629,7 +629,7 @@ namespace StaRTS.Main.Views.Animations
 				});
 			}
 			text = "reward_vfx_locator/vfx_back_alloy";
-			this.materialBackVfx = this.crateController.transform.FindChild(text).gameObject;
+			this.materialBackVfx = this.crateController.transform.Find(text).gameObject;
 			if (this.materialBackVfx == null)
 			{
 				Service.Logger.ErrorFormat("Could not find gameObject {0} in crate controller", new object[]
@@ -638,7 +638,7 @@ namespace StaRTS.Main.Views.Animations
 				});
 			}
 			text = "reward_vfx_locator/vfx_back_unit";
-			this.unitBackVfx = this.crateController.transform.FindChild(text).gameObject;
+			this.unitBackVfx = this.crateController.transform.Find(text).gameObject;
 			if (this.unitBackVfx == null)
 			{
 				Service.Logger.ErrorFormat("Could not find gameObject {0} in crate controller", new object[]
@@ -647,7 +647,7 @@ namespace StaRTS.Main.Views.Animations
 				});
 			}
 			text = "reward_vfx_locator/vfx_back_shard";
-			this.shardBackVfx = this.crateController.transform.FindChild(text).gameObject;
+			this.shardBackVfx = this.crateController.transform.Find(text).gameObject;
 			if (this.shardBackVfx == null)
 			{
 				Service.Logger.ErrorFormat("Could not find gameObject {0} in crate controller", new object[]
@@ -898,7 +898,7 @@ namespace StaRTS.Main.Views.Animations
 		private void SetupRenderTargetMesh(GameObject rootReward, SupplyCrateTag crateTag)
 		{
 			Transform transform = this.assetMeshDataMonoBehavior.OtherGameObjects[7].transform;
-			GameObject gameObject = transform.FindChild("datacardscreenmesh").gameObject;
+			GameObject gameObject = transform.Find("datacardscreenmesh").gameObject;
 			Renderer component = gameObject.GetComponent<Renderer>();
 			component.sharedMaterial.mainTexture = crateTag.RenderTexture;
 			component.sharedMaterial.shader = Shader.Find("Unlit/Transparent Colored");
@@ -907,10 +907,10 @@ namespace StaRTS.Main.Views.Animations
 		private void SetupShardQualityDisplay(GameObject rootReward, SupplyCrateTag crateTag)
 		{
 			Transform transform = this.assetMeshDataMonoBehavior.OtherGameObjects[7].transform;
-			GameObject gameObject = transform.FindChild("rarity_star_01").gameObject;
-			GameObject gameObject2 = transform.FindChild("rarity_star_02").gameObject;
-			GameObject gameObject3 = transform.FindChild("rarity_star_03").gameObject;
-			GameObject gameObject4 = transform.FindChild("rarity_star_10").gameObject;
+			GameObject gameObject = transform.Find("rarity_star_01").gameObject;
+			GameObject gameObject2 = transform.Find("rarity_star_02").gameObject;
+			GameObject gameObject3 = transform.Find("rarity_star_03").gameObject;
+			GameObject gameObject4 = transform.Find("rarity_star_10").gameObject;
 			gameObject.SetActive(false);
 			gameObject2.SetActive(false);
 			gameObject3.SetActive(false);
@@ -980,7 +980,10 @@ namespace StaRTS.Main.Views.Animations
 				{
 					color = this.ELITE_BURST_COLOR;
 				}
-				this.crateBurstParticles.startColor = color;
+				ParticleSystem.MainModule main = this.crateBurstParticles.main;
+				ParticleSystem.MinMaxGradient startColor = main.startColor;
+				startColor = color;
+				main.startColor = startColor;
 			}
 		}
 

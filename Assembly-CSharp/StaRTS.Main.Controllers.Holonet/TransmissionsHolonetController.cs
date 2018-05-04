@@ -143,12 +143,12 @@ namespace StaRTS.Main.Controllers.Holonet
 						{
 							if (!Service.PerkManager.HasPlayerSeenPerkTutorial())
 							{
-								goto IL_313;
+								goto IL_314;
 							}
 							bool flag = transmissionVO2 == null || transmissionVO3.SquadLevel > transmissionVO2.SquadLevel;
 							if (!flag || pref2 >= transmissionVO3.SquadLevel)
 							{
-								goto IL_313;
+								goto IL_314;
 							}
 							if (transmissionVO2 != null)
 							{
@@ -161,7 +161,7 @@ namespace StaRTS.Main.Controllers.Holonet
 						{
 							if (this.IsDailyCrateTransmission(transmissionVO3))
 							{
-								goto IL_313;
+								goto IL_314;
 							}
 							if (this.IsDailyCrateTutorialTransmission(transmissionVO3))
 							{
@@ -172,7 +172,7 @@ namespace StaRTS.Main.Controllers.Holonet
 						this.incomingTransmissions.Add(transmissionVO3);
 					}
 				}
-				IL_313:
+				IL_314:
 				num4++;
 			}
 			this.incomingTransmissions.Sort(new Comparison<TransmissionVO>(this.CompareIncommingPriorites));

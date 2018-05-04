@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -8,6 +9,10 @@ namespace StaRTS.Utils.Json
 {
 	public class Serializer
 	{
+		private StringBuilder sb;
+
+		private bool first;
+
 		private const string KEY_VALUE_QUOTED = "\"{0}\":\"{1}\"";
 
 		private const string KEY_VALUE_UNQUOTED = "\"{0}\":{1}";
@@ -23,10 +28,6 @@ namespace StaRTS.Utils.Json
 		private const string ARRAY_END = "]";
 
 		private const string COMMA = ",";
-
-		private StringBuilder sb;
-
-		private bool first;
 
 		private static readonly Dictionary<string, string> ESCAPE_MAPPING = new Dictionary<string, string>
 		{
@@ -70,6 +71,9 @@ namespace StaRTS.Utils.Json
 
 		private static readonly Regex ESCAPE_REGEX = new Regex(string.Join("|", Serializer.ESCAPE_MAPPING.Keys.ToArray<string>()));
 
+		[CompilerGenerated]
+		private static MatchEvaluator <>f__mg$cache0;
+
 		public Serializer()
 		{
 			this.sb = new StringBuilder();
@@ -81,7 +85,12 @@ namespace StaRTS.Utils.Json
 		{
 			if (s != null)
 			{
-				return Serializer.ESCAPE_REGEX.Replace(s, new MatchEvaluator(Serializer.EscapeMatchEval));
+				Regex arg_29_0 = Serializer.ESCAPE_REGEX;
+				if (Serializer.<>f__mg$cache0 == null)
+				{
+					Serializer.<>f__mg$cache0 = new MatchEvaluator(Serializer.EscapeMatchEval);
+				}
+				return arg_29_0.Replace(s, Serializer.<>f__mg$cache0);
 			}
 			return s;
 		}

@@ -48,10 +48,16 @@ public class UIEventListener : MonoBehaviour
 
 	public UIEventListener.BoolDelegate onTooltip;
 
+	public bool needsActiveCollider = true;
+
 	private bool isColliderEnabled
 	{
 		get
 		{
+			if (!this.needsActiveCollider)
+			{
+				return true;
+			}
 			Collider component = base.GetComponent<Collider>();
 			if (component != null)
 			{
@@ -180,6 +186,25 @@ public class UIEventListener : MonoBehaviour
 		{
 			this.onTooltip(base.gameObject, show);
 		}
+	}
+
+	public void Clear()
+	{
+		this.onSubmit = null;
+		this.onClick = null;
+		this.onDoubleClick = null;
+		this.onHover = null;
+		this.onPress = null;
+		this.onSelect = null;
+		this.onScroll = null;
+		this.onDragStart = null;
+		this.onDrag = null;
+		this.onDragOver = null;
+		this.onDragOut = null;
+		this.onDragEnd = null;
+		this.onDrop = null;
+		this.onKey = null;
+		this.onTooltip = null;
 	}
 
 	public static UIEventListener Get(GameObject go)

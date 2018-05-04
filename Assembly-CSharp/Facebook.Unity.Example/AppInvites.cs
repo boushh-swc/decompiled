@@ -9,8 +9,7 @@ namespace Facebook.Unity.Example
 			if (base.Button("Android Invite"))
 			{
 				base.Status = "Logged FB.AppEvent";
-				FacebookDelegate<IAppInviteResult> callback = new FacebookDelegate<IAppInviteResult>(base.HandleResult);
-				FB.Mobile.AppInvite(new Uri("https://fb.me/892708710750483"), null, callback);
+				FB.Mobile.AppInvite(new Uri("https://fb.me/892708710750483"), null, new FacebookDelegate<IAppInviteResult>(base.HandleResult));
 			}
 			if (base.Button("Android Invite With Custom Image"))
 			{
@@ -20,8 +19,7 @@ namespace Facebook.Unity.Example
 			if (base.Button("iOS Invite"))
 			{
 				base.Status = "Logged FB.AppEvent";
-				FacebookDelegate<IAppInviteResult> callback = new FacebookDelegate<IAppInviteResult>(base.HandleResult);
-				FB.Mobile.AppInvite(new Uri("https://fb.me/810530068992919"), null, callback);
+				FB.Mobile.AppInvite(new Uri("https://fb.me/810530068992919"), null, new FacebookDelegate<IAppInviteResult>(base.HandleResult));
 			}
 			if (base.Button("iOS Invite With Custom Image"))
 			{

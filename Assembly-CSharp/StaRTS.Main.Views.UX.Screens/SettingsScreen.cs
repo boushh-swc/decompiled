@@ -300,8 +300,8 @@ namespace StaRTS.Main.Views.UX.Screens
 			element2 = base.GetElement<UXLabel>("LabelVersion");
 			element2.Text = this.lang.Get("SETTINGS_ABOUT_VERSION", new object[]
 			{
-				"5.2.0",
-				"10309"
+				"6.0.0",
+				"10394"
 			});
 			UXLabel expr_B3 = element2;
 			expr_B3.Text = expr_B3.Text + ": " + Service.ContentManager.GetManifestVersion();
@@ -531,13 +531,13 @@ namespace StaRTS.Main.Views.UX.Screens
 			{
 				if (id == EventId.GameServicesSignedOut)
 				{
-					if ((int)cookie == 2)
+					if ((AccountProvider)cookie == AccountProvider.GOOGLEPLAY)
 					{
 						this.SetGoogleButtonLabel(false);
 					}
 				}
 			}
-			else if ((int)cookie == 2)
+			else if ((AccountProvider)cookie == AccountProvider.GOOGLEPLAY)
 			{
 				this.SetGoogleButtonLabel(true);
 				if (this.achievementsClicked)

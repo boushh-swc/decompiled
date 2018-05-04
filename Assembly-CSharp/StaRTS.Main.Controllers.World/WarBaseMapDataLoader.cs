@@ -14,8 +14,6 @@ namespace StaRTS.Main.Controllers.World
 {
 	public class WarBaseMapDataLoader : IMapDataLoader
 	{
-		private const WorldType worldType = WorldType.Opponent;
-
 		private BattleInitializationData battleData;
 
 		private SquadMemberWarData memberWarData;
@@ -27,6 +25,8 @@ namespace StaRTS.Main.Controllers.World
 		private Dictionary<string, int> defenderSquadTroops;
 
 		private Dictionary<string, int> defenderChampions;
+
+		private const WorldType worldType = WorldType.Opponent;
 
 		public WarBaseMapDataLoader()
 		{

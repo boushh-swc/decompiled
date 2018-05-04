@@ -86,7 +86,7 @@ public static class NGUIMath
 		case '>':
 		case '?':
 		case '@':
-			IL_67:
+			IL_65:
 			switch (ch)
 			{
 			case 'a':
@@ -118,7 +118,7 @@ public static class NGUIMath
 		case 'F':
 			return 15;
 		}
-		goto IL_67;
+		goto IL_65;
 	}
 
 	[DebuggerHidden, DebuggerStepThrough]
@@ -348,7 +348,7 @@ public static class NGUIMath
 
 	public static Bounds CalculateRelativeWidgetBounds(Transform trans)
 	{
-		return NGUIMath.CalculateRelativeWidgetBounds(trans, trans, false, true);
+		return NGUIMath.CalculateRelativeWidgetBounds(trans, trans, !trans.gameObject.activeSelf, true);
 	}
 
 	public static Bounds CalculateRelativeWidgetBounds(Transform trans, bool considerInactive)
@@ -358,7 +358,7 @@ public static class NGUIMath
 
 	public static Bounds CalculateRelativeWidgetBounds(Transform relativeTo, Transform content)
 	{
-		return NGUIMath.CalculateRelativeWidgetBounds(relativeTo, content, false, true);
+		return NGUIMath.CalculateRelativeWidgetBounds(relativeTo, content, !content.gameObject.activeSelf, true);
 	}
 
 	public static Bounds CalculateRelativeWidgetBounds(Transform relativeTo, Transform content, bool considerInactive, bool considerChildren = true)

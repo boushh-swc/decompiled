@@ -71,7 +71,7 @@ namespace StaRTS.Main.Controllers
 			case EventId.ShowHologramComplete:
 			case EventId.ShowAttackButton:
 			case EventId.HideHologramComplete:
-				IL_44:
+				IL_40:
 				if (id == EventId.ScreenLoaded)
 				{
 					if (cookie is HolocommScreen)
@@ -171,7 +171,7 @@ namespace StaRTS.Main.Controllers
 				}
 				return EatResponse.NotEaten;
 			}
-			goto IL_44;
+			goto IL_40;
 		}
 
 		private void StoreCommandInBuffer(EventId id, object cookie)

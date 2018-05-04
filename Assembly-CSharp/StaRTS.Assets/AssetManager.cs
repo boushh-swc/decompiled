@@ -18,6 +18,8 @@ namespace StaRTS.Assets
 {
 	public class AssetManager : IViewFrameTimeObserver
 	{
+		private const float UNLOAD_ASSET_DELAY = 0f;
+
 		public const string ASSETBUNDLE_DIR = "assetbundles/";
 
 		public const string ASSETBUNDLE_TARGET = "android";
@@ -42,15 +44,17 @@ namespace StaRTS.Assets
 
 		private const float UNLOAD_PRELOADABLES_DELAY = 5f;
 
+		private const float UNLOAD_BUNDLE_FRAME_DELAY = 0.001f;
+
 		private const int MAX_CONCURRENT_LOADS = 5;
-
-		private const string CLEARABLE_BUNDLE_PREFIX = "models_";
-
-		private const string PLANET_LOADING_PRFIX = "planet_loading_";
 
 		private Queue<AssetInfo> assetsPendingLoad;
 
 		private int numAssetsLoading;
+
+		private const string CLEARABLE_BUNDLE_PREFIX = "models_";
+
+		private const string PLANET_LOADING_PRFIX = "planet_loading_";
 
 		private Dictionary<string, ManifestEntry> manifest;
 
@@ -80,6 +84,10 @@ namespace StaRTS.Assets
 
 		private bool unloadedPreloadables;
 
+		private List<AssetBundle> fullyLoadedAssetBundles;
+
+		private float unloadAssetDelay;
+
 		public GameShaders Shaders
 		{
 			get;
@@ -100,6 +108,7 @@ namespace StaRTS.Assets
 			this.customPreloadables = new HashSet<string>();
 			this.lazyloadables = new Dictionary<string, AssetHandle>();
 			this.unloadedPreloadables = false;
+			this.fullyLoadedAssetBundles = new List<AssetBundle>();
 			this.bundleContents = new Dictionary<string, HashSet<string>>();
 			this.manifest = new Dictionary<string, ManifestEntry>();
 			this.dependencyBundles = new List<string>();
@@ -494,6 +503,7 @@ namespace StaRTS.Assets
 
 		public void ReleaseAll()
 		{
+			this.fullyLoadedAssetBundles.Clear();
 			this.Shaders = null;
 			this.Profiler = null;
 			List<AssetBundle> list = new List<AssetBundle>();
@@ -847,7 +857,8 @@ namespace StaRTS.Assets
 				assetInfo.AssetObject = null;
 				assetInfo.AllContentsExtracted = true;
 				assetInfo.Prefabs = assetBundle.LoadAllAssets();
-				assetBundle.Unload(false);
+				this.fullyLoadedAssetBundles.Add(assetBundle);
+				this.unloadAssetDelay = 0f;
 			}
 		}
 
@@ -1035,7 +1046,7 @@ namespace StaRTS.Assets
 				yield return wWW;
 				if (!WWWManager.Remove(wWW))
 				{
-					goto IL_323;
+					goto IL_2EC;
 				}
 				text2 = wWW.error;
 				if (string.IsNullOrEmpty(text2))
@@ -1073,7 +1084,7 @@ namespace StaRTS.Assets
 						obj = wWW.bytes;
 						break;
 					case AssetType.AudioClip:
-						obj = wWW.audioClip;
+						obj = wWW.GetAudioClip();
 						break;
 					default:
 						obj = null;
@@ -1092,7 +1103,7 @@ namespace StaRTS.Assets
 			}
 			this.numAssetsLoading--;
 			this.OnAssetLoaded(obj, assetInfo);
-			IL_323:
+			IL_2EC:
 			yield break;
 		}
 
@@ -1296,6 +1307,27 @@ namespace StaRTS.Assets
 
 		public void OnViewFrameTime(float dt)
 		{
+			int count = this.fullyLoadedAssetBundles.Count;
+			if (count > 0)
+			{
+				if (this.unloadAssetDelay > 0f)
+				{
+					this.unloadAssetDelay -= dt;
+				}
+				else
+				{
+					this.unloadAssetDelay = 0f;
+					for (int i = 0; i < count; i++)
+					{
+						AssetBundle assetBundle = this.fullyLoadedAssetBundles[i];
+						if (assetBundle != null)
+						{
+							assetBundle.Unload(false);
+						}
+					}
+					this.fullyLoadedAssetBundles.Clear();
+				}
+			}
 			if (!this.IsAtMaxConcurrentLoads() && this.assetsPendingLoad.Count > 0)
 			{
 				AssetInfo assetInfo = this.assetsPendingLoad.Dequeue();
@@ -1305,14 +1337,14 @@ namespace StaRTS.Assets
 					Service.Engine.StartCoroutine(this.Fetch(this.manifest[assetInfo.AssetName].AssetPath, assetInfo));
 				}
 			}
-			int count = this.callbackQueue.Count;
-			if (count == 0)
+			int count2 = this.callbackQueue.Count;
+			if (count2 == 0)
 			{
 				return;
 			}
 			float realTimeSinceStartUp = UnityUtils.GetRealTimeSinceStartUp();
 			int num = 0;
-			this.callbackQueueIter.Init(count);
+			this.callbackQueueIter.Init(count2);
 			while (this.callbackQueueIter.Active())
 			{
 				AssetRequest assetRequest = this.PeekCallbackQueue(this.callbackQueueIter.Index);

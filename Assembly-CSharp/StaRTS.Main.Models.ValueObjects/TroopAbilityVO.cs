@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace StaRTS.Main.Models.ValueObjects
 {
-	public class TroopAbilityVO : IShooterVO, ISpeedVO, ITroopShooterVO, IValueObject
+	public class TroopAbilityVO : IValueObject, ITroopShooterVO, ISpeedVO, IShooterVO
 	{
 		public static int COLUMN_selfBuff
 		{

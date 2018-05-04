@@ -52,6 +52,9 @@ public abstract class UITweener : MonoBehaviour
 	[HideInInspector]
 	public int tweenGroup;
 
+	[Tooltip("By default, Update() will be used for tweening. Setting this to 'true' will make the tween happen in FixedUpdate() insted.")]
+	public bool useFixedUpdate;
+
 	[HideInInspector]
 	public List<EventDelegate> onFinished = new List<EventDelegate>();
 
@@ -60,6 +63,9 @@ public abstract class UITweener : MonoBehaviour
 
 	[HideInInspector]
 	public string callWhenFinished;
+
+	[NonSerialized]
+	public float timeScale = 1f;
 
 	private bool mStarted;
 
@@ -77,10 +83,14 @@ public abstract class UITweener : MonoBehaviour
 	{
 		get
 		{
+			if (this.duration == 0f)
+			{
+				return 1000f;
+			}
 			if (this.mDuration != this.duration)
 			{
 				this.mDuration = this.duration;
-				this.mAmountPerDelta = Mathf.Abs((this.duration <= 0f) ? 1000f : (1f / this.duration)) * Mathf.Sign(this.mAmountPerDelta);
+				this.mAmountPerDelta = Mathf.Abs(1f / this.duration) * Mathf.Sign(this.mAmountPerDelta);
 			}
 			return this.mAmountPerDelta;
 		}
@@ -117,15 +127,32 @@ public abstract class UITweener : MonoBehaviour
 
 	protected virtual void Start()
 	{
-		this.Update();
+		this.DoUpdate();
 	}
 
-	private void Update()
+	protected void Update()
 	{
-		float num = (!this.ignoreTimeScale) ? Time.deltaTime : RealTime.deltaTime;
-		float num2 = (!this.ignoreTimeScale) ? Time.time : RealTime.time;
+		if (!this.useFixedUpdate)
+		{
+			this.DoUpdate();
+		}
+	}
+
+	protected void FixedUpdate()
+	{
+		if (this.useFixedUpdate)
+		{
+			this.DoUpdate();
+		}
+	}
+
+	protected void DoUpdate()
+	{
+		float num = (!this.ignoreTimeScale || this.useFixedUpdate) ? Time.deltaTime : Time.unscaledDeltaTime;
+		float num2 = (!this.ignoreTimeScale || this.useFixedUpdate) ? Time.time : Time.unscaledTime;
 		if (!this.mStarted)
 		{
+			num = 0f;
 			this.mStarted = true;
 			this.mStartTime = num2 + this.delay;
 		}
@@ -133,7 +160,7 @@ public abstract class UITweener : MonoBehaviour
 		{
 			return;
 		}
-		this.mFactor += this.amountPerDelta * num;
+		this.mFactor += ((this.duration != 0f) ? (this.amountPerDelta * num * this.timeScale) : 1f);
 		if (this.style == UITweener.Style.Loop)
 		{
 			if (this.mFactor > 1f)
@@ -160,7 +187,7 @@ public abstract class UITweener : MonoBehaviour
 			this.mFactor = Mathf.Clamp01(this.mFactor);
 			this.Sample(this.mFactor, true);
 			base.enabled = false;
-			if (UITweener.current == null)
+			if (UITweener.current != this)
 			{
 				UITweener uITweener = UITweener.current;
 				UITweener.current = this;
@@ -309,15 +336,19 @@ public abstract class UITweener : MonoBehaviour
 		this.Play(false);
 	}
 
-	public void Play(bool forward)
+	public virtual void Play(bool forward)
 	{
 		this.mAmountPerDelta = Mathf.Abs(this.amountPerDelta);
 		if (!forward)
 		{
 			this.mAmountPerDelta = -this.mAmountPerDelta;
 		}
-		base.enabled = true;
-		this.Update();
+		if (!base.enabled)
+		{
+			base.enabled = true;
+			this.mStarted = false;
+		}
+		this.DoUpdate();
 	}
 
 	public void ResetToBeginning()
@@ -342,7 +373,7 @@ public abstract class UITweener : MonoBehaviour
 
 	protected abstract void OnUpdate(float factor, bool isFinished);
 
-	public static T Begin<T>(GameObject go, float duration) where T : UITweener
+	public static T Begin<T>(GameObject go, float duration, float delay = 0f) where T : UITweener
 	{
 		T t = go.GetComponent<T>();
 		if (t != null && t.tweenGroup != 0)
@@ -378,9 +409,11 @@ public abstract class UITweener : MonoBehaviour
 			}
 		}
 		t.mStarted = false;
-		t.duration = duration;
 		t.mFactor = 0f;
-		t.mAmountPerDelta = Mathf.Abs(t.amountPerDelta);
+		t.duration = duration;
+		t.mDuration = duration;
+		t.delay = delay;
+		t.mAmountPerDelta = ((duration <= 0f) ? 1000f : Mathf.Abs(1f / duration));
 		t.style = UITweener.Style.Once;
 		t.animationCurve = new AnimationCurve(new Keyframe[]
 		{
@@ -389,6 +422,11 @@ public abstract class UITweener : MonoBehaviour
 		});
 		t.eventReceiver = null;
 		t.callWhenFinished = null;
+		t.onFinished.Clear();
+		if (t.mTemp != null)
+		{
+			t.mTemp.Clear();
+		}
 		t.enabled = true;
 		return t;
 	}

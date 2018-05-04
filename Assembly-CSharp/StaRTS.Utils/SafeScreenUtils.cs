@@ -114,21 +114,33 @@ namespace StaRTS.Utils
 		{
 			SafeScreenUtils.safeRect = SafeScreenUtils.invalidRect;
 			key = key.ToLower();
-			string text = key;
-			switch (text)
+			if (key != null)
 			{
-			case "x":
-				SafeScreenUtils.forceXOffset = newValue;
-				break;
-			case "y":
-				SafeScreenUtils.forceYOffset = newValue;
-				break;
-			case "w":
-				SafeScreenUtils.forceWidthOffset = newValue - (float)Screen.width;
-				break;
-			case "h":
-				SafeScreenUtils.forceHeightOffset = newValue - (float)Screen.height;
-				break;
+				if (!(key == "x"))
+				{
+					if (!(key == "y"))
+					{
+						if (!(key == "w"))
+						{
+							if (key == "h")
+							{
+								SafeScreenUtils.forceHeightOffset = newValue - (float)Screen.height;
+							}
+						}
+						else
+						{
+							SafeScreenUtils.forceWidthOffset = newValue - (float)Screen.width;
+						}
+					}
+					else
+					{
+						SafeScreenUtils.forceYOffset = newValue;
+					}
+				}
+				else
+				{
+					SafeScreenUtils.forceXOffset = newValue;
+				}
 			}
 			return SafeScreenUtils.GetSafeRectString();
 		}

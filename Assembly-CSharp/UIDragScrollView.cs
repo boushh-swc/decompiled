@@ -17,6 +17,9 @@ public class UIDragScrollView : MonoBehaviour
 
 	private bool mStarted;
 
+	[NonSerialized]
+	private bool mPressed;
+
 	private void OnEnable()
 	{
 		this.mTrans = base.transform;
@@ -52,8 +55,18 @@ public class UIDragScrollView : MonoBehaviour
 		this.mScroll = this.scrollView;
 	}
 
+	private void OnDisable()
+	{
+		if (this.mPressed && this.mScroll != null && this.mScroll.GetComponentInChildren<UIWrapContent>() == null)
+		{
+			this.mScroll.Press(false);
+			this.mScroll = null;
+		}
+	}
+
 	private void OnPress(bool pressed)
 	{
+		this.mPressed = pressed;
 		if (this.mAutoFind && this.mScroll != this.scrollView)
 		{
 			this.mScroll = this.scrollView;

@@ -1,6 +1,6 @@
-using Net.RichardLord.Ash.Core;
 using StaRTS.Main.Controllers;
 using StaRTS.Main.Models;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.Entities.Components;
 using StaRTS.Main.Models.ValueObjects;
 using StaRTS.Main.Utils;
@@ -25,7 +25,7 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		private string perkId;
 
-		private Entity buildingEntity;
+		private SmartEntity buildingEntity;
 
 		private Contract currentContract;
 
@@ -41,7 +41,7 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		private string messageOverride;
 
-		private FinishNowScreen(Entity buildingEntity, Contract currentContract, bool noContract) : base(false, null, null, null, false)
+		private FinishNowScreen(SmartEntity buildingEntity, Contract currentContract, bool noContract) : base(false, null, null, null, false)
 		{
 			this.buildingEntity = buildingEntity;
 			this.perkId = null;
@@ -53,10 +53,10 @@ namespace StaRTS.Main.Views.UX.Screens
 				switch (currentContract.DeliveryType)
 				{
 				case DeliveryType.Building:
-					this.displayName = LangUtils.GetBuildingDisplayName(buildingEntity.Get<BuildingComponent>().BuildingType);
+					this.displayName = LangUtils.GetBuildingDisplayName(buildingEntity.BuildingComp.BuildingType);
 					break;
 				case DeliveryType.UpgradeBuilding:
-					this.displayName = LangUtils.GetBuildingDisplayName(buildingEntity.Get<BuildingComponent>().BuildingType);
+					this.displayName = LangUtils.GetBuildingDisplayName(buildingEntity.BuildingComp.BuildingType);
 					break;
 				case DeliveryType.UpgradeTroop:
 					this.displayName = LangUtils.GetTroopDisplayName(staticDataController.Get<TroopTypeVO>(currentContract.ProductUid));
@@ -71,7 +71,7 @@ namespace StaRTS.Main.Views.UX.Screens
 			}
 			else
 			{
-				this.displayName = LangUtils.GetBuildingDisplayName(buildingEntity.Get<BuildingComponent>().BuildingType);
+				this.displayName = LangUtils.GetBuildingDisplayName(buildingEntity.BuildingComp.BuildingType);
 			}
 			this.RefreshData();
 		}
@@ -96,7 +96,7 @@ namespace StaRTS.Main.Views.UX.Screens
 			this.RefreshData();
 		}
 
-		public static FinishNowScreen ShowModalWithNoContract(Entity selectedBuilding, OnScreenModalResult onModalResult, object modalResultCookie, int crystalCost)
+		public static FinishNowScreen ShowModalWithNoContract(SmartEntity selectedBuilding, OnScreenModalResult onModalResult, object modalResultCookie, int crystalCost)
 		{
 			FinishNowScreen finishNowScreen = FinishNowScreen.CreateFinishNowScreen(selectedBuilding, null, true, onModalResult, modalResultCookie);
 			finishNowScreen.crystals = crystalCost;
@@ -104,7 +104,7 @@ namespace StaRTS.Main.Views.UX.Screens
 			return finishNowScreen;
 		}
 
-		public static FinishNowScreen ShowModalWithNoContract(Entity selectedBuilding, OnScreenModalResult onModalResult, object modalResultCookie, int crystalCost, string title, string message, bool alwaysOnTop)
+		public static FinishNowScreen ShowModalWithNoContract(SmartEntity selectedBuilding, OnScreenModalResult onModalResult, object modalResultCookie, int crystalCost, string title, string message, bool alwaysOnTop)
 		{
 			FinishNowScreen finishNowScreen = FinishNowScreen.CreateFinishNowScreen(selectedBuilding, null, true, onModalResult, modalResultCookie);
 			finishNowScreen.crystals = crystalCost;
@@ -139,7 +139,7 @@ namespace StaRTS.Main.Views.UX.Screens
 			return finishNowScreen;
 		}
 
-		public static void ShowModal(Entity selectedBuilding, OnScreenModalResult onModalResult, object modalResultCookie)
+		public static void ShowModal(SmartEntity selectedBuilding, OnScreenModalResult onModalResult, object modalResultCookie)
 		{
 			Contract contract = Service.ISupportController.FindCurrentContract(selectedBuilding.Get<BuildingComponent>().BuildingTO.Key);
 			if (contract == null)
@@ -150,7 +150,7 @@ namespace StaRTS.Main.Views.UX.Screens
 			Service.ScreenController.AddScreen(screen);
 		}
 
-		private static FinishNowScreen CreateFinishNowScreen(Entity buildingEntity, Contract currentContract, bool noContract, OnScreenModalResult onScreenModalResult, object modalResultCookie)
+		private static FinishNowScreen CreateFinishNowScreen(SmartEntity buildingEntity, Contract currentContract, bool noContract, OnScreenModalResult onScreenModalResult, object modalResultCookie)
 		{
 			return new FinishNowScreen(buildingEntity, currentContract, noContract)
 			{

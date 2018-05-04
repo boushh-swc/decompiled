@@ -25,6 +25,7 @@ namespace StaRTS.Externals.EnvironmentManager
 					});
 				}
 			}
+			this.GainAudioFocus();
 		}
 
 		public void SetAutoMuteOnBackgroundMute(bool value)

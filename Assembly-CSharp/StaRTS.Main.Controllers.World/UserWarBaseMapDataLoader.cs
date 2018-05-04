@@ -9,13 +9,13 @@ namespace StaRTS.Main.Controllers.World
 {
 	public class UserWarBaseMapDataLoader : IMapDataLoader
 	{
-		private const WorldType worldType = WorldType.WarBase;
-
 		private Map baseMap;
 
 		private string squadMemberName;
 
 		private FactionType faction;
+
+		private const WorldType worldType = WorldType.WarBase;
 
 		public void Initialize(Map baseMap, string squadMemberName, FactionType faction)
 		{

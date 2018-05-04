@@ -36,30 +36,30 @@ namespace StaRTS.Main.Controllers.Missions
 
 		public EatResponse OnEvent(EventId id, object cookie)
 		{
-			if (id != EventId.BattleEndFullyProcessed)
+			if (id != EventId.PvpBattleStarting)
 			{
-				if (id == EventId.PvpBattleStarting)
+				if (id == EventId.BattleEndFullyProcessed)
 				{
-					this.eventManager.RegisterObserver(this, EventId.BattleEndFullyProcessed, EventPriority.Default);
-					Service.BattleController.GetCurrentBattle().PvpMissionUid = this.parent.MissionVO.Uid;
-				}
-			}
-			else
-			{
-				this.eventManager.UnregisterObserver(this, EventId.BattleEndFullyProcessed);
-				CurrentBattle currentBattle = Service.BattleController.GetCurrentBattle();
-				if (currentBattle.Won)
-				{
-					this.parent.CompleteMission(currentBattle.EarnedStars);
-					if (this.parent.OnSuccessHook())
+					this.eventManager.UnregisterObserver(this, EventId.BattleEndFullyProcessed);
+					CurrentBattle currentBattle = Service.BattleController.GetCurrentBattle();
+					if (currentBattle.Won)
+					{
+						this.parent.CompleteMission(currentBattle.EarnedStars);
+						if (this.parent.OnSuccessHook())
+						{
+							base.PauseBattle();
+						}
+					}
+					else if (this.parent.OnFailureHook())
 					{
 						base.PauseBattle();
 					}
 				}
-				else if (this.parent.OnFailureHook())
-				{
-					base.PauseBattle();
-				}
+			}
+			else
+			{
+				this.eventManager.RegisterObserver(this, EventId.BattleEndFullyProcessed, EventPriority.Default);
+				Service.BattleController.GetCurrentBattle().PvpMissionUid = this.parent.MissionVO.Uid;
 			}
 			return EatResponse.NotEaten;
 		}

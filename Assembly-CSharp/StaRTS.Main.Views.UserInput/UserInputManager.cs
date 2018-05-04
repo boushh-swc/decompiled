@@ -400,16 +400,22 @@ namespace StaRTS.Main.Views.UserInput
 		protected bool Raycast(UserInputLayer layer, Vector3 screenPosition, ref GameObject gameObjectHit, ref Vector3 groundPosition)
 		{
 			bool flag = false;
-			switch (layer)
+			if (layer != UserInputLayer.UX)
 			{
-			case UserInputLayer.InternalLowest:
-				flag = this.activeWorldCamera.GetGroundPosition(screenPosition, ref groundPosition);
-				break;
-			case UserInputLayer.World:
-				flag = this.RaycastHelper(this.activeWorldCamera, screenPosition, ref gameObjectHit);
-				flag = (this.activeWorldCamera.GetGroundPosition(screenPosition, ref groundPosition) || flag);
-				break;
-			case UserInputLayer.UX:
+				if (layer != UserInputLayer.World)
+				{
+					if (layer == UserInputLayer.InternalLowest)
+					{
+						flag = this.activeWorldCamera.GetGroundPosition(screenPosition, ref groundPosition);
+					}
+				}
+				else
+				{
+					flag = this.RaycastHelper(this.activeWorldCamera, screenPosition, ref gameObjectHit);
+					flag = (this.activeWorldCamera.GetGroundPosition(screenPosition, ref groundPosition) || flag);
+				}
+			}
+			else
 			{
 				GameObject gameObject = gameObjectHit;
 				flag = this.RaycastHelper(this.uxCamera, screenPosition, ref gameObject);
@@ -422,8 +428,6 @@ namespace StaRTS.Main.Views.UserInput
 					return false;
 				}
 				gameObjectHit = gameObject;
-				break;
-			}
 			}
 			return flag;
 		}
@@ -455,9 +459,9 @@ namespace StaRTS.Main.Views.UserInput
 
 		public EatResponse OnEvent(EventId id, object cookie)
 		{
-			if (id != EventId.ApplicationPauseToggled)
+			if (id != EventId.DenyUserInput)
 			{
-				if (id == EventId.DenyUserInput)
+				if (id == EventId.ApplicationPauseToggled)
 				{
 					if (this.enabled)
 					{

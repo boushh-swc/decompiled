@@ -114,7 +114,7 @@ namespace StaRTS.Main.Controllers
 			int num3 = num - boardX;
 			int num4 = num2 - boardZ;
 			int num5 = IntMath.FastDist(boardX, boardZ, num, num2);
-			int num6 = 1024 * distance * 1;
+			int num6 = 1024 * distance;
 			int num7 = num5 * 3;
 			boardX += num3 * num6 / num7;
 			boardZ += num4 * num6 / num7;

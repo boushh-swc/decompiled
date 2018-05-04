@@ -129,13 +129,17 @@ namespace StaRTS.Main.Controllers.VictoryConditions
 			}
 			if (buildingType.Lvl >= this.level)
 			{
-				switch (this.matchType)
+				ConditionMatchType conditionMatchType = this.matchType;
+				if (conditionMatchType == ConditionMatchType.Uid)
 				{
-				case ConditionMatchType.Uid:
 					return buildingType.Uid == this.buildingId;
-				case ConditionMatchType.Id:
+				}
+				if (conditionMatchType == ConditionMatchType.Id)
+				{
 					return buildingType.UpgradeGroup == this.buildingId;
-				case ConditionMatchType.Type:
+				}
+				if (conditionMatchType == ConditionMatchType.Type)
+				{
 					return buildingType.Type == StringUtils.ParseEnum<BuildingType>(this.buildingId);
 				}
 			}

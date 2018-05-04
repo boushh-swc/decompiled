@@ -16,6 +16,8 @@ namespace StaRTS.Main.Views.UX.Screens.Squads
 {
 	public class SquadAdvancementActivateTab : SquadAdvancementBaseTab, IEventObserver, IViewClockTimeObserver
 	{
+		private float TIME_DELAY_TO_SHOW_CELEB = 0.5f;
+
 		private const int AVAILABLE_SORT_ORDER_REPUTATION_OFFSET = 10000;
 
 		private const int AVAILABLE_SORT_ORDER_LOCK_OFFSET = 20000;
@@ -90,6 +92,17 @@ namespace StaRTS.Main.Views.UX.Screens.Squads
 
 		private const string LABEL_AVAILABLE_COOLDOWN_COST = "CostReadyNowPerksLabel";
 
+		private static readonly string[] singleCostElementName = new string[]
+		{
+			"CostAvActPerkBot"
+		};
+
+		private static readonly string[] dualCostElementNames = new string[]
+		{
+			"CostAvActPerkTop",
+			"CostAvActPerkBot"
+		};
+
 		private const string LANG_PERK_ACTIVE_SLOTS_TITLE = "PERK_ACTIVE_SLOTS_TITLE";
 
 		private const string LANG_PERK_ACTIVE_AVAILABLE_TITLE = "PERK_ACTIVE_AVAILABLE_TITLE";
@@ -109,19 +122,6 @@ namespace StaRTS.Main.Views.UX.Screens.Squads
 		private const string LANG_PERK_ACTIVE_UPGRADE_CARD_LVL_REQ = "PERK_ACTIVATE_UPGRADE_CARD_LVL_REQ";
 
 		private const string LANG_PERK_ACTIVE_SLOT_ACTIVE_TIMER_DESC = "PERK_ACTIVE_SLOT_ACTIVE_TIMER_DESC";
-
-		private float TIME_DELAY_TO_SHOW_CELEB = 0.5f;
-
-		private static readonly string[] singleCostElementName = new string[]
-		{
-			"CostAvActPerkBot"
-		};
-
-		private static readonly string[] dualCostElementNames = new string[]
-		{
-			"CostAvActPerkTop",
-			"CostAvActPerkBot"
-		};
 
 		private UXGrid activePerksGrid;
 

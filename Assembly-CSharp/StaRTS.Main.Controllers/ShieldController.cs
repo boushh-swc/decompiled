@@ -17,6 +17,7 @@ using StaRTS.Utils.Core;
 using StaRTS.Utils.State;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace StaRTS.Main.Controllers
@@ -28,6 +29,12 @@ namespace StaRTS.Main.Controllers
 		private List<Entity> replacedEntities;
 
 		private ShieldEffects effects;
+
+		[CompilerGenerated]
+		private static Converter<string, int> <>f__mg$cache0;
+
+		[CompilerGenerated]
+		private static Converter<string, int> <>f__mg$cache1;
 
 		public int[] PointsToRange
 		{
@@ -57,12 +64,22 @@ namespace StaRTS.Main.Controllers
 			{
 				' '
 			});
-			this.PointsToRange = Array.ConvertAll<string, int>(array, new Converter<string, int>(int.Parse));
+			string[] arg_BB_0 = array;
+			if (ShieldController.<>f__mg$cache0 == null)
+			{
+				ShieldController.<>f__mg$cache0 = new Converter<string, int>(int.Parse);
+			}
+			this.PointsToRange = Array.ConvertAll<string, int>(arg_BB_0, ShieldController.<>f__mg$cache0);
 			string[] array2 = GameConstants.SHIELD_HEALTH_PER_POINT.Split(new char[]
 			{
 				' '
 			});
-			this.PointsToHealth = Array.ConvertAll<string, int>(array2, new Converter<string, int>(int.Parse));
+			string[] arg_FA_0 = array2;
+			if (ShieldController.<>f__mg$cache1 == null)
+			{
+				ShieldController.<>f__mg$cache1 = new Converter<string, int>(int.Parse);
+			}
+			this.PointsToHealth = Array.ConvertAll<string, int>(arg_FA_0, ShieldController.<>f__mg$cache1);
 		}
 
 		public void PrepareShieldsForBattle()
@@ -195,7 +212,7 @@ namespace StaRTS.Main.Controllers
 				return EatResponse.NotEaten;
 			}
 			case EventId.BuildingSelectedSound:
-				IL_24:
+				IL_20:
 				if (id != EventId.BuildingViewReady)
 				{
 					if (id == EventId.EntityHit)
@@ -210,8 +227,8 @@ namespace StaRTS.Main.Controllers
 					}
 					if (id == EventId.BuildingReplaced)
 					{
-						Entity entity2 = cookie as Entity;
-						if (entity2.Has<ShieldGeneratorComponent>())
+						SmartEntity smartEntity = cookie as SmartEntity;
+						if (smartEntity.ShieldGeneratorComp != null)
 						{
 							this.replacedEntities.Add(cookie as Entity);
 						}
@@ -252,15 +269,15 @@ namespace StaRTS.Main.Controllers
 				break;
 			case EventId.BuildingDeselected:
 			{
-				Entity entity3 = cookie as Entity;
-				if (entity3.Has<ShieldGeneratorComponent>() && !GameUtils.IsVisitingBase())
+				Entity entity2 = cookie as Entity;
+				if (entity2.Has<ShieldGeneratorComponent>() && !GameUtils.IsVisitingBase())
 				{
 					this.StopAllEffects();
 				}
 				return EatResponse.NotEaten;
 			}
 			}
-			goto IL_24;
+			goto IL_20;
 		}
 
 		public void InitializeEffects(Entity entity)

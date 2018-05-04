@@ -30,26 +30,23 @@ namespace StaRTS.Main.Controllers
 
 		public EatResponse OnEvent(EventId id, object cookie)
 		{
-			if (id != EventId.GameStateChanged)
+			if (id != EventId.UserWantedEditBaseState)
 			{
-				if (id != EventId.UserWantedEditBaseState)
+				if (id != EventId.InventoryResourceUpdated)
 				{
-					if (id == EventId.InventoryResourceUpdated)
+					if (id == EventId.GameStateChanged)
 					{
-						if (cookie as string == "droids")
-						{
-							Service.UXController.HUD.UpdateDroidCount();
-						}
+						this.HandleGameStateChanged();
 					}
 				}
-				else
+				else if (cookie as string == "droids")
 				{
-					Service.GameStateMachine.SetState(new EditBaseState((bool)cookie));
+					Service.UXController.HUD.UpdateDroidCount();
 				}
 			}
 			else
 			{
-				this.HandleGameStateChanged();
+				Service.GameStateMachine.SetState(new EditBaseState((bool)cookie));
 			}
 			return EatResponse.NotEaten;
 		}

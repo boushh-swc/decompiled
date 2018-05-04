@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace StaRTS.Main.Models.ValueObjects
 {
-	public class TurretTypeVO : IShooterVO, ITrackerVO, IValueObject
+	public class TurretTypeVO : IValueObject, IShooterVO, ITrackerVO
 	{
 		public static int COLUMN_trackerName
 		{

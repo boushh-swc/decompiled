@@ -2,7 +2,7 @@ using System;
 
 namespace StaRTS.Main.Models.ValueObjects
 {
-	public class SkinnedTroopShooterFacade : SkinnedShooterFacade, IShooterVO, ITroopShooterVO
+	public class SkinnedTroopShooterFacade : SkinnedShooterFacade, ITroopShooterVO, IShooterVO
 	{
 		public bool TargetLocking
 		{

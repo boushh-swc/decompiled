@@ -6,12 +6,15 @@ using StaRTS.Utils;
 using StaRTS.Utils.Core;
 using StaRTS.Utils.Scheduling;
 using System;
+using System.Collections;
 using UnityEngine;
 
 namespace StaRTS.Main.Views.Story
 {
 	public class HoloCharacter
 	{
+		private readonly Vector3 HOLO_CONTAINER_POSITION = new Vector3(0f, 2000f, 0f);
+
 		private const float CAM_NEAR_CLIP = -2f;
 
 		private const float CAM_FAR_CLIP = 2f;
@@ -51,8 +54,6 @@ namespace StaRTS.Main.Views.Story
 		private const float DELAY_SHOW_EVENT = 0.7f;
 
 		private const float DELAY_SWITCH = 0.4f;
-
-		private readonly Vector3 HOLO_CONTAINER_POSITION = new Vector3(0f, 2000f, 0f);
 
 		private static readonly Vector3 HOLO_OFFSET = new Vector3(0.34f, 1.07f, 0f);
 
@@ -160,7 +161,7 @@ namespace StaRTS.Main.Views.Story
 			transform3.parent = this.holoAssetPositioner.transform;
 			transform3.localScale = Vector3.one;
 			transform3.localRotation = Quaternion.identity;
-			this.charMaterialParent = transform3.FindChild("Char");
+			this.charMaterialParent = transform3.Find("Char");
 			transform3.transform.localPosition = HoloCharacter.HOLO_OFFSET;
 			if (this.holoCharacterTexture != null)
 			{
@@ -240,15 +241,28 @@ namespace StaRTS.Main.Views.Story
 		{
 			this.UnloadAndResetPrevHandle();
 			this.CallDoneLoadingCallback();
-			foreach (Transform transform in this.charMaterialParent)
+			IEnumerator enumerator = this.charMaterialParent.GetEnumerator();
+			try
 			{
-				if (transform.gameObject.name == "Char04_Bands")
+				while (enumerator.MoveNext())
 				{
-					transform.GetComponent<Renderer>().sharedMaterial.SetTexture("_MaskTex", this.holoCharacterTexture);
+					Transform transform = (Transform)enumerator.Current;
+					if (transform.gameObject.name == "Char04_Bands")
+					{
+						transform.GetComponent<Renderer>().sharedMaterial.SetTexture("_MaskTex", this.holoCharacterTexture);
+					}
+					else
+					{
+						transform.GetComponent<Renderer>().sharedMaterial.mainTexture = this.holoCharacterTexture;
+					}
 				}
-				else
+			}
+			finally
+			{
+				IDisposable disposable;
+				if ((disposable = (enumerator as IDisposable)) != null)
 				{
-					transform.GetComponent<Renderer>().sharedMaterial.mainTexture = this.holoCharacterTexture;
+					disposable.Dispose();
 				}
 			}
 		}

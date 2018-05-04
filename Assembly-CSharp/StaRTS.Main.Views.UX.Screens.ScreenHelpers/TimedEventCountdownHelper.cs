@@ -70,9 +70,31 @@ namespace StaRTS.Main.Views.UX.Screens.ScreenHelpers
 		{
 			TimedEventState state = TimedEventUtils.GetState(this.Campaign);
 			string text = string.Empty;
-			switch (state)
+			if (state != TimedEventState.Upcoming)
 			{
-			case TimedEventState.Upcoming:
+				if (state != TimedEventState.Live)
+				{
+					if (state == TimedEventState.Closing)
+					{
+						int num = TimedEventUtils.GetStoreSecondsRemaining(this.Campaign);
+						string text2 = LangUtils.FormatTime((long)num);
+						text = this.lang.Get("REWARD_DURATION", new object[]
+						{
+							text2
+						});
+					}
+				}
+				else
+				{
+					int num = TimedEventUtils.GetSecondsRemaining(this.Campaign);
+					string text2 = LangUtils.FormatTime((long)num);
+					text = this.lang.Get("CAMPAIGN_ENDS_IN", new object[]
+					{
+						text2
+					});
+				}
+			}
+			else
 			{
 				int num = TimedEventUtils.GetSecondsRemaining(this.Campaign);
 				string text2 = LangUtils.FormatTime((long)num);
@@ -80,28 +102,6 @@ namespace StaRTS.Main.Views.UX.Screens.ScreenHelpers
 				{
 					text2
 				});
-				break;
-			}
-			case TimedEventState.Live:
-			{
-				int num = TimedEventUtils.GetSecondsRemaining(this.Campaign);
-				string text2 = LangUtils.FormatTime((long)num);
-				text = this.lang.Get("CAMPAIGN_ENDS_IN", new object[]
-				{
-					text2
-				});
-				break;
-			}
-			case TimedEventState.Closing:
-			{
-				int num = TimedEventUtils.GetStoreSecondsRemaining(this.Campaign);
-				string text2 = LangUtils.FormatTime((long)num);
-				text = this.lang.Get("REWARD_DURATION", new object[]
-				{
-					text2
-				});
-				break;
-			}
 			}
 			if (!string.IsNullOrEmpty(text))
 			{

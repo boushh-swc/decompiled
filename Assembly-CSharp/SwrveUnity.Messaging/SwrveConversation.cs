@@ -40,27 +40,32 @@ namespace SwrveUnity.Messaging
 				{
 					Dictionary<string, object> dictionary2 = (Dictionary<string, object>)list2[j];
 					string text = (string)dictionary2["type"];
-					string text2 = text;
-					switch (text2)
+					if (text != null)
 					{
-					case "image":
-						swrveConversation.queueImageAsset(dictionary2);
-						break;
-					case "html-fragment":
-					case "star-rating":
-						swrveConversation.queueFontAsset(dictionary2);
-						break;
-					case "multi-value-input":
-					{
-						swrveConversation.queueFontAsset(dictionary2);
-						List<object> list3 = (List<object>)dictionary2["values"];
-						for (int k = 0; k < list3.Count; k++)
+						if (!(text == "image"))
 						{
-							Dictionary<string, object> content = (Dictionary<string, object>)list3[k];
-							swrveConversation.queueFontAsset(content);
+							if (!(text == "html-fragment") && !(text == "star-rating"))
+							{
+								if (text == "multi-value-input")
+								{
+									swrveConversation.queueFontAsset(dictionary2);
+									List<object> list3 = (List<object>)dictionary2["values"];
+									for (int k = 0; k < list3.Count; k++)
+									{
+										Dictionary<string, object> content = (Dictionary<string, object>)list3[k];
+										swrveConversation.queueFontAsset(content);
+									}
+								}
+							}
+							else
+							{
+								swrveConversation.queueFontAsset(dictionary2);
+							}
 						}
-						break;
-					}
+						else
+						{
+							swrveConversation.queueImageAsset(dictionary2);
+						}
 					}
 				}
 				List<object> list4 = (List<object>)dictionary["controls"];

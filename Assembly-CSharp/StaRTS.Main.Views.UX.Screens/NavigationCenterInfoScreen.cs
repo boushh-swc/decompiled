@@ -1,6 +1,5 @@
-using Net.RichardLord.Ash.Core;
 using StaRTS.Main.Controllers;
-using StaRTS.Main.Models.Entities.Components;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.Player;
 using StaRTS.Main.Models.ValueObjects;
 using StaRTS.Main.Utils;
@@ -23,9 +22,9 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		private UXButton buttonTutorialConfirm;
 
-		public NavigationCenterInfoScreen(Entity selectedBuilding) : base(selectedBuilding)
+		public NavigationCenterInfoScreen(SmartEntity selectedBuilding) : base(selectedBuilding)
 		{
-			this.buildingInfo = selectedBuilding.Get<BuildingComponent>().BuildingType;
+			this.buildingInfo = selectedBuilding.BuildingComp.BuildingType;
 		}
 
 		protected override void InitGroups()

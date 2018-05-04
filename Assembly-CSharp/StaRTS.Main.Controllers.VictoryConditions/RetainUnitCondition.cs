@@ -89,13 +89,17 @@ namespace StaRTS.Main.Controllers.VictoryConditions
 			ITroopDeployableVO troopType = component.TroopType;
 			if (troopType.Lvl >= this.level)
 			{
-				switch (this.matchType)
+				ConditionMatchType conditionMatchType = this.matchType;
+				if (conditionMatchType == ConditionMatchType.Uid)
 				{
-				case ConditionMatchType.Uid:
 					return troopType.Uid == this.unitMatchId;
-				case ConditionMatchType.Id:
+				}
+				if (conditionMatchType == ConditionMatchType.Id)
+				{
 					return troopType.UpgradeGroup == this.unitMatchId;
-				case ConditionMatchType.Type:
+				}
+				if (conditionMatchType == ConditionMatchType.Type)
+				{
 					return troopType.Type == StringUtils.ParseEnum<TroopType>(this.unitMatchId);
 				}
 			}

@@ -5,6 +5,7 @@ using StaRTS.Externals.Manimal.TransferObjects.Request;
 using StaRTS.GameBoard;
 using StaRTS.Main.Controllers;
 using StaRTS.Main.Controllers.GameStates;
+using StaRTS.Main.Controllers.Planets;
 using StaRTS.Main.Models;
 using StaRTS.Main.Models.Commands.Crates;
 using StaRTS.Main.Models.Commands.Episodes;
@@ -30,7 +31,9 @@ using StaRTS.Utils;
 using StaRTS.Utils.Core;
 using StaRTS.Utils.State;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 using UnityEngine;
 
@@ -43,6 +46,39 @@ namespace StaRTS.Main.Utils
 		private const uint FRAME_COUNT_OFFSET_FOR_NEXT_TARGETING = 30u;
 
 		private const string PERK_VO_PREFIX = "perk_";
+
+		[CompilerGenerated]
+		private static Comparison<BuildingTypeVO> <>f__mg$cache0;
+
+		[CompilerGenerated]
+		private static OnScreenModalResult <>f__mg$cache1;
+
+		[CompilerGenerated]
+		private static WipeCompleteDelegate <>f__mg$cache2;
+
+		[CompilerGenerated]
+		private static AbstractCommand<BuyLimitedEditionItemRequest, CrateDataResponse>.OnSuccessCallback <>f__mg$cache3;
+
+		[CompilerGenerated]
+		private static AbstractCommand<BuyCrateRequest, CrateDataResponse>.OnSuccessCallback <>f__mg$cache4;
+
+		[CompilerGenerated]
+		private static AbstractCommand<OpenCrateRequest, OpenCrateResponse>.OnSuccessCallback <>f__mg$cache5;
+
+		[CompilerGenerated]
+		private static AbstractCommand<OpenCrateRequest, OpenCrateResponse>.OnFailureCallback <>f__mg$cache6;
+
+		[CompilerGenerated]
+		private static AbstractCommand<PlayerIdRequest, EpisodeTaskClaimResponse>.OnSuccessCallback <>f__mg$cache7;
+
+		[CompilerGenerated]
+		private static OnScreenModalResult <>f__mg$cache8;
+
+		[CompilerGenerated]
+		private static Comparison<Building> <>f__mg$cache9;
+
+		[CompilerGenerated]
+		private static Comparison<Building> <>f__mg$cacheA;
 
 		public static GamePlayer GetWorldOwner()
 		{
@@ -291,10 +327,10 @@ namespace StaRTS.Main.Utils
 			return buildingInfo.Lvl > 0 && buildingInfo.Lvl < Service.BuildingUpgradeCatalog.GetMaxLevel(buildingInfo.UpgradeGroup).Lvl;
 		}
 
-		public static int GetBuildingEffectiveLevel(Entity building)
+		public static int GetBuildingEffectiveLevel(SmartEntity building)
 		{
-			BuildingComponent buildingComponent = building.Get<BuildingComponent>();
-			BuildingTypeVO buildingType = buildingComponent.BuildingType;
+			BuildingComponent buildingComp = building.BuildingComp;
+			BuildingTypeVO buildingType = buildingComp.BuildingType;
 			if (ContractUtils.IsBuildingConstructing(building))
 			{
 				return 0;
@@ -333,7 +369,12 @@ namespace StaRTS.Main.Utils
 			{
 				list.Add(current);
 			}
-			list.Sort(new Comparison<BuildingTypeVO>(GameUtils.SortBuildingByUID));
+			List<BuildingTypeVO> arg_7C_0 = list;
+			if (GameUtils.<>f__mg$cache0 == null)
+			{
+				GameUtils.<>f__mg$cache0 = new Comparison<BuildingTypeVO>(GameUtils.SortBuildingByUID);
+			}
+			arg_7C_0.Sort(GameUtils.<>f__mg$cache0);
 			return GameUtils.GetEquivalentFromPreSortedList(list, currentType, faction);
 		}
 
@@ -701,24 +742,40 @@ namespace StaRTS.Main.Utils
 			Dictionary<string, int> dictionary = GameUtils.ListToMap(cost);
 			foreach (string current in dictionary.Keys)
 			{
-				string text = current;
-				switch (text)
+				if (current != null)
 				{
-				case "credits":
-					credits = dictionary[current];
-					break;
-				case "materials":
-					materials = dictionary[current];
-					break;
-				case "contraband":
-					contraband = dictionary[current];
-					break;
-				case "reputation":
-					reputation = dictionary[current];
-					break;
-				case "crystals":
-					crystals = dictionary[current];
-					break;
+					if (!(current == "credits"))
+					{
+						if (!(current == "materials"))
+						{
+							if (!(current == "contraband"))
+							{
+								if (!(current == "reputation"))
+								{
+									if (current == "crystals")
+									{
+										crystals = dictionary[current];
+									}
+								}
+								else
+								{
+									reputation = dictionary[current];
+								}
+							}
+							else
+							{
+								contraband = dictionary[current];
+							}
+						}
+						else
+						{
+							materials = dictionary[current];
+						}
+					}
+					else
+					{
+						credits = dictionary[current];
+					}
 				}
 			}
 		}
@@ -742,9 +799,16 @@ namespace StaRTS.Main.Utils
 		public static void PromptToBuyCrystals()
 		{
 			Lang lang = Service.Lang;
-			string title = lang.Get("NOT_ENOUGH_CRYSTALS", new object[0]);
-			string message = lang.Get("NOT_ENOUGH_CRYSTALS_BUY_MORE", new object[0]);
-			AlertScreen.ShowModal(false, title, message, new OnScreenModalResult(GameUtils.OnBuyMoreCrystals), null);
+			string text = lang.Get("NOT_ENOUGH_CRYSTALS", new object[0]);
+			string text2 = lang.Get("NOT_ENOUGH_CRYSTALS_BUY_MORE", new object[0]);
+			bool arg_4B_0 = false;
+			string arg_4B_1 = text;
+			string arg_4B_2 = text2;
+			if (GameUtils.<>f__mg$cache1 == null)
+			{
+				GameUtils.<>f__mg$cache1 = new OnScreenModalResult(GameUtils.OnBuyMoreCrystals);
+			}
+			AlertScreen.ShowModal(arg_4B_0, arg_4B_1, arg_4B_2, GameUtils.<>f__mg$cache1, null);
 		}
 
 		private static void OnBuyMoreCrystals(object result, object cookie)
@@ -754,7 +818,13 @@ namespace StaRTS.Main.Utils
 			{
 				ScreenController screenController = Service.ScreenController;
 				screenController.CloseAll();
-				Service.GalaxyViewController.GoToHome(true, new WipeCompleteDelegate(GameUtils.ReturnToHomeCompleteNowBuyMoreCrystals), result);
+				GalaxyViewController arg_46_0 = Service.GalaxyViewController;
+				bool arg_46_1 = true;
+				if (GameUtils.<>f__mg$cache2 == null)
+				{
+					GameUtils.<>f__mg$cache2 = new WipeCompleteDelegate(GameUtils.ReturnToHomeCompleteNowBuyMoreCrystals);
+				}
+				arg_46_0.GoToHome(arg_46_1, GameUtils.<>f__mg$cache2, result);
 				return;
 			}
 			if (result != null)
@@ -995,17 +1065,23 @@ namespace StaRTS.Main.Utils
 		{
 			bool flag = true;
 			CurrentPlayer currentPlayer = Service.CurrentPlayer;
-			switch (currency)
+			if (currency != CurrencyType.Credits)
 			{
-			case CurrencyType.Credits:
+				if (currency != CurrencyType.Materials)
+				{
+					if (currency == CurrencyType.Contraband)
+					{
+						flag = (currentPlayer.CurrentContrabandAmount + amount <= currentPlayer.MaxContrabandAmount);
+					}
+				}
+				else
+				{
+					flag = (currentPlayer.CurrentMaterialsAmount + amount <= currentPlayer.MaxMaterialsAmount);
+				}
+			}
+			else
+			{
 				flag = (currentPlayer.CurrentCreditsAmount + amount <= currentPlayer.MaxCreditsAmount);
-				break;
-			case CurrencyType.Materials:
-				flag = (currentPlayer.CurrentMaterialsAmount + amount <= currentPlayer.MaxMaterialsAmount);
-				break;
-			case CurrencyType.Contraband:
-				flag = (currentPlayer.CurrentContrabandAmount + amount <= currentPlayer.MaxContrabandAmount);
-				break;
 			}
 			if (!flag)
 			{
@@ -1058,7 +1134,12 @@ namespace StaRTS.Main.Utils
 			ProcessingScreen.Show();
 			BuyLimitedEditionItemRequest request = new BuyLimitedEditionItemRequest(itemVO.Uid);
 			BuyLimitedEditionItemCommand buyLimitedEditionItemCommand = new BuyLimitedEditionItemCommand(request);
-			buyLimitedEditionItemCommand.AddSuccessCallback(new AbstractCommand<BuyLimitedEditionItemRequest, CrateDataResponse>.OnSuccessCallback(GameUtils.HandleCratePurchaseResponse));
+			AbstractCommand<BuyLimitedEditionItemRequest, CrateDataResponse> arg_B1_0 = buyLimitedEditionItemCommand;
+			if (GameUtils.<>f__mg$cache3 == null)
+			{
+				GameUtils.<>f__mg$cache3 = new AbstractCommand<BuyLimitedEditionItemRequest, CrateDataResponse>.OnSuccessCallback(GameUtils.HandleCratePurchaseResponse);
+			}
+			arg_B1_0.AddSuccessCallback(GameUtils.<>f__mg$cache3);
 			Service.ServerAPI.Sync(buyLimitedEditionItemCommand);
 			return true;
 		}
@@ -1083,7 +1164,12 @@ namespace StaRTS.Main.Utils
 			player.ArmoryInfo.FirstCratePurchased = true;
 			BuyCrateRequest request = new BuyCrateRequest(crateVO.Uid);
 			BuyCrateCommand buyCrateCommand = new BuyCrateCommand(request);
-			buyCrateCommand.AddSuccessCallback(new AbstractCommand<BuyCrateRequest, CrateDataResponse>.OnSuccessCallback(GameUtils.HandleCratePurchaseResponse));
+			AbstractCommand<BuyCrateRequest, CrateDataResponse> arg_B3_0 = buyCrateCommand;
+			if (GameUtils.<>f__mg$cache4 == null)
+			{
+				GameUtils.<>f__mg$cache4 = new AbstractCommand<BuyCrateRequest, CrateDataResponse>.OnSuccessCallback(GameUtils.HandleCratePurchaseResponse);
+			}
+			arg_B3_0.AddSuccessCallback(GameUtils.<>f__mg$cache4);
 			Service.ServerAPI.Sync(buyCrateCommand);
 			Service.EventManager.SendEvent(EventId.CrateStorePurchase, crateVO.Uid);
 			return true;
@@ -1107,8 +1193,18 @@ namespace StaRTS.Main.Utils
 				crateData.Claimed = true;
 				OpenCrateRequest request = new OpenCrateRequest(crateData.UId);
 				OpenCrateCommand openCrateCommand = new OpenCrateCommand(request);
-				openCrateCommand.AddSuccessCallback(new AbstractCommand<OpenCrateRequest, OpenCrateResponse>.OnSuccessCallback(GameUtils.CrateOpenSuccessCallback));
-				openCrateCommand.AddFailureCallback(new AbstractCommand<OpenCrateRequest, OpenCrateResponse>.OnFailureCallback(GameUtils.CrateOpenFailureCallback));
+				AbstractCommand<OpenCrateRequest, OpenCrateResponse> arg_3E_0 = openCrateCommand;
+				if (GameUtils.<>f__mg$cache5 == null)
+				{
+					GameUtils.<>f__mg$cache5 = new AbstractCommand<OpenCrateRequest, OpenCrateResponse>.OnSuccessCallback(GameUtils.CrateOpenSuccessCallback);
+				}
+				arg_3E_0.AddSuccessCallback(GameUtils.<>f__mg$cache5);
+				AbstractCommand<OpenCrateRequest, OpenCrateResponse> arg_61_0 = openCrateCommand;
+				if (GameUtils.<>f__mg$cache6 == null)
+				{
+					GameUtils.<>f__mg$cache6 = new AbstractCommand<OpenCrateRequest, OpenCrateResponse>.OnFailureCallback(GameUtils.CrateOpenFailureCallback);
+				}
+				arg_61_0.AddFailureCallback(GameUtils.<>f__mg$cache6);
 				openCrateCommand.Context = crateData;
 				ProcessingScreen.Show();
 				Service.ServerAPI.Sync(openCrateCommand);
@@ -1137,7 +1233,12 @@ namespace StaRTS.Main.Utils
 			{
 				PlayerId = Service.CurrentPlayer.PlayerId
 			});
-			episodeTaskClaimCommand.AddSuccessCallback(new AbstractCommand<PlayerIdRequest, EpisodeTaskClaimResponse>.OnSuccessCallback(GameUtils.HandleEpisodeClaimResponse));
+			AbstractCommand<PlayerIdRequest, EpisodeTaskClaimResponse> arg_3B_0 = episodeTaskClaimCommand;
+			if (GameUtils.<>f__mg$cache7 == null)
+			{
+				GameUtils.<>f__mg$cache7 = new AbstractCommand<PlayerIdRequest, EpisodeTaskClaimResponse>.OnSuccessCallback(GameUtils.HandleEpisodeClaimResponse);
+			}
+			arg_3B_0.AddSuccessCallback(GameUtils.<>f__mg$cache7);
 			Service.ServerAPI.Sync(episodeTaskClaimCommand);
 		}
 
@@ -1270,17 +1371,23 @@ namespace StaRTS.Main.Utils
 				return false;
 			}
 			CurrentPlayer currentPlayer = Service.CurrentPlayer;
-			switch (currency)
+			if (currency != CurrencyType.Credits)
 			{
-			case CurrencyType.Credits:
+				if (currency != CurrencyType.Materials)
+				{
+					if (currency == CurrencyType.Contraband)
+					{
+						currentPlayer.Inventory.ModifyContraband(amount);
+					}
+				}
+				else
+				{
+					currentPlayer.Inventory.ModifyMaterials(amount);
+				}
+			}
+			else
+			{
 				currentPlayer.Inventory.ModifyCredits(amount);
-				break;
-			case CurrencyType.Materials:
-				currentPlayer.Inventory.ModifyMaterials(amount);
-				break;
-			case CurrencyType.Contraband:
-				currentPlayer.Inventory.ModifyContraband(amount);
-				break;
 			}
 			BuyResourceRequest buyResourceRequest = BuyResourceRequest.MakeBuyResourceRequest(currency, amount);
 			if (!string.IsNullOrEmpty(purchaseContext))
@@ -1294,17 +1401,23 @@ namespace StaRTS.Main.Utils
 			if (softCurrencyFlow)
 			{
 				itemType = "soft_currency_flow";
-				switch (currency)
+				if (currency != CurrencyType.Credits)
 				{
-				case CurrencyType.Credits:
+					if (currency != CurrencyType.Materials)
+					{
+						if (currency == CurrencyType.Contraband)
+						{
+							itemId = "contraband";
+						}
+					}
+					else
+					{
+						itemId = "materials";
+					}
+				}
+				else
+				{
 					itemId = "credits";
-					break;
-				case CurrencyType.Materials:
-					itemId = "materials";
-					break;
-				case CurrencyType.Contraband:
-					itemId = "contraband";
-					break;
 				}
 			}
 			string type = "currency_purchase";
@@ -1374,8 +1487,7 @@ namespace StaRTS.Main.Utils
 		private static string GetAnalyticsDroidHutType()
 		{
 			CurrentPlayer currentPlayer = Service.CurrentPlayer;
-			FactionType faction = currentPlayer.Faction;
-			return faction.ToString().ToLower() + "DroidHut";
+			return currentPlayer.Faction.ToString().ToLower() + "DroidHut";
 		}
 
 		public static string GetBuildingPurchaseContext(BuildingTypeVO nextBuildingVO, BuildingTypeVO currentBuildingVO, bool isUpgrade, bool isSwap)
@@ -1424,8 +1536,15 @@ namespace StaRTS.Main.Utils
 			}
 			else
 			{
-				string message2 = Service.Lang.Get("EXIT_WARNING", new object[0]);
-				AlertScreen.ShowModal(false, null, message2, new OnScreenModalResult(GameUtils.OnOpenURLModalResult), url);
+				string text = Service.Lang.Get("EXIT_WARNING", new object[0]);
+				bool arg_6C_0 = false;
+				string arg_6C_1 = null;
+				string arg_6C_2 = text;
+				if (GameUtils.<>f__mg$cache8 == null)
+				{
+					GameUtils.<>f__mg$cache8 = new OnScreenModalResult(GameUtils.OnOpenURLModalResult);
+				}
+				AlertScreen.ShowModal(arg_6C_0, arg_6C_1, arg_6C_2, GameUtils.<>f__mg$cache8, url);
 			}
 		}
 
@@ -1442,9 +1561,22 @@ namespace StaRTS.Main.Utils
 			if (viewComp != null && viewComp.MainTransform != null)
 			{
 				Transform mainTransform = viewComp.MainTransform;
-				foreach (Transform transform in mainTransform)
+				IEnumerator enumerator = mainTransform.GetEnumerator();
+				try
 				{
-					transform.gameObject.SetActive(visible);
+					while (enumerator.MoveNext())
+					{
+						Transform transform = (Transform)enumerator.Current;
+						transform.gameObject.SetActive(visible);
+					}
+				}
+				finally
+				{
+					IDisposable disposable;
+					if ((disposable = (enumerator as IDisposable)) != null)
+					{
+						disposable.Dispose();
+					}
 				}
 			}
 		}
@@ -1507,11 +1639,21 @@ namespace StaRTS.Main.Utils
 			bool flag = baseLayoutToolController != null && baseLayoutToolController.ShouldChecksumLastSaveData();
 			if (flag)
 			{
-				list3.Sort(new Comparison<Building>(GameUtils.CompareLastSavedBuildingLocation));
+				List<Building> arg_97_0 = list3;
+				if (GameUtils.<>f__mg$cache9 == null)
+				{
+					GameUtils.<>f__mg$cache9 = new Comparison<Building>(GameUtils.CompareLastSavedBuildingLocation);
+				}
+				arg_97_0.Sort(GameUtils.<>f__mg$cache9);
 			}
 			else
 			{
-				list3.Sort(new Comparison<Building>(GameUtils.CompareBuildingsByPosition));
+				List<Building> arg_C0_0 = list3;
+				if (GameUtils.<>f__mg$cacheA == null)
+				{
+					GameUtils.<>f__mg$cacheA = new Comparison<Building>(GameUtils.CompareBuildingsByPosition);
+				}
+				arg_C0_0.Sort(GameUtils.<>f__mg$cacheA);
 			}
 			stringBuilder.Append("--Buildings--\n");
 			int i = 0;
@@ -2230,21 +2372,18 @@ namespace StaRTS.Main.Utils
 		public static int GetShardQualityNumeric(CrateSupplyVO supplyVO)
 		{
 			StaticDataController staticDataController = Service.StaticDataController;
-			switch (supplyVO.Type)
-			{
-			case SupplyType.Shard:
-			{
-				EquipmentVO currentEquipmentDataByID = ArmoryUtils.GetCurrentEquipmentDataByID(supplyVO.RewardUid);
-				return (int)currentEquipmentDataByID.Quality;
-			}
-			case SupplyType.ShardTroop:
-			case SupplyType.ShardSpecialAttack:
+			SupplyType type = supplyVO.Type;
+			if (type == SupplyType.ShardTroop || type == SupplyType.ShardSpecialAttack)
 			{
 				ShardVO shardVO = staticDataController.Get<ShardVO>(supplyVO.RewardUid);
 				return (int)shardVO.Quality;
 			}
+			if (type != SupplyType.Shard)
+			{
+				return -1;
 			}
-			return -1;
+			EquipmentVO currentEquipmentDataByID = ArmoryUtils.GetCurrentEquipmentDataByID(supplyVO.RewardUid);
+			return (int)currentEquipmentDataByID.Quality;
 		}
 
 		public static int GetUpgradeShardsOwned(CrateSupplyVO supplyVO, CurrentPlayer player)
@@ -2259,59 +2398,63 @@ namespace StaRTS.Main.Utils
 		public static int GetUpgradeShardsRequired(CrateSupplyVO supplyVO, CurrentPlayer player, StaticDataController idc)
 		{
 			int level = 1;
-			switch (supplyVO.Type)
+			SupplyType type = supplyVO.Type;
+			if (type != SupplyType.ShardTroop)
 			{
-			case SupplyType.Shard:
-			{
-				string rewardUid = supplyVO.RewardUid;
-				if (player.UnlockedLevels.Equipment.Has(rewardUid))
+				if (type != SupplyType.ShardSpecialAttack)
 				{
-					level = player.UnlockedLevels.Equipment.GetNextLevel(rewardUid);
+					if (type != SupplyType.Shard)
+					{
+						Service.Logger.WarnFormat("Unexpected CrateSupply data passed.  No shards required for upgrade.{0} - {1}", new object[]
+						{
+							supplyVO.Uid,
+							supplyVO.Type
+						});
+						return 101;
+					}
+					string rewardUid = supplyVO.RewardUid;
+					if (player.UnlockedLevels.Equipment.Has(rewardUid))
+					{
+						level = player.UnlockedLevels.Equipment.GetNextLevel(rewardUid);
+					}
+					EquipmentVO byLevel = Service.EquipmentUpgradeCatalog.GetByLevel(rewardUid, level);
+					if (byLevel == null)
+					{
+						return 0;
+					}
+					return byLevel.UpgradeShards;
 				}
-				EquipmentVO byLevel = Service.EquipmentUpgradeCatalog.GetByLevel(rewardUid, level);
-				if (byLevel == null)
+				else
 				{
-					return 0;
+					string rewardUid2 = supplyVO.RewardUid;
+					if (player.UnlockedLevels.Starships.Has(rewardUid2))
+					{
+						level = player.UnlockedLevels.Starships.GetNextLevel(rewardUid2);
+					}
+					ShardVO shardVO = idc.Get<ShardVO>(supplyVO.RewardUid);
+					SpecialAttackTypeVO byLevel2 = Service.StarshipUpgradeCatalog.GetByLevel(shardVO.TargetGroupId, level);
+					if (byLevel2 == null)
+					{
+						return 0;
+					}
+					return byLevel2.UpgradeShardCount;
 				}
-				return byLevel.UpgradeShards;
 			}
-			case SupplyType.ShardTroop:
-			{
-				string rewardUid2 = supplyVO.RewardUid;
-				if (player.UnlockedLevels.Troops.Has(rewardUid2))
-				{
-					level = player.UnlockedLevels.Troops.GetNextLevel(rewardUid2);
-				}
-				ShardVO shardVO = idc.Get<ShardVO>(supplyVO.RewardUid);
-				TroopTypeVO byLevel2 = Service.TroopUpgradeCatalog.GetByLevel(shardVO.TargetGroupId, level);
-				if (byLevel2 == null)
-				{
-					return 0;
-				}
-				return byLevel2.UpgradeShardCount;
-			}
-			case SupplyType.ShardSpecialAttack:
+			else
 			{
 				string rewardUid3 = supplyVO.RewardUid;
-				if (player.UnlockedLevels.Starships.Has(rewardUid3))
+				if (player.UnlockedLevels.Troops.Has(rewardUid3))
 				{
-					level = player.UnlockedLevels.Starships.GetNextLevel(rewardUid3);
+					level = player.UnlockedLevels.Troops.GetNextLevel(rewardUid3);
 				}
 				ShardVO shardVO2 = idc.Get<ShardVO>(supplyVO.RewardUid);
-				SpecialAttackTypeVO byLevel3 = Service.StarshipUpgradeCatalog.GetByLevel(shardVO2.TargetGroupId, level);
+				TroopTypeVO byLevel3 = Service.TroopUpgradeCatalog.GetByLevel(shardVO2.TargetGroupId, level);
 				if (byLevel3 == null)
 				{
 					return 0;
 				}
 				return byLevel3.UpgradeShardCount;
 			}
-			}
-			Service.Logger.WarnFormat("Unexpected CrateSupply data passed.  No shards required for upgrade.{0} - {1}", new object[]
-			{
-				supplyVO.Uid,
-				supplyVO.Type
-			});
-			return 101;
 		}
 
 		public static string GetShardShopNameWithoutQuantity(CrateSupplyVO supply, StaticDataController idc)
@@ -2322,28 +2465,29 @@ namespace StaRTS.Main.Utils
 				Service.Logger.Error("Argument cannot be null (ShardShopName)");
 				return result;
 			}
-			switch (supply.Type)
+			SupplyType type = supply.Type;
+			if (type != SupplyType.ShardSpecialAttack)
 			{
-			case SupplyType.Shard:
-			{
-				EquipmentVO currentEquipmentDataByID = ArmoryUtils.GetCurrentEquipmentDataByID(supply.RewardUid);
-				result = LangUtils.GetEquipmentDisplayName(currentEquipmentDataByID);
-				break;
+				if (type != SupplyType.ShardTroop)
+				{
+					if (type == SupplyType.Shard)
+					{
+						EquipmentVO currentEquipmentDataByID = ArmoryUtils.GetCurrentEquipmentDataByID(supply.RewardUid);
+						result = LangUtils.GetEquipmentDisplayName(currentEquipmentDataByID);
+					}
+				}
+				else
+				{
+					ShardVO optional = idc.GetOptional<ShardVO>(supply.RewardUid);
+					IDeployableVO deployableVOFromShard = Service.DeployableShardUnlockController.GetDeployableVOFromShard(optional);
+					result = LangUtils.GetTroopDisplayName((TroopTypeVO)deployableVOFromShard);
+				}
 			}
-			case SupplyType.ShardTroop:
-			{
-				ShardVO optional = idc.GetOptional<ShardVO>(supply.RewardUid);
-				IDeployableVO deployableVOFromShard = Service.DeployableShardUnlockController.GetDeployableVOFromShard(optional);
-				result = LangUtils.GetTroopDisplayName((TroopTypeVO)deployableVOFromShard);
-				break;
-			}
-			case SupplyType.ShardSpecialAttack:
+			else
 			{
 				ShardVO optional2 = idc.GetOptional<ShardVO>(supply.RewardUid);
 				IDeployableVO deployableVOFromShard2 = Service.DeployableShardUnlockController.GetDeployableVOFromShard(optional2);
 				result = LangUtils.GetStarshipDisplayName((SpecialAttackTypeVO)deployableVOFromShard2);
-				break;
-			}
 			}
 			return result;
 		}
@@ -2690,7 +2834,7 @@ namespace StaRTS.Main.Utils
 				break;
 			}
 			}
-			Entity availableTroopResearchLab = Service.BuildingLookupController.GetAvailableTroopResearchLab();
+			SmartEntity availableTroopResearchLab = Service.BuildingLookupController.GetAvailableTroopResearchLab();
 			if (deployableVO != null)
 			{
 				Service.EventManager.SendEvent(EventId.LootTableUnitInfoTapped, deployableVO.Uid);

@@ -26,31 +26,31 @@ public class UIButtonKeys : UIKeyNavigation
 		{
 			this.onClick = this.selectOnClick.gameObject;
 			this.selectOnClick = null;
-			NGUITools.SetDirty(this);
+			NGUITools.SetDirty(this, "last change");
 		}
 		if (this.onLeft == null && this.selectOnLeft != null)
 		{
 			this.onLeft = this.selectOnLeft.gameObject;
 			this.selectOnLeft = null;
-			NGUITools.SetDirty(this);
+			NGUITools.SetDirty(this, "last change");
 		}
 		if (this.onRight == null && this.selectOnRight != null)
 		{
 			this.onRight = this.selectOnRight.gameObject;
 			this.selectOnRight = null;
-			NGUITools.SetDirty(this);
+			NGUITools.SetDirty(this, "last change");
 		}
 		if (this.onUp == null && this.selectOnUp != null)
 		{
 			this.onUp = this.selectOnUp.gameObject;
 			this.selectOnUp = null;
-			NGUITools.SetDirty(this);
+			NGUITools.SetDirty(this, "last change");
 		}
 		if (this.onDown == null && this.selectOnDown != null)
 		{
 			this.onDown = this.selectOnDown.gameObject;
 			this.selectOnDown = null;
-			NGUITools.SetDirty(this);
+			NGUITools.SetDirty(this, "last change");
 		}
 	}
 }

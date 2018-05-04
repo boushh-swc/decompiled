@@ -10,6 +10,10 @@ namespace StaRTS.Main.Controllers.Entities.Systems
 {
 	public class HealthRenderSystem : ViewSystemBase
 	{
+		private EntityController entityController;
+
+		private NodeList<HealthViewNode> nodeList;
+
 		private const float HP_REGENERATION_INTERVAL_TIME = 0.1f;
 
 		private const int HP_REGENERATION_PER_INTERVAL = 80;
@@ -17,10 +21,6 @@ namespace StaRTS.Main.Controllers.Entities.Systems
 		public const float HP_REGENERATION_PERCENT_THRESHOLD_RUBBLE = 0.2f;
 
 		private const float REGENERATION_FINISHED_EVENT_DELAY = 1f;
-
-		private EntityController entityController;
-
-		private NodeList<HealthViewNode> nodeList;
 
 		private float timeSinceRegenerationUpdate;
 

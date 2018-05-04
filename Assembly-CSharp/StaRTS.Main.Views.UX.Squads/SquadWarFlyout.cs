@@ -12,6 +12,10 @@ namespace StaRTS.Main.Views.UX.Squads
 {
 	public class SquadWarFlyout : AbstractSquadWarBoardElement
 	{
+		private SquadWarParticipantState opponentState;
+
+		private SquadWarBuffBaseData buffBaseData;
+
 		private const string SHOW_TOP = "ShowTop";
 
 		private const string SHOW_BOTTOM = "ShowBottom";
@@ -37,10 +41,6 @@ namespace StaRTS.Main.Views.UX.Squads
 		private const string INFO = "context_Info";
 
 		private const string SCOUT = "SCOUT";
-
-		private SquadWarParticipantState opponentState;
-
-		private SquadWarBuffBaseData buffBaseData;
 
 		private UXButton scoutMemberButton;
 

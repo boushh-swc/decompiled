@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
@@ -13,6 +14,9 @@ public static class CrittercismAndroid
 	private static AndroidJavaClass mCrittercismsPlugin;
 
 	private static volatile bool logUnhandledExceptionAsCrash;
+
+	[CompilerGenerated]
+	private static Application.LogCallback <>f__mg$cache0;
 
 	public static void Init(string appID)
 	{
@@ -45,7 +49,11 @@ public static class CrittercismAndroid
 				});
 			}
 		}
-		Application.logMessageReceived += new Application.LogCallback(CrittercismAndroid.OnLogMessageReceived);
+		if (CrittercismAndroid.<>f__mg$cache0 == null)
+		{
+			CrittercismAndroid.<>f__mg$cache0 = new Application.LogCallback(CrittercismAndroid.OnLogMessageReceived);
+		}
+		Application.logMessageReceived += CrittercismAndroid.<>f__mg$cache0;
 		CrittercismAndroid.isInitialized = true;
 	}
 

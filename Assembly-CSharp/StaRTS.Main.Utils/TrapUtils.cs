@@ -5,7 +5,7 @@ using StaRTS.Main.Controllers.TrapConditions;
 using StaRTS.Main.Models;
 using StaRTS.Main.Models.Battle;
 using StaRTS.Main.Models.Commands.Player.Building.Rearm;
-using StaRTS.Main.Models.Entities.Components;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.Entities.Nodes;
 using StaRTS.Main.Models.ValueObjects;
 using StaRTS.Main.Views.UX.Screens;
@@ -13,11 +13,18 @@ using StaRTS.Utils.Core;
 using StaRTS.Utils.State;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace StaRTS.Main.Utils
 {
 	public static class TrapUtils
 	{
+		[CompilerGenerated]
+		private static OnScreenModalResult <>f__mg$cache0;
+
+		[CompilerGenerated]
+		private static OnScreenModalResult <>f__mg$cache1;
+
 		public static uint GetTrapMaxRadius(TrapTypeVO trapType)
 		{
 			List<TrapCondition> parsedTrapConditions = trapType.ParsedTrapConditions;
@@ -35,20 +42,20 @@ namespace StaRTS.Main.Utils
 		{
 			StaticDataController staticDataController = Service.StaticDataController;
 			TrapEventType eventType = trapType.EventType;
-			if (eventType == TrapEventType.SpecialAttack)
+			if (eventType == TrapEventType.Turret)
 			{
-				string specialAttackName = trapType.ShipTED.SpecialAttackName;
-				SpecialAttackTypeVO specialAttackTypeVO = staticDataController.Get<SpecialAttackTypeVO>(specialAttackName);
-				ProjectileTypeVO projectileType = specialAttackTypeVO.ProjectileType;
-				return (uint)projectileType.SplashRadius;
+				string turretUid = trapType.TurretTED.TurretUid;
+				TurretTypeVO turretTypeVO = staticDataController.Get<TurretTypeVO>(turretUid);
+				return turretTypeVO.MaxAttackRange;
 			}
-			if (eventType != TrapEventType.Turret)
+			if (eventType != TrapEventType.SpecialAttack)
 			{
 				return 0u;
 			}
-			string turretUid = trapType.TurretTED.TurretUid;
-			TurretTypeVO turretTypeVO = staticDataController.Get<TurretTypeVO>(turretUid);
-			return turretTypeVO.MaxAttackRange;
+			string specialAttackName = trapType.ShipTED.SpecialAttackName;
+			SpecialAttackTypeVO specialAttackTypeVO = staticDataController.Get<SpecialAttackTypeVO>(specialAttackName);
+			ProjectileTypeVO projectileType = specialAttackTypeVO.ProjectileType;
+			return (uint)projectileType.SplashRadius;
 		}
 
 		public static List<AddOnMapping> ParseAddons(string rawString)
@@ -131,12 +138,12 @@ namespace StaRTS.Main.Utils
 			materialsCost = 0;
 			contrabandCost = 0;
 			StaticDataController staticDataController = Service.StaticDataController;
-			List<Entity> rearmableTraps = TrapUtils.GetRearmableTraps();
+			List<SmartEntity> rearmableTraps = TrapUtils.GetRearmableTraps();
 			int i = 0;
 			int count = rearmableTraps.Count;
 			while (i < count)
 			{
-				TrapTypeVO trapTypeVO = staticDataController.Get<TrapTypeVO>(rearmableTraps[i].Get<BuildingComponent>().BuildingType.TrapUid);
+				TrapTypeVO trapTypeVO = staticDataController.Get<TrapTypeVO>(rearmableTraps[i].BuildingComp.BuildingType.TrapUid);
 				creditsCost += trapTypeVO.RearmCreditsCost;
 				materialsCost += trapTypeVO.RearmMaterialsCost;
 				contrabandCost += trapTypeVO.RearmContrabandCost;
@@ -144,15 +151,16 @@ namespace StaRTS.Main.Utils
 			}
 		}
 
-		public static List<Entity> GetRearmableTraps()
+		public static List<SmartEntity> GetRearmableTraps()
 		{
-			List<Entity> list = new List<Entity>();
+			List<SmartEntity> list = new List<SmartEntity>();
 			NodeList<TrapNode> trapNodeList = Service.BuildingLookupController.TrapNodeList;
 			for (TrapNode trapNode = trapNodeList.Head; trapNode != null; trapNode = trapNode.Next)
 			{
-				if (trapNode.TrapComp.CurrentState == TrapState.Spent && !ContractUtils.IsBuildingUpgrading(trapNode.Entity))
+				SmartEntity smartEntity = (SmartEntity)trapNode.Entity;
+				if (trapNode.TrapComp.CurrentState == TrapState.Spent && !ContractUtils.IsBuildingUpgrading(smartEntity))
 				{
-					list.Add(trapNode.Entity);
+					list.Add(smartEntity);
 				}
 			}
 			return list;
@@ -160,16 +168,24 @@ namespace StaRTS.Main.Utils
 
 		public static void RearmAllTraps()
 		{
-			int credits;
-			int materials;
-			int contraband;
-			TrapUtils.GetRearmAllTrapsCost(out credits, out materials, out contraband);
-			if (!GameUtils.CanAffordCredits(credits) || !GameUtils.CanAffordMaterials(materials) || !GameUtils.CanAffordContraband(contraband))
+			int num;
+			int num2;
+			int num3;
+			TrapUtils.GetRearmAllTrapsCost(out num, out num2, out num3);
+			if (!GameUtils.CanAffordCredits(num) || !GameUtils.CanAffordMaterials(num2) || !GameUtils.CanAffordContraband(num3))
 			{
-				PayMeScreen.ShowIfNotEnoughCurrency(credits, materials, contraband, "Rearm_All_Traps", new OnScreenModalResult(TrapUtils.OnPayMeForCurrencyResultForMultiTrap));
+				int arg_51_0 = num;
+				int arg_51_1 = num2;
+				int arg_51_2 = num3;
+				string arg_51_3 = "Rearm_All_Traps";
+				if (TrapUtils.<>f__mg$cache0 == null)
+				{
+					TrapUtils.<>f__mg$cache0 = new OnScreenModalResult(TrapUtils.OnPayMeForCurrencyResultForMultiTrap);
+				}
+				PayMeScreen.ShowIfNotEnoughCurrency(arg_51_0, arg_51_1, arg_51_2, arg_51_3, TrapUtils.<>f__mg$cache0);
 				return;
 			}
-			List<Entity> rearmableTraps = TrapUtils.GetRearmableTraps();
+			List<SmartEntity> rearmableTraps = TrapUtils.GetRearmableTraps();
 			int i = 0;
 			int count = rearmableTraps.Count;
 			while (i < count)
@@ -180,33 +196,41 @@ namespace StaRTS.Main.Utils
 			TrapUtils.SendRearmTrapServerCommand(rearmableTraps);
 		}
 
-		public static void RearmSingleTrap(Entity selectedBuilding)
+		public static void RearmSingleTrap(SmartEntity selectedBuilding)
 		{
 			bool flag = TrapUtils.RearmTrapForClient(selectedBuilding);
 			if (flag)
 			{
-				TrapUtils.SendRearmTrapServerCommand(new List<Entity>
+				TrapUtils.SendRearmTrapServerCommand(new List<SmartEntity>
 				{
 					selectedBuilding
 				});
 			}
 		}
 
-		public static bool RearmTrapForClient(Entity selectedBuilding)
+		public static bool RearmTrapForClient(SmartEntity selectedBuilding)
 		{
-			BuildingTypeVO buildingType = selectedBuilding.Get<BuildingComponent>().BuildingType;
+			BuildingTypeVO buildingType = selectedBuilding.BuildingComp.BuildingType;
 			TrapTypeVO trapTypeVO = Service.StaticDataController.Get<TrapTypeVO>(buildingType.TrapUid);
 			int rearmCreditsCost = trapTypeVO.RearmCreditsCost;
 			int rearmMaterialsCost = trapTypeVO.RearmMaterialsCost;
 			int rearmContrabandCost = trapTypeVO.RearmContrabandCost;
 			if (!GameUtils.CanAffordCredits(rearmCreditsCost) || !GameUtils.CanAffordMaterials(rearmMaterialsCost))
 			{
-				PayMeScreen.ShowIfNotEnoughCurrency(rearmCreditsCost, rearmMaterialsCost, rearmContrabandCost, GameUtils.GetBuildingPurchaseContext(buildingType, null, false, false), new OnScreenModalResult(TrapUtils.OnPayMeForCurrencyResultSingleTrap));
+				int arg_73_0 = rearmCreditsCost;
+				int arg_73_1 = rearmMaterialsCost;
+				int arg_73_2 = rearmContrabandCost;
+				string arg_73_3 = GameUtils.GetBuildingPurchaseContext(buildingType, null, false, false);
+				if (TrapUtils.<>f__mg$cache1 == null)
+				{
+					TrapUtils.<>f__mg$cache1 = new OnScreenModalResult(TrapUtils.OnPayMeForCurrencyResultSingleTrap);
+				}
+				PayMeScreen.ShowIfNotEnoughCurrency(arg_73_0, arg_73_1, arg_73_2, arg_73_3, TrapUtils.<>f__mg$cache1);
 				return false;
 			}
 			GameUtils.SpendCurrency(rearmCreditsCost, rearmMaterialsCost, rearmContrabandCost, true);
-			Service.TrapController.SetTrapState(selectedBuilding.Get<TrapComponent>(), TrapState.Armed);
-			selectedBuilding.Get<BuildingComponent>().BuildingTO.CurrentStorage = 1;
+			Service.TrapController.SetTrapState(selectedBuilding.TrapComp, TrapState.Armed);
+			selectedBuilding.BuildingComp.BuildingTO.CurrentStorage = 1;
 			Service.UXController.HUD.ShowContextButtons(selectedBuilding);
 			Service.BuildingController.RedrawRadiusForSelectedBuilding();
 			return true;
@@ -214,7 +238,7 @@ namespace StaRTS.Main.Utils
 
 		public static void OnPayMeForCurrencyResultSingleTrap(object result, object cookie)
 		{
-			Entity selectedBuilding = Service.BuildingController.SelectedBuilding;
+			SmartEntity selectedBuilding = Service.BuildingController.SelectedBuilding;
 			if (GameUtils.HandleSoftCurrencyFlow(result, cookie))
 			{
 				TrapUtils.RearmSingleTrap(selectedBuilding);
@@ -229,12 +253,12 @@ namespace StaRTS.Main.Utils
 			}
 		}
 
-		public static void SendRearmTrapServerCommand(List<Entity> buildings)
+		public static void SendRearmTrapServerCommand(List<SmartEntity> buildings)
 		{
 			List<string> list = new List<string>();
 			for (int i = 0; i < buildings.Count; i++)
 			{
-				list.Add(buildings[i].Get<BuildingComponent>().BuildingTO.Key);
+				list.Add(buildings[i].BuildingComp.BuildingTO.Key);
 			}
 			RearmTrapCommand command = new RearmTrapCommand(new RearmTrapRequest
 			{

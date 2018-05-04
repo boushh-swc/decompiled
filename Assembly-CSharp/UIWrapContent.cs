@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 [AddComponentMenu("NGUI/Interaction/Wrap Content")]
@@ -15,6 +16,8 @@ public class UIWrapContent : MonoBehaviour
 
 	public int maxIndex;
 
+	public bool hideInactive;
+
 	public UIWrapContent.OnInitializeItem onInitializeItem;
 
 	protected Transform mTrans;
@@ -28,6 +31,15 @@ public class UIWrapContent : MonoBehaviour
 	protected bool mFirstTime = true;
 
 	protected List<Transform> mChildren = new List<Transform>();
+
+	[CompilerGenerated]
+	private static Comparison<Transform> <>f__mg$cache0;
+
+	[CompilerGenerated]
+	private static Comparison<Transform> <>f__mg$cache1;
+
+	[CompilerGenerated]
+	private static Comparison<Transform> <>f__mg$cache2;
 
 	protected virtual void Start()
 	{
@@ -55,15 +67,29 @@ public class UIWrapContent : MonoBehaviour
 		this.mChildren.Clear();
 		for (int i = 0; i < this.mTrans.childCount; i++)
 		{
-			this.mChildren.Add(this.mTrans.GetChild(i));
+			Transform child = this.mTrans.GetChild(i);
+			if (!this.hideInactive || child.gameObject.activeInHierarchy)
+			{
+				this.mChildren.Add(child);
+			}
 		}
 		if (this.mHorizontal)
 		{
-			this.mChildren.Sort(new Comparison<Transform>(UIGrid.SortHorizontal));
+			List<Transform> arg_9A_0 = this.mChildren;
+			if (UIWrapContent.<>f__mg$cache0 == null)
+			{
+				UIWrapContent.<>f__mg$cache0 = new Comparison<Transform>(UIGrid.SortHorizontal);
+			}
+			arg_9A_0.Sort(UIWrapContent.<>f__mg$cache0);
 		}
 		else
 		{
-			this.mChildren.Sort(new Comparison<Transform>(UIGrid.SortVertical));
+			List<Transform> arg_C7_0 = this.mChildren;
+			if (UIWrapContent.<>f__mg$cache1 == null)
+			{
+				UIWrapContent.<>f__mg$cache1 = new Comparison<Transform>(UIGrid.SortVertical);
+			}
+			arg_C7_0.Sort(UIWrapContent.<>f__mg$cache1);
 		}
 		this.ResetChildPositions();
 	}
@@ -78,9 +104,18 @@ public class UIWrapContent : MonoBehaviour
 		this.mChildren.Clear();
 		for (int i = 0; i < this.mTrans.childCount; i++)
 		{
-			this.mChildren.Add(this.mTrans.GetChild(i));
+			Transform child = this.mTrans.GetChild(i);
+			if (!this.hideInactive || child.gameObject.activeInHierarchy)
+			{
+				this.mChildren.Add(child);
+			}
 		}
-		this.mChildren.Sort(new Comparison<Transform>(UIGrid.SortByName));
+		List<Transform> arg_8F_0 = this.mChildren;
+		if (UIWrapContent.<>f__mg$cache2 == null)
+		{
+			UIWrapContent.<>f__mg$cache2 = new Comparison<Transform>(UIGrid.SortByName);
+		}
+		arg_8F_0.Sort(UIWrapContent.<>f__mg$cache2);
 		this.ResetChildPositions();
 	}
 
@@ -249,6 +284,7 @@ public class UIWrapContent : MonoBehaviour
 			}
 		}
 		this.mScroll.restrictWithinPanel = !flag;
+		this.mScroll.InvalidateBounds();
 	}
 
 	private void OnValidate()

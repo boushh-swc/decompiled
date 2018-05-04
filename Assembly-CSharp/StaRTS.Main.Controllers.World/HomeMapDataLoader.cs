@@ -10,9 +10,9 @@ namespace StaRTS.Main.Controllers.World
 {
 	public class HomeMapDataLoader : IMapDataLoader
 	{
-		private const WorldType worldType = WorldType.Home;
-
 		private MapLoadedDelegate onMapLoaded;
+
+		private const WorldType worldType = WorldType.Home;
 
 		public HomeMapDataLoader()
 		{

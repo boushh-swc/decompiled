@@ -9,13 +9,13 @@ namespace StaRTS.Main.Story
 {
 	public class ActionChain : IStoryReactor
 	{
-		private const int RECURSIVE_LIMIT = 500;
-
 		private List<IStoryAction> actions;
 
 		private int currentActionIndex;
 
 		private int recursiveCounter;
+
+		private const int RECURSIVE_LIMIT = 500;
 
 		private bool destroying;
 

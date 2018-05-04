@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 [AddComponentMenu("NGUI/UI/NGUI Panel"), ExecuteInEditMode]
@@ -16,7 +17,7 @@ public class UIPanel : UIRect
 
 	public delegate void OnClippingMoved(UIPanel panel);
 
-	public delegate void OnAnimationEventCallback(AnimationEvent value);
+	public delegate Material OnCreateMaterial(UIWidget widget, Material mat);
 
 	public static List<UIPanel> list = new List<UIPanel>();
 
@@ -25,6 +26,10 @@ public class UIPanel : UIRect
 	public bool showInPanelTool = true;
 
 	public bool generateNormals;
+
+	public bool generateUV2;
+
+	public UIDrawCall.ShadowMode shadowMode;
 
 	public bool widgetsAreStatic;
 
@@ -52,9 +57,11 @@ public class UIPanel : UIRect
 	[NonSerialized]
 	public Vector4 drawCallClipRange = new Vector4(0f, 0f, 1f, 1f);
 
-	public UIPanel.OnAnimationEventCallback animationEventCallback;
-
 	public UIPanel.OnClippingMoved onClipMove;
+
+	public UIPanel.OnCreateMaterial onCreateMaterial;
+
+	public UIDrawCall.OnCreateDrawCall onCreateDrawCall;
 
 	[HideInInspector, SerializeField]
 	private Texture2D mClipTexture;
@@ -77,6 +84,9 @@ public class UIPanel : UIRect
 	[HideInInspector, SerializeField]
 	private int mSortingOrder;
 
+	[HideInInspector, SerializeField]
+	private string mSortingLayerName;
+
 	private bool mRebuild;
 
 	private bool mResized;
@@ -96,11 +106,11 @@ public class UIPanel : UIRect
 
 	private Vector2 mMax = Vector2.zero;
 
-	private bool mHalfPixelOffset;
-
 	private bool mSortWidgets;
 
 	private bool mUpdateScroll;
+
+	public bool useSortingOrder;
 
 	private UIPanel mParentPanel;
 
@@ -108,9 +118,37 @@ public class UIPanel : UIRect
 
 	private static int mUpdateFrame = -1;
 
+	[NonSerialized]
+	private bool mHasMoved;
+
 	private UIDrawCall.OnRenderCallback mOnRender;
 
 	private bool mForced;
+
+	[CompilerGenerated]
+	private static Comparison<UIPanel> <>f__mg$cache0;
+
+	[CompilerGenerated]
+	private static Comparison<UIPanel> <>f__mg$cache1;
+
+	[CompilerGenerated]
+	private static Comparison<UIWidget> <>f__mg$cache2;
+
+	public string sortingLayerName
+	{
+		get
+		{
+			return this.mSortingLayerName;
+		}
+		set
+		{
+			if (this.mSortingLayerName != value)
+			{
+				this.mSortingLayerName = value;
+				this.UpdateDrawCalls(UIPanel.list.IndexOf(this));
+			}
+		}
+	}
 
 	public static int nextUnusedDepth
 	{
@@ -147,10 +185,18 @@ public class UIPanel : UIRect
 			float num = Mathf.Clamp01(value);
 			if (this.mAlpha != num)
 			{
+				bool flag = this.mAlpha > 0.001f;
 				this.mAlphaFrameID = -1;
 				this.mResized = true;
 				this.mAlpha = num;
-				this.SetDirty();
+				int i = 0;
+				int count = this.drawCalls.Count;
+				while (i < count)
+				{
+					this.drawCalls[i].isDirty = true;
+					i++;
+				}
+				this.Invalidate(!flag && this.mAlpha > 0.001f);
 			}
 		}
 	}
@@ -166,7 +212,12 @@ public class UIPanel : UIRect
 			if (this.mDepth != value)
 			{
 				this.mDepth = value;
-				UIPanel.list.Sort(new Comparison<UIPanel>(UIPanel.CompareFunc));
+				List<UIPanel> arg_35_0 = UIPanel.list;
+				if (UIPanel.<>f__mg$cache0 == null)
+				{
+					UIPanel.<>f__mg$cache0 = new Comparison<UIPanel>(UIPanel.CompareFunc);
+				}
+				arg_35_0.Sort(UIPanel.<>f__mg$cache0);
 			}
 		}
 	}
@@ -182,7 +233,7 @@ public class UIPanel : UIRect
 			if (this.mSortingOrder != value)
 			{
 				this.mSortingOrder = value;
-				this.UpdateDrawCalls();
+				this.UpdateDrawCalls(UIPanel.list.IndexOf(this));
 			}
 		}
 	}
@@ -207,7 +258,7 @@ public class UIPanel : UIRect
 	{
 		get
 		{
-			return this.mHalfPixelOffset;
+			return false;
 		}
 	}
 
@@ -228,8 +279,8 @@ public class UIPanel : UIRect
 				Vector2 windowSize = this.GetWindowSize();
 				float num = (!(base.root != null)) ? 1f : base.root.pixelSizeAdjustment;
 				float num2 = num / windowSize.y / this.mCam.orthographicSize;
-				bool flag = this.mHalfPixelOffset;
-				bool flag2 = this.mHalfPixelOffset;
+				bool flag = false;
+				bool flag2 = false;
 				if ((Mathf.RoundToInt(windowSize.x) & 1) == 1)
 				{
 					flag = !flag;
@@ -395,7 +446,13 @@ public class UIPanel : UIRect
 			{
 				return new Vector4(this.mClipRange.x + this.mClipOffset.x, this.mClipRange.y + this.mClipOffset.y, viewSize.x, viewSize.y);
 			}
-			return new Vector4(0f, 0f, viewSize.x, viewSize.y);
+			Vector4 result = new Vector4(0f, 0f, viewSize.x, viewSize.y);
+			Vector3 vector = base.anchorCamera.WorldToScreenPoint(base.cachedTransform.position);
+			vector.x -= viewSize.x * 0.5f;
+			vector.y -= viewSize.y * 0.5f;
+			result.x -= vector.x;
+			result.y -= vector.y;
+			return result;
 		}
 	}
 
@@ -731,11 +788,6 @@ public class UIPanel : UIRect
 	protected override void Awake()
 	{
 		base.Awake();
-		this.mHalfPixelOffset = (Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.XBOX360 || Application.platform == RuntimePlatform.WindowsWebPlayer || Application.platform == RuntimePlatform.WindowsEditor);
-		if (this.mHalfPixelOffset && SystemInfo.graphicsDeviceVersion.Contains("Direct3D"))
-		{
-			this.mHalfPixelOffset = (SystemInfo.graphicsShaderLevel < 40);
-		}
 	}
 
 	private void FindParent()
@@ -787,7 +839,12 @@ public class UIPanel : UIRect
 		this.mAlphaFrameID = -1;
 		this.mMatrixFrame = -1;
 		UIPanel.list.Add(this);
-		UIPanel.list.Sort(new Comparison<UIPanel>(UIPanel.CompareFunc));
+		List<UIPanel> arg_E1_0 = UIPanel.list;
+		if (UIPanel.<>f__mg$cache1 == null)
+		{
+			UIPanel.<>f__mg$cache1 = new Comparison<UIPanel>(UIPanel.CompareFunc);
+		}
+		arg_E1_0.Sort(UIPanel.<>f__mg$cache1);
 	}
 
 	protected override void OnDisable()
@@ -818,15 +875,10 @@ public class UIPanel : UIRect
 	private void UpdateTransformMatrix()
 	{
 		int frameCount = Time.frameCount;
-		if (base.cachedTransform.hasChanged)
-		{
-			this.mTrans.hasChanged = false;
-			this.mMatrixFrame = -1;
-		}
-		if (this.mMatrixFrame != frameCount)
+		if (this.mHasMoved || this.mMatrixFrame != frameCount)
 		{
 			this.mMatrixFrame = frameCount;
-			this.worldToLocal = this.mTrans.worldToLocalMatrix;
+			this.worldToLocal = base.cachedTransform.worldToLocalMatrix;
 			Vector2 vector = this.GetViewSize() * 0.5f;
 			float num = this.mClipOffset.x + this.mClipRange.x;
 			float num2 = this.mClipOffset.y + this.mClipRange.y;
@@ -979,12 +1031,12 @@ public class UIPanel : UIRect
 				if (uIPanel.renderQueue == UIPanel.RenderQueue.Automatic)
 				{
 					uIPanel.startingRenderQueue = num;
-					uIPanel.UpdateDrawCalls();
+					uIPanel.UpdateDrawCalls(j);
 					num += uIPanel.drawCalls.Count;
 				}
 				else if (uIPanel.renderQueue == UIPanel.RenderQueue.StartAt)
 				{
-					uIPanel.UpdateDrawCalls();
+					uIPanel.UpdateDrawCalls(j);
 					if (uIPanel.drawCalls.Count != 0)
 					{
 						num = Mathf.Max(num, uIPanel.startingRenderQueue + uIPanel.drawCalls.Count);
@@ -992,7 +1044,7 @@ public class UIPanel : UIRect
 				}
 				else
 				{
-					uIPanel.UpdateDrawCalls();
+					uIPanel.UpdateDrawCalls(j);
 					if (uIPanel.drawCalls.Count != 0)
 					{
 						num = Mathf.Max(num, uIPanel.startingRenderQueue + 1);
@@ -1005,6 +1057,7 @@ public class UIPanel : UIRect
 
 	private void UpdateSelf()
 	{
+		this.mHasMoved = base.cachedTransform.hasChanged;
 		this.UpdateTransformMatrix();
 		this.UpdateLayers();
 		this.UpdateWidgets();
@@ -1039,12 +1092,22 @@ public class UIPanel : UIRect
 				component.UpdateScrollbars();
 			}
 		}
+		if (this.mHasMoved)
+		{
+			this.mHasMoved = false;
+			this.mTrans.hasChanged = false;
+		}
 	}
 
 	public void SortWidgets()
 	{
 		this.mSortWidgets = false;
-		this.widgets.Sort(new Comparison<UIWidget>(UIWidget.PanelCompareFunc));
+		List<UIWidget> arg_2A_0 = this.widgets;
+		if (UIPanel.<>f__mg$cache2 == null)
+		{
+			UIPanel.<>f__mg$cache2 = new Comparison<UIWidget>(UIWidget.PanelCompareFunc);
+		}
+		arg_2A_0.Sort(UIPanel.<>f__mg$cache2);
 	}
 
 	private void FillAllDrawCalls()
@@ -1069,11 +1132,15 @@ public class UIPanel : UIRect
 			if (uIWidget.isVisible && uIWidget.hasVertices)
 			{
 				Material material2 = uIWidget.material;
+				if (this.onCreateMaterial != null)
+				{
+					material2 = this.onCreateMaterial(uIWidget, material2);
+				}
 				Texture mainTexture = uIWidget.mainTexture;
 				Shader shader2 = uIWidget.shader;
 				if (material != material2 || texture != mainTexture || shader != shader2)
 				{
-					if (uIDrawCall != null && uIDrawCall.verts.size != 0)
+					if (uIDrawCall != null && uIDrawCall.verts.Count != 0)
 					{
 						this.drawCalls.Add(uIDrawCall);
 						uIDrawCall.UpdateGeometry(num);
@@ -1094,6 +1161,7 @@ public class UIPanel : UIRect
 						uIDrawCall.depthStart = uIWidget.depth;
 						uIDrawCall.depthEnd = uIDrawCall.depthStart;
 						uIDrawCall.panel = this;
+						uIDrawCall.onCreateDrawCall = this.onCreateDrawCall;
 					}
 					else
 					{
@@ -1111,11 +1179,11 @@ public class UIPanel : UIRect
 					num++;
 					if (this.generateNormals)
 					{
-						uIWidget.WriteToBuffers(uIDrawCall.verts, uIDrawCall.uvs, uIDrawCall.cols, uIDrawCall.norms, uIDrawCall.tans);
+						uIWidget.WriteToBuffers(uIDrawCall.verts, uIDrawCall.uvs, uIDrawCall.cols, uIDrawCall.norms, uIDrawCall.tans, (!this.generateUV2) ? null : uIDrawCall.uv2);
 					}
 					else
 					{
-						uIWidget.WriteToBuffers(uIDrawCall.verts, uIDrawCall.uvs, uIDrawCall.cols, null, null);
+						uIWidget.WriteToBuffers(uIDrawCall.verts, uIDrawCall.uvs, uIDrawCall.cols, null, null, (!this.generateUV2) ? null : uIDrawCall.uv2);
 					}
 					if (uIWidget.mOnRender != null)
 					{
@@ -1135,7 +1203,7 @@ public class UIPanel : UIRect
 				uIWidget.drawCall = null;
 			}
 		}
-		if (uIDrawCall != null && uIDrawCall.verts.size != 0)
+		if (uIDrawCall != null && uIDrawCall.verts.Count != 0)
 		{
 			this.drawCalls.Add(uIDrawCall);
 			uIDrawCall.UpdateGeometry(num);
@@ -1144,7 +1212,7 @@ public class UIPanel : UIRect
 		}
 	}
 
-	private bool FillDrawCall(UIDrawCall dc)
+	public bool FillDrawCall(UIDrawCall dc)
 	{
 		if (dc != null)
 		{
@@ -1167,11 +1235,11 @@ public class UIPanel : UIRect
 							num++;
 							if (this.generateNormals)
 							{
-								uIWidget.WriteToBuffers(dc.verts, dc.uvs, dc.cols, dc.norms, dc.tans);
+								uIWidget.WriteToBuffers(dc.verts, dc.uvs, dc.cols, dc.norms, dc.tans, (!this.generateUV2) ? null : dc.uv2);
 							}
 							else
 							{
-								uIWidget.WriteToBuffers(dc.verts, dc.uvs, dc.cols, null, null);
+								uIWidget.WriteToBuffers(dc.verts, dc.uvs, dc.cols, null, null, (!this.generateUV2) ? null : dc.uv2);
 							}
 							if (uIWidget.mOnRender != null)
 							{
@@ -1193,7 +1261,7 @@ public class UIPanel : UIRect
 					i++;
 				}
 			}
-			if (dc.verts.size != 0)
+			if (dc.verts.Count != 0)
 			{
 				dc.UpdateGeometry(num);
 				dc.onRender = this.mOnRender;
@@ -1204,7 +1272,7 @@ public class UIPanel : UIRect
 		return false;
 	}
 
-	private void UpdateDrawCalls()
+	private void UpdateDrawCalls(int sortOrder)
 	{
 		Transform cachedTransform = base.cachedTransform;
 		bool usedForUI = this.usedForUI;
@@ -1264,8 +1332,10 @@ public class UIPanel : UIRect
 			cachedTransform2.localScale = lossyScale;
 			uIDrawCall.renderQueue = ((this.renderQueue != UIPanel.RenderQueue.Explicit) ? (this.startingRenderQueue + i) : this.startingRenderQueue);
 			uIDrawCall.alwaysOnScreen = (this.alwaysOnScreen && (this.mClipping == UIDrawCall.Clipping.None || this.mClipping == UIDrawCall.Clipping.ConstrainButDontClip));
-			uIDrawCall.sortingOrder = this.mSortingOrder;
+			uIDrawCall.sortingOrder = ((!this.useSortingOrder) ? 0 : ((this.mSortingOrder != 0 || this.renderQueue != UIPanel.RenderQueue.Automatic) ? this.mSortingOrder : sortOrder));
+			uIDrawCall.sortingLayerName = ((!this.useSortingOrder) ? null : this.mSortingLayerName);
 			uIDrawCall.clipTexture = this.mClipTexture;
+			uIDrawCall.shadowMode = this.shadowMode;
 		}
 	}
 
@@ -1322,10 +1392,10 @@ public class UIPanel : UIRect
 			UIWidget uIWidget = this.widgets[j];
 			if (uIWidget.panel == this && uIWidget.enabled)
 			{
-				if (uIWidget.UpdateTransform(frameCount) || this.mResized)
+				if (uIWidget.UpdateTransform(frameCount) || this.mResized || (this.mHasMoved && !this.alwaysOnScreen))
 				{
 					bool visibleByAlpha = flag2 || uIWidget.CalculateCumulativeAlpha(frameCount) > 0.001f;
-					uIWidget.UpdateVisibility(visibleByAlpha, flag2 || (!hasCumulativeClipping && !uIWidget.hideIfOffScreen) || this.IsVisible(uIWidget));
+					uIWidget.UpdateVisibility(visibleByAlpha, flag2 || this.alwaysOnScreen || (!hasCumulativeClipping && !uIWidget.hideIfOffScreen) || this.IsVisible(uIWidget));
 				}
 				if (uIWidget.UpdateGeometry(frameCount))
 				{
@@ -1356,6 +1426,7 @@ public class UIPanel : UIRect
 	{
 		Material material = w.material;
 		Texture mainTexture = w.mainTexture;
+		Shader shader = w.shader;
 		int depth = w.depth;
 		for (int i = 0; i < this.drawCalls.Count; i++)
 		{
@@ -1364,7 +1435,7 @@ public class UIPanel : UIRect
 			int num2 = (i + 1 != this.drawCalls.Count) ? (this.drawCalls[i + 1].depthStart - 1) : 2147483647;
 			if (num <= depth && num2 >= depth)
 			{
-				if (uIDrawCall.baseMaterial == material && uIDrawCall.mainTexture == mainTexture)
+				if (uIDrawCall.baseMaterial == material && uIDrawCall.shader == shader && uIDrawCall.mainTexture == mainTexture)
 				{
 					if (w.isVisible)
 					{
@@ -1551,13 +1622,5 @@ public class UIPanel : UIRect
 			return new Vector2(this.mClipRange.z, this.mClipRange.w);
 		}
 		return NGUITools.screenSize;
-	}
-
-	public void OnAnimationEvent(AnimationEvent animationEvent)
-	{
-		if (this.animationEventCallback != null)
-		{
-			this.animationEventCallback(animationEvent);
-		}
 	}
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -10,10 +11,23 @@ public static class EnumHelper
 		int enumLength = EnumHelper.GetEnumLength<T>();
 		string[] array = new string[enumLength];
 		int num = 0;
-		foreach (object current in Enum.GetValues(typeFromHandle))
+		IEnumerator enumerator = Enum.GetValues(typeFromHandle).GetEnumerator();
+		try
 		{
-			array[num] = current.ToString();
-			num++;
+			while (enumerator.MoveNext())
+			{
+				object current = enumerator.Current;
+				array[num] = current.ToString();
+				num++;
+			}
+		}
+		finally
+		{
+			IDisposable disposable;
+			if ((disposable = (enumerator as IDisposable)) != null)
+			{
+				disposable.Dispose();
+			}
 		}
 		return array;
 	}

@@ -72,7 +72,7 @@ namespace StaRTS.Main.Controllers
 				}
 				if (buildingController.IsPurchasing && !buildingController.IsLifted(buildingController.PurchasingBuilding))
 				{
-					this.AddLoweredFootprint((SmartEntity)buildingController.PurchasingBuilding);
+					this.AddLoweredFootprint(buildingController.PurchasingBuilding);
 				}
 				bool allowErrorThrown = true;
 				if (Service.BaseLayoutToolController.IsBaseLayoutModeActive)
@@ -172,7 +172,7 @@ namespace StaRTS.Main.Controllers
 				return EatResponse.NotEaten;
 			case EventId.UserLiftedBuildingAudio:
 			case EventId.UserGridMovedBuildingAudio:
-				IL_22:
+				IL_20:
 				if (id != EventId.BuildingRemovedFromBoard && id != EventId.BuildingSelectedFromStore)
 				{
 					return EatResponse.NotEaten;
@@ -187,7 +187,7 @@ namespace StaRTS.Main.Controllers
 				this.ResetLoweredFootprints();
 				return EatResponse.NotEaten;
 			}
-			goto IL_22;
+			goto IL_20;
 		}
 	}
 }

@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace StaRTS.Main.Models.ValueObjects
 {
-	public class CivilianTypeVO : IAssetVO, IAudioVO, IHealthVO, ISpeedVO, IValueObject
+	public class CivilianTypeVO : IValueObject, ISpeedVO, IAssetVO, IHealthVO, IAudioVO
 	{
 		public int Acceleration;
 

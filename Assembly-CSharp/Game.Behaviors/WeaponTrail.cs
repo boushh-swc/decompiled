@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace Game.Behaviors
@@ -22,10 +23,6 @@ namespace Game.Behaviors
 		public delegate Vector3 ToVector3<T>(T v);
 
 		public delegate float InterpolateFunction(float a, float b, float c, float d);
-
-		private const string TRAIL_OBJECT_NAME = "Trail";
-
-		private const string TRAIL_MESH_NAME_SUFFIX = "TrailMesh";
 
 		[SerializeField]
 		private bool emit = true;
@@ -73,6 +70,16 @@ namespace Game.Behaviors
 		private bool lastFrameEmit = true;
 
 		private bool started;
+
+		private const string TRAIL_OBJECT_NAME = "Trail";
+
+		private const string TRAIL_MESH_NAME_SUFFIX = "TrailMesh";
+
+		[CompilerGenerated]
+		private static WeaponTrail.ToVector3<Transform> <>f__mg$cache0;
+
+		[CompilerGenerated]
+		private static WeaponTrail.ToVector3<Vector3> <>f__mg$cache1;
 
 		public bool Emit
 		{
@@ -359,12 +366,20 @@ namespace Game.Behaviors
 
 		public static IEnumerable<Vector3> NewCatmullRom(Transform[] nodes, int slices, bool loop)
 		{
-			return WeaponTrail.NewCatmullRom<Transform>(nodes, new WeaponTrail.ToVector3<Transform>(WeaponTrail.TransformDotPosition), slices, loop);
+			if (WeaponTrail.<>f__mg$cache0 == null)
+			{
+				WeaponTrail.<>f__mg$cache0 = new WeaponTrail.ToVector3<Transform>(WeaponTrail.TransformDotPosition);
+			}
+			return WeaponTrail.NewCatmullRom<Transform>(nodes, WeaponTrail.<>f__mg$cache0, slices, loop);
 		}
 
 		public static IEnumerable<Vector3> NewCatmullRom(Vector3[] points, int slices, bool loop)
 		{
-			return WeaponTrail.NewCatmullRom<Vector3>(points, new WeaponTrail.ToVector3<Vector3>(WeaponTrail.CastVector3Func), slices, loop);
+			if (WeaponTrail.<>f__mg$cache1 == null)
+			{
+				WeaponTrail.<>f__mg$cache1 = new WeaponTrail.ToVector3<Vector3>(WeaponTrail.CastVector3Func);
+			}
+			return WeaponTrail.NewCatmullRom<Vector3>(points, WeaponTrail.<>f__mg$cache1, slices, loop);
 		}
 
 		[DebuggerHidden]

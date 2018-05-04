@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace StaRTS.Main.Models.ValueObjects
 {
-	public class EquipmentVO : IAssetVO, IGeometryVO, IUnlockableVO, IUpgradeableVO, IValueObject
+	public class EquipmentVO : IValueObject, IGeometryVO, IUpgradeableVO, IAssetVO, IUnlockableVO
 	{
 		public static int COLUMN_equipmentID
 		{

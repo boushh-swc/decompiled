@@ -3,7 +3,7 @@ using System;
 
 namespace StaRTS.Main.Models.ValueObjects
 {
-	public class UITypeVO : IAssetVO, IValueObject
+	public class UITypeVO : IValueObject, IAssetVO
 	{
 		public static int COLUMN_assetName
 		{

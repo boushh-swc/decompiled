@@ -13,6 +13,8 @@ namespace StaRTS.Main.Utils
 {
 	public static class FXUtils
 	{
+		public static readonly Color SELECTION_OUTLINE_COLOR = new Color(0.482f, 0.831f, 0.996f, 1f);
+
 		public const float SELECTION_OUTLINE_WIDTH = 0.00125f;
 
 		public const string ATTACHMENT_RUBBLE = "rubble";
@@ -34,8 +36,6 @@ namespace StaRTS.Main.Utils
 		private const int FX_MAX_SIZE = 6;
 
 		private const string KEY_DELIMITER = "|";
-
-		public static readonly Color SELECTION_OUTLINE_COLOR = new Color(0.482f, 0.831f, 0.996f, 1f);
 
 		public static string MakeAssetKey(string attachmentKey, Entity entity)
 		{

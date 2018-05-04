@@ -530,11 +530,11 @@ public class EventDelegate
 					{
 						if (ex.InnerException != null)
 						{
-							Debug.LogError(ex.InnerException.Message);
+							Debug.LogException(ex.InnerException);
 						}
 						else
 						{
-							Debug.LogError(ex.Message);
+							Debug.LogException(ex);
 						}
 					}
 					if (i >= list.Count)

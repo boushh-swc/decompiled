@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using UnityEngine;
 
 public static class SwrveLog
@@ -16,7 +17,31 @@ public static class SwrveLog
 
 	public static SwrveLog.LogLevel Level;
 
-	public static event SwrveLog.SwrveLogEventHandler OnLog;
+	public static event SwrveLog.SwrveLogEventHandler OnLog
+	{
+		add
+		{
+			SwrveLog.SwrveLogEventHandler swrveLogEventHandler = SwrveLog.OnLog;
+			SwrveLog.SwrveLogEventHandler swrveLogEventHandler2;
+			do
+			{
+				swrveLogEventHandler2 = swrveLogEventHandler;
+				swrveLogEventHandler = Interlocked.CompareExchange<SwrveLog.SwrveLogEventHandler>(ref SwrveLog.OnLog, (SwrveLog.SwrveLogEventHandler)Delegate.Combine(swrveLogEventHandler2, value), swrveLogEventHandler);
+			}
+			while (swrveLogEventHandler != swrveLogEventHandler2);
+		}
+		remove
+		{
+			SwrveLog.SwrveLogEventHandler swrveLogEventHandler = SwrveLog.OnLog;
+			SwrveLog.SwrveLogEventHandler swrveLogEventHandler2;
+			do
+			{
+				swrveLogEventHandler2 = swrveLogEventHandler;
+				swrveLogEventHandler = Interlocked.CompareExchange<SwrveLog.SwrveLogEventHandler>(ref SwrveLog.OnLog, (SwrveLog.SwrveLogEventHandler)Delegate.Remove(swrveLogEventHandler2, value), swrveLogEventHandler);
+			}
+			while (swrveLogEventHandler != swrveLogEventHandler2);
+		}
+	}
 
 	public static void Log(object message)
 	{

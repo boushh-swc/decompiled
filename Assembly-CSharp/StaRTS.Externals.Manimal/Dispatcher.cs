@@ -48,8 +48,6 @@ namespace StaRTS.Externals.Manimal
 
 		private const string DI_AUTH_HEADER = "GAE 54690BA3-45EF-4CEF-9A75-F30314596815";
 
-		private const uint MAX_RETRIES = 3u;
-
 		private string url;
 
 		private MonoBehaviour engine;
@@ -68,7 +66,9 @@ namespace StaRTS.Externals.Manimal
 
 		public HashSet<uint> SuccessStatuses;
 
-		private Logger logger;
+		private const uint MAX_RETRIES = 3u;
+
+		private StaRTS.Utils.Diagnostics.Logger logger;
 
 		private Dictionary<string, string> headers;
 
@@ -229,7 +229,7 @@ namespace StaRTS.Externals.Manimal
 			dictionary["DGMemory"] = string.Format("{0} MB", SystemInfo.graphicsMemorySize);
 			dictionary["DGShaderLevel"] = SystemInfo.graphicsShaderLevel.ToString();
 			dictionary["Authorization"] = "GAE 54690BA3-45EF-4CEF-9A75-F30314596815";
-			dictionary["CAppVersion"] = "5.2.0.10309";
+			dictionary["CAppVersion"] = "6.0.0.10394";
 			return dictionary;
 		}
 
@@ -274,13 +274,13 @@ namespace StaRTS.Externals.Manimal
 							{
 								this.syncDispatchLock = false;
 							}
-							goto IL_5B4;
+							goto IL_4DF;
 						}
 						if (onCompleteAction == OnCompleteAction.Desync)
 						{
 							this.responseHandler.Desync(DesyncType.CriticalCommandFail, data.Status);
 							wWW.Dispose();
-							goto IL_5B4;
+							goto IL_4DF;
 						}
 						if (onCompleteAction == OnCompleteAction.Retry && flag)
 						{
@@ -290,7 +290,7 @@ namespace StaRTS.Externals.Manimal
 								Service.Logger.Error("Command Desync. " + this.CreateCommandErrorString(command, serverTime));
 								this.responseHandler.Desync(DesyncType.CommandMaxRetry, data.Status);
 								wWW.Dispose();
-								goto IL_5B4;
+								goto IL_4DF;
 							}
 							if (batch2 == null)
 							{
@@ -306,7 +306,7 @@ namespace StaRTS.Externals.Manimal
 					{
 						this.Exec(batch2);
 						wWW.Dispose();
-						goto IL_5B4;
+						goto IL_4DF;
 					}
 					if (batch.Sync)
 					{
@@ -324,14 +324,14 @@ namespace StaRTS.Externals.Manimal
 						Service.Logger.Error("Batch Desync. " + this.CreateBatchErrorString(batch, wWW, serverTime));
 						this.responseHandler.Desync(DesyncType.BatchMaxRetry, status);
 						wWW.Dispose();
-						goto IL_5B4;
+						goto IL_4DF;
 					}
 					Service.Logger.Warn("Batch WWW Error. " + this.CreateBatchErrorString(batch, wWW, serverTime));
 					this.Exec(batch);
 				}
 				wWW.Dispose();
 			}
-			IL_5B4:
+			IL_4DF:
 			yield break;
 		}
 

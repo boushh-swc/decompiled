@@ -2,6 +2,7 @@ using StaRTS.Main.Models;
 using StaRTS.Utils.Pooling;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace StaRTS.Utils.MeshCombiner
@@ -15,6 +16,18 @@ namespace StaRTS.Utils.MeshCombiner
 		private GameObjectPool meshCombinerGameObjectPool;
 
 		private bool isDisabled;
+
+		[CompilerGenerated]
+		private static GameObjectPool.CreatePoolObjectDelegate <>f__mg$cache0;
+
+		[CompilerGenerated]
+		private static GameObjectPool.DestroyPoolObjectDelegate <>f__mg$cache1;
+
+		[CompilerGenerated]
+		private static GameObjectPool.ActivatePoolObjectDelegate <>f__mg$cache2;
+
+		[CompilerGenerated]
+		private static GameObjectPool.DeactivatePoolObjectDelegate <>f__mg$cache3;
 
 		public MeshCombiner(GameObjectPool meshCombinerGameObjectPool, GameObject parentObject, string containerObjectName)
 		{
@@ -62,7 +75,26 @@ namespace StaRTS.Utils.MeshCombiner
 
 		public static GameObjectPool CreateMeshCombinerObjectPool()
 		{
-			return new GameObjectPool(new GameObjectPool.CreatePoolObjectDelegate(MeshCombiner.CreateMeshCombinerGameObject), new GameObjectPool.DestroyPoolObjectDelegate(MeshCombiner.DestroyMeshCombinerGameObject), new GameObjectPool.ActivatePoolObjectDelegate(MeshCombiner.ActivateMeshCombinerGameObject), new GameObjectPool.DeactivatePoolObjectDelegate(MeshCombiner.DeactivateMeshCombinerGameObject));
+			if (MeshCombiner.<>f__mg$cache0 == null)
+			{
+				MeshCombiner.<>f__mg$cache0 = new GameObjectPool.CreatePoolObjectDelegate(MeshCombiner.CreateMeshCombinerGameObject);
+			}
+			GameObjectPool.CreatePoolObjectDelegate arg_74_0 = MeshCombiner.<>f__mg$cache0;
+			if (MeshCombiner.<>f__mg$cache1 == null)
+			{
+				MeshCombiner.<>f__mg$cache1 = new GameObjectPool.DestroyPoolObjectDelegate(MeshCombiner.DestroyMeshCombinerGameObject);
+			}
+			GameObjectPool.DestroyPoolObjectDelegate arg_74_1 = MeshCombiner.<>f__mg$cache1;
+			if (MeshCombiner.<>f__mg$cache2 == null)
+			{
+				MeshCombiner.<>f__mg$cache2 = new GameObjectPool.ActivatePoolObjectDelegate(MeshCombiner.ActivateMeshCombinerGameObject);
+			}
+			GameObjectPool.ActivatePoolObjectDelegate arg_74_2 = MeshCombiner.<>f__mg$cache2;
+			if (MeshCombiner.<>f__mg$cache3 == null)
+			{
+				MeshCombiner.<>f__mg$cache3 = new GameObjectPool.DeactivatePoolObjectDelegate(MeshCombiner.DeactivateMeshCombinerGameObject);
+			}
+			return new GameObjectPool(arg_74_0, arg_74_1, arg_74_2, MeshCombiner.<>f__mg$cache3);
 		}
 
 		public void CombineMeshes(HashSet<Renderer> combineRenderers)

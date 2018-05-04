@@ -31,9 +31,9 @@ namespace StaRTS.FX
 
 		private const int WORLD_SCALE = 3;
 
-		private const int INITIAL_LIST_CAPACITY = 16384;
-
 		public static readonly Color TERRAIN_PLACEMENT_COLOR = Color.red;
+
+		private const int INITIAL_LIST_CAPACITY = 16384;
 
 		private Mesh currentTerrainMesh;
 
@@ -72,14 +72,14 @@ namespace StaRTS.FX
 				this.PaintTerrainPlacedArea((Entity)cookie);
 				return EatResponse.NotEaten;
 			case EventId.BuildingMovedOnBoard:
-				IL_16:
+				IL_14:
 				switch (id)
 				{
 				case EventId.UserLoweredBuilding:
 					this.PaintTerrainPlacedArea((Entity)cookie);
 					return EatResponse.NotEaten;
 				case EventId.UserLoweredBuildingAudio:
-					IL_2E:
+					IL_2C:
 					if (id == EventId.WorldLoadComplete)
 					{
 						this.RefreshTerrainBlendingNewMap();
@@ -89,23 +89,23 @@ namespace StaRTS.FX
 					{
 						return EatResponse.NotEaten;
 					}
-					goto IL_56;
+					goto IL_54;
 				case EventId.UserStashedBuilding:
-					goto IL_56;
+					goto IL_54;
 				}
-				goto IL_2E;
-				IL_56:
+				goto IL_2C;
+				IL_54:
 				this.ResetTerrainArea((Entity)cookie);
 				return EatResponse.NotEaten;
 			case EventId.BuildingRemovedFromBoard:
 				return EatResponse.NotEaten;
 			}
-			goto IL_16;
+			goto IL_14;
 		}
 
 		public void IndexTerrainMesh(GameObject targetGameObject)
 		{
-			GameObject gameObject = targetGameObject.transform.FindChild("terrainInnerMesh").gameObject;
+			GameObject gameObject = targetGameObject.transform.Find("terrainInnerMesh").gameObject;
 			this.currentTerrainMesh = gameObject.GetComponent<MeshFilter>().sharedMesh;
 			this.originalVertexColors = this.currentTerrainMesh.colors32;
 			this.targetColors = this.currentTerrainMesh.colors32;

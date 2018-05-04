@@ -34,16 +34,13 @@ namespace StaRTS.Main.Story.Trigger
 
 		public EatResponse OnEvent(EventId id, object cookie)
 		{
-			switch (id)
+			if (id == EventId.SquadJoinedByCurrentPlayer || id == EventId.SquadUpdated)
 			{
-			case EventId.SquadUpdated:
-			case EventId.SquadJoinedByCurrentPlayer:
 				if (this.IsSatisfied())
 				{
 					this.UnregisterObservers();
 					this.parent.SatisfyTrigger(this);
 				}
-				break;
 			}
 			return EatResponse.NotEaten;
 		}

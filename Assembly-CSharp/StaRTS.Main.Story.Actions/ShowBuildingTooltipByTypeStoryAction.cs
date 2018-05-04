@@ -58,47 +58,47 @@ namespace StaRTS.Main.Story.Actions
 		public override void Execute()
 		{
 			base.Execute();
-			List<Entity> buildingListByType = Service.BuildingLookupController.GetBuildingListByType(this.type);
+			List<SmartEntity> buildingListByType = Service.BuildingLookupController.GetBuildingListByType(this.type);
 			for (int i = 0; i < buildingListByType.Count; i++)
 			{
-				Entity entity = buildingListByType[i];
-				BuildingComponent buildingComponent = entity.Get<BuildingComponent>();
-				if (this.area.Contains(new Vector2((float)buildingComponent.BuildingTO.X, (float)buildingComponent.BuildingTO.Z)))
+				SmartEntity smartEntity = buildingListByType[i];
+				BuildingComponent buildingComp = smartEntity.BuildingComp;
+				if (this.area.Contains(new Vector2((float)buildingComp.BuildingTO.X, (float)buildingComp.BuildingTO.Z)))
 				{
-					if (!ContractUtils.IsBuildingConstructing(entity))
+					if (!ContractUtils.IsBuildingConstructing(smartEntity))
 					{
-						if (entity.Has<HealthViewComponent>())
+						if (smartEntity.HealthViewComp != null)
 						{
-							entity.Get<HealthViewComponent>().SetEnabled(this.show);
+							smartEntity.HealthViewComp.SetEnabled(this.show);
 						}
-						if (entity.Has<SupportViewComponent>())
+						if (smartEntity.SupportViewComp != null)
 						{
-							entity.Get<SupportViewComponent>().SetEnabled(this.show);
+							smartEntity.SupportViewComp.SetEnabled(this.show);
 						}
-						if (entity.Has<GeneratorViewComponent>())
+						if (smartEntity.GeneratorViewComp != null)
 						{
-							GeneratorViewComponent generatorViewComponent = entity.Get<GeneratorViewComponent>();
+							GeneratorViewComponent generatorViewComp = smartEntity.GeneratorViewComp;
 							if (this.show)
 							{
-								generatorViewComponent.SetEnabled(this.show);
+								generatorViewComp.SetEnabled(this.show);
 								NodeList<GeneratorViewNode> nodeList = Service.EntityController.GetNodeList<GeneratorViewNode>();
 								for (GeneratorViewNode generatorViewNode = nodeList.Head; generatorViewNode != null; generatorViewNode = generatorViewNode.Next)
 								{
-									if (generatorViewNode.Entity == entity)
+									if (generatorViewNode.Entity == smartEntity)
 									{
-										Service.ICurrencyController.UpdateGeneratorAccruedCurrency((SmartEntity)entity);
+										Service.ICurrencyController.UpdateGeneratorAccruedCurrency(smartEntity);
 									}
 								}
 							}
 							else
 							{
-								generatorViewComponent.ShowCollectButton(false);
-								generatorViewComponent.SetEnabled(this.show);
+								generatorViewComp.ShowCollectButton(false);
+								generatorViewComp.SetEnabled(this.show);
 							}
 						}
 						if (this.show)
 						{
-							Service.BuildingTooltipController.EnsureBuildingTooltip((SmartEntity)buildingComponent.Entity);
+							Service.BuildingTooltipController.EnsureBuildingTooltip(smartEntity);
 						}
 					}
 				}

@@ -9,6 +9,8 @@ using System;
 using System.Collections;
 using System.Diagnostics;
 using UnityEngine;
+using UnityEngine.Profiling;
+using UnityEngine.SceneManagement;
 
 namespace StaRTS.Main.Controllers
 {
@@ -49,12 +51,12 @@ namespace StaRTS.Main.Controllers
 			Application.targetFrameRate = 30;
 			Service.Engine = this;
 			this.InitLogger();
-			uint monoUsedSize = Profiler.GetMonoUsedSize();
-			uint monoHeapSize = Profiler.GetMonoHeapSize();
+			long monoUsedSizeLong = Profiler.GetMonoUsedSizeLong();
+			long monoHeapSizeLong = Profiler.GetMonoHeapSizeLong();
 			Service.Logger.DebugFormat("Managed memory on load: {0:F1}MB/{1:F1}MB", new object[]
 			{
-				monoUsedSize / 1048576f,
-				monoHeapSize / 1048576f
+				(float)monoUsedSizeLong / 1048576f,
+				(float)monoHeapSizeLong / 1048576f
 			});
 			this.reloadWait = false;
 			this.inputManager = new TouchManager();
@@ -72,7 +74,7 @@ namespace StaRTS.Main.Controllers
 
 		private void InitLogger()
 		{
-			Logger logger = new Logger();
+			StaRTS.Utils.Diagnostics.Logger logger = new StaRTS.Utils.Diagnostics.Logger();
 			UnityLogAppender unityLogAppender = null;
 			logger.ErrorLevels = (LogLevel)3;
 			logger.AddAppender(new BILogAppender(unityLogAppender));
@@ -99,12 +101,12 @@ namespace StaRTS.Main.Controllers
 				this.reloadWait = false;
 				yield return null;
 			}
-			uint monoUsedSize = Profiler.GetMonoUsedSize();
-			uint monoHeapSize = Profiler.GetMonoHeapSize();
+			long monoUsedSizeLong = Profiler.GetMonoUsedSizeLong();
+			long monoHeapSizeLong = Profiler.GetMonoHeapSizeLong();
 			Service.Logger.DebugFormat("Managed memory before reload: {0:F1}MB/{1:F1}MB", new object[]
 			{
-				monoUsedSize / 1048576f,
-				monoHeapSize / 1048576f
+				(float)monoUsedSizeLong / 1048576f,
+				(float)monoHeapSizeLong / 1048576f
 			});
 			MainController.StaticReset();
 			MainController.CleanupReferences();
@@ -115,7 +117,7 @@ namespace StaRTS.Main.Controllers
 
 		private void OnGarbageCollectedReload()
 		{
-			Application.LoadLevelAsync("MainScene");
+			SceneManager.LoadSceneAsync("MainScene");
 		}
 
 		public void ForceGarbageCollection(Action onComplete)

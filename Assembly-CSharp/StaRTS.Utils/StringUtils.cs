@@ -11,9 +11,9 @@ namespace StaRTS.Utils
 
 		private const string guidRegxPattern = "^(\\{){0,1}[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}(\\}){0,1}$";
 
-		private const string BASE64_REGEX = "^[a-zA-Z0-9\\+/]*={0,3}$";
-
 		private static Regex guidRegx;
+
+		private const string BASE64_REGEX = "^[a-zA-Z0-9\\+/]*={0,3}$";
 
 		public static T ParseEnum<T>(string name)
 		{

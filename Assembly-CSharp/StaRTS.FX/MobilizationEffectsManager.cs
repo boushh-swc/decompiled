@@ -2,6 +2,7 @@ using Net.RichardLord.Ash.Core;
 using StaRTS.Main.Controllers;
 using StaRTS.Main.Controllers.GameStates;
 using StaRTS.Main.Models;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.Entities.Components;
 using StaRTS.Main.Models.Entities.Nodes;
 using StaRTS.Main.Models.Player.Store;
@@ -103,8 +104,9 @@ namespace StaRTS.FX
 			NodeList<NavigationCenterNode> navigationCenterNodeList = buildingLookupController.NavigationCenterNodeList;
 			for (NavigationCenterNode navigationCenterNode = navigationCenterNodeList.Head; navigationCenterNode != null; navigationCenterNode = navigationCenterNode.Next)
 			{
-				bool flag = ContractUtils.IsBuildingUpgrading(navigationCenterNode.Entity);
-				if (!ContractUtils.IsBuildingConstructing(navigationCenterNode.Entity) && !flag)
+				SmartEntity selectedBuilding = (SmartEntity)navigationCenterNode.Entity;
+				bool flag = ContractUtils.IsBuildingUpgrading(selectedBuilding);
+				if (!ContractUtils.IsBuildingConstructing(selectedBuilding) && !flag)
 				{
 					this.CreateEffect(navigationCenterNode.BuildingComp.Entity, "GalacticNavHologram", false, true);
 				}
@@ -279,83 +281,85 @@ namespace StaRTS.FX
 				break;
 			}
 			default:
+			{
 				switch (id)
 				{
-				case EventId.WorldLoadComplete:
+				case EventId.BuildingViewReady:
 				{
-					IState currentState = Service.GameStateMachine.CurrentState;
-					if (currentState is ApplicationLoadState || currentState is HomeState || currentState is WarBoardState)
+					EntityViewParams entityViewParams = (EntityViewParams)cookie;
+					if (this.effectsByEntityId != null && this.effectsByEntityId.ContainsKey(entityViewParams.Entity.ID))
 					{
-						this.AddAllEffects(false);
+						BuildingHoloEffect buildingHoloEffect = this.effectsByEntityId[entityViewParams.Entity.ID];
+						if (buildingHoloEffect.WaitingForBuildingView)
+						{
+							buildingHoloEffect.UpdateEffect();
+						}
+					}
+					if (this.effectsByEntityId != null && entityViewParams.Entity.Has<NavigationCenterComponent>())
+					{
+						this.AddNavigationCenterHolo(entityViewParams.Entity);
 					}
 					return EatResponse.NotEaten;
 				}
-				case EventId.WorldInTransitionComplete:
-				case EventId.WorldOutTransitionComplete:
+				case EventId.BuildingViewFailed:
 				{
-					IL_37:
-					switch (id)
+					IL_2D:
+					if (id == EventId.BuildingConstructed)
 					{
-					case EventId.BuildingViewReady:
-					{
-						EntityViewParams entityViewParams = (EntityViewParams)cookie;
-						if (this.effectsByEntityId != null && this.effectsByEntityId.ContainsKey(entityViewParams.Entity.ID))
-						{
-							BuildingHoloEffect buildingHoloEffect = this.effectsByEntityId[entityViewParams.Entity.ID];
-							if (buildingHoloEffect.WaitingForBuildingView)
-							{
-								buildingHoloEffect.UpdateEffect();
-							}
-						}
-						if (this.effectsByEntityId != null && entityViewParams.Entity.Has<NavigationCenterComponent>())
-						{
-							this.AddNavigationCenterHolo(entityViewParams.Entity);
-						}
-						return EatResponse.NotEaten;
+						goto IL_101;
 					}
-					case EventId.BuildingViewFailed:
-						IL_4C:
-						if (id == EventId.BuildingConstructed)
+					if (id != EventId.BuildingReplaced)
+					{
+						switch (id)
 						{
-							goto IL_10C;
-						}
-						if (id == EventId.BuildingReplaced)
+						case EventId.WorldLoadComplete:
 						{
-							Entity entity3 = cookie as Entity;
-							if (entity3.Has<NavigationCenterComponent>())
+							IState currentState = Service.GameStateMachine.CurrentState;
+							if (currentState is ApplicationLoadState || currentState is HomeState || currentState is WarBoardState)
 							{
-								this.AddNavigationCenterHolo(entity3);
+								this.AddAllEffects(false);
 							}
 							return EatResponse.NotEaten;
 						}
-						if (id == EventId.ContractStarted || id == EventId.ContractContinued)
-						{
-							this.OnContractStarted((ContractEventData)cookie);
+						case EventId.WorldInTransitionComplete:
+						case EventId.WorldOutTransitionComplete:
+							IL_56:
+							if (id == EventId.ContractStarted || id == EventId.ContractContinued)
+							{
+								this.OnContractStarted((ContractEventData)cookie);
+								return EatResponse.NotEaten;
+							}
+							if (id != EventId.ContractCanceled)
+							{
+								return EatResponse.NotEaten;
+							}
+							this.OnContractCanceled((ContractEventData)cookie);
+							return EatResponse.NotEaten;
+						case EventId.WorldReset:
+							this.RemoveAllEffects();
 							return EatResponse.NotEaten;
 						}
-						if (id != EventId.ContractCanceled)
-						{
-							return EatResponse.NotEaten;
-						}
-						this.OnContractCanceled((ContractEventData)cookie);
-						return EatResponse.NotEaten;
-					case EventId.BuildingCancelled:
-						goto IL_10C;
+						goto IL_56;
 					}
-					goto IL_4C;
-					IL_10C:
-					ContractEventData contractEventData = (ContractEventData)cookie;
-					if (contractEventData.BuildingVO.Type == BuildingType.NavigationCenter)
+					SmartEntity smartEntity = cookie as SmartEntity;
+					if (smartEntity.NavigationCenterComp != null)
 					{
-						this.AddNavigationCenterHolo();
+						this.AddNavigationCenterHolo(smartEntity);
 					}
 					return EatResponse.NotEaten;
 				}
-				case EventId.WorldReset:
-					this.RemoveAllEffects();
-					return EatResponse.NotEaten;
+				case EventId.BuildingCancelled:
+					goto IL_101;
 				}
-				goto IL_37;
+				goto IL_2D;
+				IL_101:
+				ContractEventData contractEventData = (ContractEventData)cookie;
+				if (contractEventData.BuildingVO.Type == BuildingType.NavigationCenter)
+				{
+					this.AddNavigationCenterHolo();
+				}
+				break;
+			}
 			}
 			return EatResponse.NotEaten;
 		}

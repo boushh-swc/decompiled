@@ -1,4 +1,3 @@
-using Net.RichardLord.Ash.Core;
 using StaRTS.Main.Controllers;
 using StaRTS.Main.Controllers.GameStates;
 using StaRTS.Main.Controllers.Planets;
@@ -305,7 +304,7 @@ namespace StaRTS.Main.Views.UX.Screens
 			}
 		}
 
-		public DeployableInfoScreen(TroopUpgradeTag selectedTroop, List<TroopUpgradeTag> troopList, bool showUpgradeControls, Entity selectedBuilding) : base("gui_troop_info", selectedBuilding)
+		public DeployableInfoScreen(TroopUpgradeTag selectedTroop, List<TroopUpgradeTag> troopList, bool showUpgradeControls, SmartEntity selectedBuilding) : base("gui_troop_info", selectedBuilding)
 		{
 			TroopUpgradeCatalog troopUpgradeCatalog = Service.TroopUpgradeCatalog;
 			this.wantsTransition = false;
@@ -430,7 +429,7 @@ namespace StaRTS.Main.Views.UX.Screens
 			Contract contract = null;
 			if (this.selectedBuilding != null)
 			{
-				BuildingComponent buildingComp = ((SmartEntity)this.selectedBuilding).BuildingComp;
+				BuildingComponent buildingComp = this.selectedBuilding.BuildingComp;
 				contract = Service.ISupportController.FindCurrentContract(buildingComp.BuildingTO.Key);
 			}
 			if (contract != null)
@@ -725,21 +724,11 @@ namespace StaRTS.Main.Views.UX.Screens
 		private void SetupTroopImage()
 		{
 			UXUtils.HideQualityCards(this, "TroopImage", "TroopImageQ{0}");
-			IDeployableVO arg_35_0;
-			if (this.nextLevel != null)
-			{
-				IDeployableVO deployableVO = this.nextLevel;
-				arg_35_0 = deployableVO;
-			}
-			else
-			{
-				arg_35_0 = this.selectedTroop.Troop;
-			}
-			IDeployableVO deployableVO2 = arg_35_0;
+			IDeployableVO deployableVO = (this.nextLevel == null) ? this.selectedTroop.Troop : this.nextLevel;
 			ShardVO shardVO = null;
-			if (!string.IsNullOrEmpty(deployableVO2.UpgradeShardUid))
+			if (!string.IsNullOrEmpty(deployableVO.UpgradeShardUid))
 			{
-				shardVO = Service.StaticDataController.GetOptional<ShardVO>(deployableVO2.UpgradeShardUid);
+				shardVO = Service.StaticDataController.GetOptional<ShardVO>(deployableVO.UpgradeShardUid);
 			}
 			string name = "SpriteTroopSelectedItemImage";
 			base.GetElement<UXLabel>("LabelProgress").Text = string.Empty;
@@ -759,7 +748,7 @@ namespace StaRTS.Main.Views.UX.Screens
 			}
 			base.GetElement<UXElement>("TroopImage").Visible = (shardVO == null);
 			UXSprite element = base.GetElement<UXSprite>(name);
-			ProjectorConfig projectorConfig = ProjectorUtils.GenerateGeometryConfig(deployableVO2, element, true);
+			ProjectorConfig projectorConfig = ProjectorUtils.GenerateGeometryConfig(deployableVO, element, true);
 			projectorConfig.AnimPreference = AnimationPreference.AnimationPreferred;
 			this.troopImage = ProjectorUtils.GenerateProjector(projectorConfig);
 			FactionDecal.SetDeployableDecalVisibiliy(this, false);
@@ -810,21 +799,11 @@ namespace StaRTS.Main.Views.UX.Screens
 		private string GetOwnLabelID()
 		{
 			string result = "LabelQuantityOwn";
-			IDeployableVO arg_2B_0;
-			if (this.nextLevel != null)
-			{
-				IDeployableVO deployableVO = this.nextLevel;
-				arg_2B_0 = deployableVO;
-			}
-			else
-			{
-				arg_2B_0 = this.selectedTroop.Troop;
-			}
-			IDeployableVO deployableVO2 = arg_2B_0;
+			IDeployableVO deployableVO = (this.nextLevel == null) ? this.selectedTroop.Troop : this.nextLevel;
 			ShardVO shardVO = null;
-			if (!string.IsNullOrEmpty(deployableVO2.UpgradeShardUid))
+			if (!string.IsNullOrEmpty(deployableVO.UpgradeShardUid))
 			{
-				shardVO = Service.StaticDataController.GetOptional<ShardVO>(deployableVO2.UpgradeShardUid);
+				shardVO = Service.StaticDataController.GetOptional<ShardVO>(deployableVO.UpgradeShardUid);
 			}
 			if (shardVO != null)
 			{
@@ -1313,17 +1292,17 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		private void RefreshResearchContextButtons()
 		{
-			Entity selectedBuilding = Service.BuildingController.SelectedBuilding;
+			SmartEntity selectedBuilding = Service.BuildingController.SelectedBuilding;
 			if (selectedBuilding == null)
 			{
 				return;
 			}
-			BuildingComponent buildingComponent = selectedBuilding.Get<BuildingComponent>();
-			if (buildingComponent == null)
+			BuildingComponent buildingComp = selectedBuilding.BuildingComp;
+			if (buildingComp == null)
 			{
 				return;
 			}
-			BuildingTypeVO buildingType = buildingComponent.BuildingType;
+			BuildingTypeVO buildingType = buildingComp.BuildingType;
 			if (buildingType.Type == BuildingType.TroopResearch)
 			{
 				Service.UXController.HUD.ShowContextButtons(selectedBuilding);
@@ -1479,7 +1458,7 @@ namespace StaRTS.Main.Views.UX.Screens
 				return;
 			}
 			Service.ISupportController.BuyOutCurrentBuildingContract(this.selectedBuilding, true);
-			BuildingComponent buildingComp = ((SmartEntity)this.selectedBuilding).BuildingComp;
+			BuildingComponent buildingComp = this.selectedBuilding.BuildingComp;
 			if (buildingComp != null)
 			{
 				BuildingTypeVO buildingType = buildingComp.BuildingType;

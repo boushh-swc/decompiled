@@ -1,4 +1,4 @@
-using Net.RichardLord.Ash.Core;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.Static;
 using StaRTS.Main.Models.ValueObjects;
 using StaRTS.Main.Utils;
@@ -17,7 +17,7 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		private BuildingTypeVO maxBuildingInfo;
 
-		public ChampionInfoScreen(Entity platformBuilding, TroopTypeVO championType, bool forUpgrade) : base(new TroopUpgradeTag(championType, true), null, forUpgrade, platformBuilding)
+		public ChampionInfoScreen(SmartEntity platformBuilding, TroopTypeVO championType, bool forUpgrade) : base(new TroopUpgradeTag(championType, true), null, forUpgrade, platformBuilding)
 		{
 			this.wantsTransition = true;
 			this.shouldCloseParent = false;

@@ -24,9 +24,9 @@ namespace StaRTS.FX
 
 		public EatResponse OnEvent(EventId id, object cookie)
 		{
-			if (id != EventId.BuildingViewReady)
+			if (id != EventId.GameStateChanged)
 			{
-				if (id == EventId.GameStateChanged)
+				if (id == EventId.BuildingViewReady)
 				{
 					this.UpdateEnvironmentLighting(0f);
 				}

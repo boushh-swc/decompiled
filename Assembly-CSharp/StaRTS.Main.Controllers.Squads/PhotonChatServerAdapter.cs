@@ -22,11 +22,11 @@ namespace StaRTS.Main.Controllers.Squads
 
 		public const string CENSORED_WORD_REPLACEMENT = "**** ";
 
-		private const float PUBLISH_TIMER_DELAY_DEFAULT = 2f;
-
 		private PhotonChatWrapper photonChatWrapper;
 
 		private uint publishTimerId;
+
+		private const float PUBLISH_TIMER_DELAY_DEFAULT = 2f;
 
 		private float publishTimerDelay;
 

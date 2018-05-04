@@ -49,7 +49,7 @@ namespace StaRTS.Main.Story.Trigger
 
 		public EatResponse OnEvent(EventId id, object cookie)
 		{
-			if (id == EventId.StartupTasksCompleted || id == EventId.HQCelebrationScreenClosed)
+			if (id == EventId.HQCelebrationScreenClosed || id == EventId.StartupTasksCompleted)
 			{
 				this.CheckHQLevelAndSatisfy();
 			}

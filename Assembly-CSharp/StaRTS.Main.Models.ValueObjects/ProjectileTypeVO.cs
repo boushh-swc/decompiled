@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace StaRTS.Main.Models.ValueObjects
 {
-	public class ProjectileTypeVO : IAssetVO, IValueObject
+	public class ProjectileTypeVO : IValueObject, IAssetVO
 	{
 		private const int BEAM_EXTEND_FACTOR = 4;
 

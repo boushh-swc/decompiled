@@ -19,10 +19,11 @@ using StaRTS.Utils.Core;
 using StaRTS.Utils.Scheduling;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace StaRTS.Main.Views.UX.Screens.Squads
 {
-	public class SquadTroopRequestScreen : AbstractSquadRequestScreen, IEventObserver, IViewClockTimeObserver
+	public class SquadTroopRequestScreen : AbstractSquadRequestScreen, IViewClockTimeObserver, IEventObserver
 	{
 		private const string REQUEST_NOW_COST_LABEL = "FinishCostLabel";
 
@@ -80,6 +81,9 @@ namespace StaRTS.Main.Views.UX.Screens.Squads
 
 		private bool canRequestTroops = true;
 
+		[CompilerGenerated]
+		private static UIInput.OnValidate <>f__mg$cache0;
+
 		public SquadTroopRequestScreen(string defaultText, bool warMode)
 		{
 			this.defaultRequestText = defaultText;
@@ -102,7 +106,12 @@ namespace StaRTS.Main.Views.UX.Screens.Squads
 			{
 				this.input = base.GetElement<UXInput>("LabelInputNameSquadWar");
 				UIInput uIInputComponent = this.input.GetUIInputComponent();
-				uIInputComponent.onValidate = new UIInput.OnValidate(LangUtils.OnValidateWNewLines);
+				UIInput arg_108_0 = uIInputComponent;
+				if (SquadTroopRequestScreen.<>f__mg$cache0 == null)
+				{
+					SquadTroopRequestScreen.<>f__mg$cache0 = new UIInput.OnValidate(LangUtils.OnValidateWNewLines);
+				}
+				arg_108_0.onValidate = SquadTroopRequestScreen.<>f__mg$cache0;
 				UXTexture element = base.GetElement<UXTexture>("TextureWarRequest");
 				element.LoadTexture("squadwars_playerdetails_bg");
 				Service.EventManager.RegisterObserver(this, EventId.CurrentPlayerMemberDataUpdated);

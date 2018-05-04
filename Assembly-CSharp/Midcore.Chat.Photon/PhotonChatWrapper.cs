@@ -135,21 +135,25 @@ namespace Midcore.Chat.Photon
 				this.LogError("Trying to subscribe to channels when channelsToJoinOnConnect is null. Chat is disabled");
 				return;
 			}
-			switch (this.SessionState)
+			PhotonChatSessionState sessionState = this.SessionState;
+			if (sessionState != PhotonChatSessionState.Connected)
 			{
-			case PhotonChatSessionState.Connecting:
-				if (!this.channelsToJoinOnConnect.Contains(channelId))
+				if (sessionState != PhotonChatSessionState.Connecting)
+				{
+					if (sessionState == PhotonChatSessionState.Disconnected)
+					{
+						this.LogError("Trying to subscribe to a channel after disconnecting from chat");
+					}
+				}
+				else if (!this.channelsToJoinOnConnect.Contains(channelId))
 				{
 					this.channelsToJoinOnConnect.Add(channelId);
 				}
-				break;
-			case PhotonChatSessionState.Connected:
+			}
+			else
+			{
 				this.channelsToJoinOnConnect.Add(channelId);
 				this.SubscribeToChannelId(channelId);
-				break;
-			case PhotonChatSessionState.Disconnected:
-				this.LogError("Trying to subscribe to a channel after disconnecting from chat");
-				break;
 			}
 		}
 

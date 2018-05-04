@@ -4,6 +4,7 @@ using StaRTS.Main.Controllers.GameStates;
 using StaRTS.Main.Controllers.World;
 using StaRTS.Main.Controllers.World.Transitions;
 using StaRTS.Main.Models;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.Entities.Components;
 using StaRTS.Main.Models.Player;
 using StaRTS.Main.Models.Player.World;
@@ -234,7 +235,7 @@ namespace StaRTS.Main.Views.UX
 			case EventId.BuildingSelectedFromStore:
 			case EventId.BuildingSelectedSound:
 			{
-				IL_3E:
+				IL_3C:
 				if (id != EventId.WarPhaseChanged)
 				{
 					return EatResponse.NotEaten;
@@ -244,7 +245,7 @@ namespace StaRTS.Main.Views.UX
 					Service.Logger.Warn("Not in War Base Editor when responding to Squad War phase change");
 					return EatResponse.NotEaten;
 				}
-				SquadWarStatusType squadWarStatusType = (SquadWarStatusType)((int)cookie);
+				SquadWarStatusType squadWarStatusType = (SquadWarStatusType)cookie;
 				if (squadWarStatusType != SquadWarStatusType.PhasePrep)
 				{
 					this.ShowForceExitAlert();
@@ -268,7 +269,7 @@ namespace StaRTS.Main.Views.UX
 				this.RefreshCurrencyTray(false);
 				return EatResponse.NotEaten;
 			}
-			goto IL_3E;
+			goto IL_3C;
 		}
 
 		private void ShowForceExitAlert()
@@ -576,12 +577,12 @@ namespace StaRTS.Main.Views.UX
 				this.stashedBuildingsGrid.Clear();
 				return;
 			}
-			foreach (KeyValuePair<string, List<Entity>> current in baseLayoutToolController.stashedBuildingMap)
+			foreach (KeyValuePair<string, List<SmartEntity>> current in baseLayoutToolController.stashedBuildingMap)
 			{
-				List<Entity> value = current.Value;
+				List<SmartEntity> value = current.Value;
 				if (value.Count >= 1)
 				{
-					Building buildingTO = value[0].Get<BuildingComponent>().BuildingTO;
+					Building buildingTO = value[0].BuildingComp.BuildingTO;
 					this.RefreshStashedBuildingCount(buildingTO.Uid);
 				}
 			}

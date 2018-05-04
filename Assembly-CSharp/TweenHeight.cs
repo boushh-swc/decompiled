@@ -71,7 +71,7 @@ public class TweenHeight : UITweener
 
 	public static TweenHeight Begin(UIWidget widget, float duration, int height)
 	{
-		TweenHeight tweenHeight = UITweener.Begin<TweenHeight>(widget.gameObject, duration);
+		TweenHeight tweenHeight = UITweener.Begin<TweenHeight>(widget.gameObject, duration, 0f);
 		tweenHeight.from = widget.height;
 		tweenHeight.to = height;
 		if (duration <= 0f)

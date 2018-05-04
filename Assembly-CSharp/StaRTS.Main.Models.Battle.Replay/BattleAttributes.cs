@@ -9,6 +9,10 @@ namespace StaRTS.Main.Models.Battle.Replay
 {
 	public class BattleAttributes : ISerializable
 	{
+		private List<string> deathLogUids;
+
+		private List<uint> deathLogTimes;
+
 		private const string BATTLE_ENDED_AT_KEY = "battleEndedAt";
 
 		private const string DAMAGE_PERCENTAGE_AT_KEY = "damagePercentage";
@@ -20,10 +24,6 @@ namespace StaRTS.Main.Models.Battle.Replay
 		private const string DEATH_LOG_DELIM = "_";
 
 		private const string DEATH_LOG_UNKNOWN = "unknown";
-
-		private List<string> deathLogUids;
-
-		private List<uint> deathLogTimes;
 
 		public uint BattleEndedAt
 		{

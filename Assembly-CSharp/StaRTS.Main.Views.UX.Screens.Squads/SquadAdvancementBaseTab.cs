@@ -387,7 +387,7 @@ namespace StaRTS.Main.Views.UX.Screens.Squads
 
 		public virtual EatResponse OnEvent(EventId id, object cookie)
 		{
-			if (id != EventId.PerkUnlocked && id != EventId.PerkUpgraded)
+			if (id != EventId.PerkUpgraded && id != EventId.PerkUnlocked)
 			{
 				if (id == EventId.SquadScreenOpenedOrClosed)
 				{

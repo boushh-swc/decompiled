@@ -45,14 +45,16 @@ namespace StaRTS.Externals.BI
 			}
 			else if (this.unityLogAppender == null || !this.unityLogAppender.CurrentlyLogging)
 			{
-				switch (type)
+				if (type != LogType.Error)
 				{
-				case LogType.Error:
+					if (type == LogType.Warning)
+					{
+						this.LogBIMessage(LogLevel.Warn, logString);
+					}
+				}
+				else
+				{
 					this.LogBIMessage(LogLevel.Error, logString);
-					break;
-				case LogType.Warning:
-					this.LogBIMessage(LogLevel.Warn, logString);
-					break;
 				}
 			}
 		}

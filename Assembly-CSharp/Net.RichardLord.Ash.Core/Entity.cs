@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Net.RichardLord.Ash.Core
 {
@@ -9,9 +10,57 @@ namespace Net.RichardLord.Ash.Core
 
 		public uint ID;
 
-		internal event Action<Entity, Type> ComponentAdded;
+		internal event Action<Entity, Type> ComponentAdded
+		{
+			add
+			{
+				Action<Entity, Type> action = this.ComponentAdded;
+				Action<Entity, Type> action2;
+				do
+				{
+					action2 = action;
+					action = Interlocked.CompareExchange<Action<Entity, Type>>(ref this.ComponentAdded, (Action<Entity, Type>)Delegate.Combine(action2, value), action);
+				}
+				while (action != action2);
+			}
+			remove
+			{
+				Action<Entity, Type> action = this.ComponentAdded;
+				Action<Entity, Type> action2;
+				do
+				{
+					action2 = action;
+					action = Interlocked.CompareExchange<Action<Entity, Type>>(ref this.ComponentAdded, (Action<Entity, Type>)Delegate.Remove(action2, value), action);
+				}
+				while (action != action2);
+			}
+		}
 
-		internal event Action<Entity, Type> ComponentRemoved;
+		internal event Action<Entity, Type> ComponentRemoved
+		{
+			add
+			{
+				Action<Entity, Type> action = this.ComponentRemoved;
+				Action<Entity, Type> action2;
+				do
+				{
+					action2 = action;
+					action = Interlocked.CompareExchange<Action<Entity, Type>>(ref this.ComponentRemoved, (Action<Entity, Type>)Delegate.Combine(action2, value), action);
+				}
+				while (action != action2);
+			}
+			remove
+			{
+				Action<Entity, Type> action = this.ComponentRemoved;
+				Action<Entity, Type> action2;
+				do
+				{
+					action2 = action;
+					action = Interlocked.CompareExchange<Action<Entity, Type>>(ref this.ComponentRemoved, (Action<Entity, Type>)Delegate.Remove(action2, value), action);
+				}
+				while (action != action2);
+			}
+		}
 
 		internal Entity Previous
 		{

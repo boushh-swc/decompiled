@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 [AddComponentMenu("NGUI/UI/NGUI Label"), ExecuteInEditMode]
@@ -27,6 +28,16 @@ public class UILabel : UIWidget
 		OnDesktop = 1,
 		Always = 2
 	}
+
+	public enum Modifier
+	{
+		None = 0,
+		ToUppercase = 1,
+		ToLowercase = 2,
+		Custom = 255
+	}
+
+	public delegate string ModifierFunc(string s);
 
 	public UILabel.Crispness keepCrispWhenShrunk = UILabel.Crispness.OnDesktop;
 
@@ -70,9 +81,6 @@ public class UILabel : UIWidget
 	private UILabel.Overflow mOverflow;
 
 	[HideInInspector, SerializeField]
-	private Material mMaterial;
-
-	[HideInInspector, SerializeField]
 	private bool mApplyGradient;
 
 	[HideInInspector, SerializeField]
@@ -98,6 +106,15 @@ public class UILabel : UIWidget
 
 	[HideInInspector, SerializeField]
 	private bool mOverflowEllipsis;
+
+	[HideInInspector, SerializeField]
+	private int mOverflowWidth;
+
+	[HideInInspector, SerializeField]
+	private int mOverflowHeight;
+
+	[HideInInspector, SerializeField]
+	private UILabel.Modifier mModifier;
 
 	[HideInInspector, SerializeField]
 	private bool mShrinkToFit;
@@ -147,17 +164,23 @@ public class UILabel : UIWidget
 	[NonSerialized]
 	public bool UseFontSharpening = true;
 
+	public UILabel.ModifierFunc customModifier;
+
 	private static BetterList<UILabel> mList = new BetterList<UILabel>();
 
 	private static Dictionary<Font, int> mFontUsage = new Dictionary<Font, int>();
 
-	private static List<UIPanel> mTempPanelList;
+	[NonSerialized]
+	private static BetterList<UIDrawCall> mTempDrawcalls;
 
 	private static bool mTexRebuildAdded = false;
 
-	private static BetterList<Vector3> mTempVerts = new BetterList<Vector3>();
+	private static List<Vector3> mTempVerts = new List<Vector3>();
 
-	private static BetterList<int> mTempIndices = new BetterList<int>();
+	private static List<int> mTempIndices = new List<int>();
+
+	[CompilerGenerated]
+	private static Action<Font> <>f__mg$cache0;
 
 	public int finalFontSize
 	{
@@ -167,7 +190,7 @@ public class UILabel : UIWidget
 			{
 				return Mathf.RoundToInt(this.mScale * (float)this.mFinalFontSize);
 			}
-			return Mathf.RoundToInt((float)this.mFinalFontSize * this.mScale);
+			return Mathf.RoundToInt((float)this.mFontSize * this.mScale);
 		}
 	}
 
@@ -211,9 +234,9 @@ public class UILabel : UIWidget
 	{
 		get
 		{
-			if (this.mMaterial != null)
+			if (this.mMat != null)
 			{
-				return this.mMaterial;
+				return this.mMat;
 			}
 			if (this.mFont != null)
 			{
@@ -227,12 +250,31 @@ public class UILabel : UIWidget
 		}
 		set
 		{
-			if (this.mMaterial != value)
+			base.material = value;
+		}
+	}
+
+	public override Texture mainTexture
+	{
+		get
+		{
+			if (this.mFont != null)
 			{
-				base.RemoveFromPanel();
-				this.mMaterial = value;
-				this.MarkAsChanged();
+				return this.mFont.texture;
 			}
+			if (this.mTrueTypeFont != null)
+			{
+				Material material = this.mTrueTypeFont.material;
+				if (material != null)
+				{
+					return material.mainTexture;
+				}
+			}
+			return null;
+		}
+		set
+		{
+			base.mainTexture = value;
 		}
 	}
 
@@ -335,6 +377,10 @@ public class UILabel : UIWidget
 					this.mText = string.Empty;
 					this.MarkAsChanged();
 					this.ProcessAndRequest();
+					if (this.autoResizeBoxCollider)
+					{
+						base.ResizeCollider();
+					}
 				}
 			}
 			else if (this.mText != value)
@@ -342,10 +388,10 @@ public class UILabel : UIWidget
 				this.mText = value;
 				this.MarkAsChanged();
 				this.ProcessAndRequest();
-			}
-			if (this.autoResizeBoxCollider)
-			{
-				base.ResizeCollider();
+				if (this.autoResizeBoxCollider)
+				{
+					base.ResizeCollider();
+				}
 			}
 		}
 	}
@@ -576,6 +622,46 @@ public class UILabel : UIWidget
 		}
 	}
 
+	public int overflowWidth
+	{
+		get
+		{
+			return this.mOverflowWidth;
+		}
+		set
+		{
+			if (value < 0)
+			{
+				value = 0;
+			}
+			if (this.mOverflowWidth != value)
+			{
+				this.mOverflowWidth = value;
+				this.MarkAsChanged();
+			}
+		}
+	}
+
+	public int overflowHeight
+	{
+		get
+		{
+			return this.mOverflowHeight;
+		}
+		set
+		{
+			if (value < 0)
+			{
+				value = 0;
+			}
+			if (this.mOverflowHeight != value)
+			{
+				this.mOverflowHeight = value;
+				this.MarkAsChanged();
+			}
+		}
+	}
+
 	private bool keepCrisp
 	{
 		get
@@ -680,7 +766,7 @@ public class UILabel : UIWidget
 		{
 			if (this.shouldBeProcessed)
 			{
-				this.ProcessText();
+				this.ProcessText(false, true);
 			}
 			return base.localCorners;
 		}
@@ -692,7 +778,7 @@ public class UILabel : UIWidget
 		{
 			if (this.shouldBeProcessed)
 			{
-				this.ProcessText();
+				this.ProcessText(false, true);
 			}
 			return base.worldCorners;
 		}
@@ -704,7 +790,7 @@ public class UILabel : UIWidget
 		{
 			if (this.shouldBeProcessed)
 			{
-				this.ProcessText();
+				this.ProcessText(false, true);
 			}
 			return base.drawingDimensions;
 		}
@@ -781,6 +867,26 @@ public class UILabel : UIWidget
 		}
 	}
 
+	public int quadsPerCharacter
+	{
+		get
+		{
+			if (this.mEffectStyle == UILabel.Effect.Shadow)
+			{
+				return 2;
+			}
+			if (this.mEffectStyle == UILabel.Effect.Outline)
+			{
+				return 5;
+			}
+			if (this.mEffectStyle == UILabel.Effect.Outline8)
+			{
+				return 9;
+			}
+			return 1;
+		}
+	}
+
 	[Obsolete("Use 'overflowMethod == UILabel.Overflow.ShrinkContent' instead")]
 	public bool shrinkToFit
 	{
@@ -809,7 +915,7 @@ public class UILabel : UIWidget
 			}
 			if (this.shouldBeProcessed)
 			{
-				this.ProcessText();
+				this.ProcessText(false, true);
 			}
 			return this.mProcessedText;
 		}
@@ -821,7 +927,7 @@ public class UILabel : UIWidget
 		{
 			if (this.shouldBeProcessed)
 			{
-				this.ProcessText();
+				this.ProcessText(false, true);
 			}
 			return this.mCalculatedSize;
 		}
@@ -833,7 +939,7 @@ public class UILabel : UIWidget
 		{
 			if (this.shouldBeProcessed)
 			{
-				this.ProcessText();
+				this.ProcessText(false, true);
 			}
 			return base.localSize;
 		}
@@ -844,6 +950,50 @@ public class UILabel : UIWidget
 		get
 		{
 			return this.mFont != null || this.mTrueTypeFont != null;
+		}
+	}
+
+	public UILabel.Modifier modifier
+	{
+		get
+		{
+			return this.mModifier;
+		}
+		set
+		{
+			if (this.mModifier != value)
+			{
+				this.mModifier = value;
+				this.MarkAsChanged();
+				this.ProcessAndRequest();
+			}
+		}
+	}
+
+	public string printedText
+	{
+		get
+		{
+			if (!string.IsNullOrEmpty(this.mText))
+			{
+				if (this.mModifier == UILabel.Modifier.None)
+				{
+					return this.mText;
+				}
+				if (this.mModifier == UILabel.Modifier.ToLowercase)
+				{
+					return this.mText.ToLower();
+				}
+				if (this.mModifier == UILabel.Modifier.ToUppercase)
+				{
+					return this.mText.ToUpper();
+				}
+				if (this.mModifier == UILabel.Modifier.Custom && this.customModifier != null)
+				{
+					return this.customModifier(this.mText);
+				}
+			}
+			return this.mText;
 		}
 	}
 
@@ -899,27 +1049,33 @@ public class UILabel : UIWidget
 				if (trueTypeFont == font)
 				{
 					trueTypeFont.RequestCharactersInTexture(uILabel.mText, uILabel.mFinalFontSize, uILabel.mFontStyle);
-					uILabel.RemoveFromPanel();
-					uILabel.CreatePanel();
-					if (UILabel.mTempPanelList == null)
+					uILabel.MarkAsChanged();
+					if (uILabel.panel == null)
 					{
-						UILabel.mTempPanelList = new List<UIPanel>();
+						uILabel.CreatePanel();
 					}
-					if (!UILabel.mTempPanelList.Contains(uILabel.panel))
+					if (UILabel.mTempDrawcalls == null)
 					{
-						UILabel.mTempPanelList.Add(uILabel.panel);
+						UILabel.mTempDrawcalls = new BetterList<UIDrawCall>();
+					}
+					if (uILabel.drawCall != null && !UILabel.mTempDrawcalls.Contains(uILabel.drawCall))
+					{
+						UILabel.mTempDrawcalls.Add(uILabel.drawCall);
 					}
 				}
 			}
 		}
-		if (UILabel.mTempPanelList != null)
+		if (UILabel.mTempDrawcalls != null)
 		{
-			for (int j = 0; j < UILabel.mTempPanelList.Count; j++)
+			for (int j = 0; j < UILabel.mTempDrawcalls.size; j++)
 			{
-				UIPanel uIPanel = UILabel.mTempPanelList[j];
-				uIPanel.Refresh();
+				UIDrawCall uIDrawCall = UILabel.mTempDrawcalls[j];
+				if (uIDrawCall.panel != null)
+				{
+					uIDrawCall.panel.FillDrawCall(uIDrawCall);
+				}
 			}
-			UILabel.mTempPanelList.Clear();
+			UILabel.mTempDrawcalls.Clear();
 		}
 	}
 
@@ -927,7 +1083,7 @@ public class UILabel : UIWidget
 	{
 		if (this.shouldBeProcessed)
 		{
-			this.ProcessText();
+			this.ProcessText(false, true);
 		}
 		return base.GetSides(relativeTo);
 	}
@@ -988,7 +1144,7 @@ public class UILabel : UIWidget
 	{
 		if (this.ambigiousFont != null)
 		{
-			this.ProcessText();
+			this.ProcessText(false, true);
 		}
 	}
 
@@ -998,7 +1154,11 @@ public class UILabel : UIWidget
 		if (!UILabel.mTexRebuildAdded)
 		{
 			UILabel.mTexRebuildAdded = true;
-			Font.textureRebuilt += new Action<Font>(UILabel.OnFontChanged);
+			if (UILabel.<>f__mg$cache0 == null)
+			{
+				UILabel.<>f__mg$cache0 = new Action<Font>(UILabel.OnFontChanged);
+			}
+			Font.textureRebuilt += UILabel.<>f__mg$cache0;
 		}
 	}
 
@@ -1025,12 +1185,7 @@ public class UILabel : UIWidget
 		base.MarkAsChanged();
 	}
 
-	public void ProcessText()
-	{
-		this.ProcessText(false, true);
-	}
-
-	private void ProcessText(bool legacyMode, bool full)
+	public void ProcessText(bool legacyMode = false, bool full = true)
 	{
 		if (!this.isValid)
 		{
@@ -1070,10 +1225,28 @@ public class UILabel : UIWidget
 		}
 		if (this.mOverflow == UILabel.Overflow.ResizeFreely)
 		{
-			NGUIText.rectWidth = 1000000;
-			NGUIText.regionWidth = 1000000;
+			if (this.mOverflowWidth > 0)
+			{
+				NGUIText.rectWidth = this.mOverflowWidth;
+				NGUIText.regionWidth = this.mOverflowWidth;
+			}
+			else
+			{
+				NGUIText.rectWidth = 1000000;
+				NGUIText.regionWidth = 1000000;
+			}
+			if (this.mOverflowHeight > 0)
+			{
+				NGUIText.rectHeight = this.mOverflowHeight;
+				NGUIText.regionHeight = this.mOverflowHeight;
+			}
+			else
+			{
+				NGUIText.rectHeight = 1000000;
+				NGUIText.regionHeight = 1000000;
+			}
 		}
-		if (this.mOverflow == UILabel.Overflow.ResizeFreely || this.mOverflow == UILabel.Overflow.ResizeHeight)
+		else if (this.mOverflow == UILabel.Overflow.ResizeFreely || this.mOverflow == UILabel.Overflow.ResizeHeight)
 		{
 			NGUIText.rectHeight = 1000000;
 			NGUIText.regionHeight = 1000000;
@@ -1094,7 +1267,7 @@ public class UILabel : UIWidget
 					NGUIText.fontScale = ((!flag) ? ((float)this.mFontSize / (float)this.mFont.defaultSize * this.mScale) : this.mScale);
 				}
 				NGUIText.Update(false, this.UseFontSharpening);
-				bool flag2 = NGUIText.WrapText(this.mText, out this.mProcessedText, true, false, this.mOverflowEllipsis && this.mOverflow == UILabel.Overflow.ClampContent);
+				bool flag2 = NGUIText.WrapText(this.printedText, out this.mProcessedText, false, false, this.mOverflow == UILabel.Overflow.ClampContent && this.mOverflowEllipsis);
 				if (NGUIText.dynamicFont == null)
 				{
 					this.ProcessText(legacyMode, full);
@@ -1105,36 +1278,64 @@ public class UILabel : UIWidget
 					if (this.mOverflow == UILabel.Overflow.ResizeFreely)
 					{
 						this.mCalculatedSize = NGUIText.CalculatePrintedSize(this.mProcessedText);
-						this.mWidth = Mathf.Max(this.minWidth, Mathf.RoundToInt(this.mCalculatedSize.x));
-						if (num != 1f)
+						if (!flag2 && this.mOverflowWidth > 0)
 						{
-							this.mWidth = Mathf.RoundToInt((float)this.mWidth / num);
+							if (--i > 1)
+							{
+								goto IL_578;
+							}
+							break;
 						}
-						this.mHeight = Mathf.Max(this.minHeight, Mathf.RoundToInt(this.mCalculatedSize.y));
-						if (num2 != 1f)
+						else
 						{
-							this.mHeight = Mathf.RoundToInt((float)this.mHeight / num2);
-						}
-						if ((this.mWidth & 1) == 1)
-						{
-							this.mWidth++;
-						}
-						if ((this.mHeight & 1) == 1)
-						{
-							this.mHeight++;
+							int num3 = Mathf.Max(this.minWidth, Mathf.RoundToInt(this.mCalculatedSize.x));
+							if (num != 1f)
+							{
+								num3 = Mathf.RoundToInt((float)num3 / num);
+							}
+							int num4 = Mathf.Max(this.minHeight, Mathf.RoundToInt(this.mCalculatedSize.y));
+							if (num2 != 1f)
+							{
+								num4 = Mathf.RoundToInt((float)num4 / num2);
+							}
+							if ((num3 & 1) == 1)
+							{
+								num3++;
+							}
+							if ((num4 & 1) == 1)
+							{
+								num4++;
+							}
+							if (this.mWidth != num3 || this.mHeight != num4)
+							{
+								this.mWidth = num3;
+								this.mHeight = num4;
+								if (this.onChange != null)
+								{
+									this.onChange();
+								}
+							}
 						}
 					}
 					else if (this.mOverflow == UILabel.Overflow.ResizeHeight)
 					{
 						this.mCalculatedSize = NGUIText.CalculatePrintedSize(this.mProcessedText);
-						this.mHeight = Mathf.Max(this.minHeight, Mathf.RoundToInt(this.mCalculatedSize.y));
+						int num5 = Mathf.Max(this.minHeight, Mathf.RoundToInt(this.mCalculatedSize.y));
 						if (num2 != 1f)
 						{
-							this.mHeight = Mathf.RoundToInt((float)this.mHeight / num2);
+							num5 = Mathf.RoundToInt((float)num5 / num2);
 						}
-						if ((this.mHeight & 1) == 1)
+						if ((num5 & 1) == 1)
 						{
-							this.mHeight++;
+							num5++;
+						}
+						if (this.mHeight != num5)
+						{
+							this.mHeight = num5;
+							if (this.onChange != null)
+							{
+								this.onChange();
+							}
 						}
 					}
 					else
@@ -1153,6 +1354,7 @@ public class UILabel : UIWidget
 				{
 					break;
 				}
+				IL_578:;
 			}
 		}
 		else
@@ -1275,7 +1477,7 @@ public class UILabel : UIWidget
 			{
 				NGUIText.PrintApproximateCharacterPositions(processedText, UILabel.mTempVerts, UILabel.mTempIndices);
 			}
-			if (UILabel.mTempVerts.size > 0)
+			if (UILabel.mTempVerts.Count > 0)
 			{
 				this.ApplyOffset(UILabel.mTempVerts, 0);
 				int result = (!precise) ? NGUIText.GetApproximateCharacterIndex(UILabel.mTempVerts, UILabel.mTempIndices, localPos) : NGUIText.GetExactCharacterIndex(UILabel.mTempVerts, UILabel.mTempIndices, localPos);
@@ -1305,14 +1507,15 @@ public class UILabel : UIWidget
 
 	public string GetWordAtCharacterIndex(int characterIndex)
 	{
-		if (characterIndex != -1 && characterIndex < this.mText.Length)
+		string printedText = this.printedText;
+		if (characterIndex != -1 && characterIndex < printedText.Length)
 		{
-			int num = this.mText.LastIndexOfAny(new char[]
+			int num = printedText.LastIndexOfAny(new char[]
 			{
 				' ',
 				'\n'
 			}, characterIndex) + 1;
-			int num2 = this.mText.IndexOfAny(new char[]
+			int num2 = printedText.IndexOfAny(new char[]
 			{
 				' ',
 				'\n',
@@ -1321,14 +1524,14 @@ public class UILabel : UIWidget
 			}, characterIndex);
 			if (num2 == -1)
 			{
-				num2 = this.mText.Length;
+				num2 = printedText.Length;
 			}
 			if (num != num2)
 			{
 				int num3 = num2 - num;
 				if (num3 > 0)
 				{
-					string text = this.mText.Substring(num, num3);
+					string text = printedText.Substring(num, num3);
 					return NGUIText.StripSymbols(text);
 				}
 			}
@@ -1348,31 +1551,32 @@ public class UILabel : UIWidget
 
 	public string GetUrlAtCharacterIndex(int characterIndex)
 	{
-		if (characterIndex != -1 && characterIndex < this.mText.Length - 6)
+		string printedText = this.printedText;
+		if (characterIndex != -1 && characterIndex < printedText.Length - 6)
 		{
 			int num;
-			if (this.mText[characterIndex] == '[' && this.mText[characterIndex + 1] == 'u' && this.mText[characterIndex + 2] == 'r' && this.mText[characterIndex + 3] == 'l' && this.mText[characterIndex + 4] == '=')
+			if (printedText[characterIndex] == '[' && printedText[characterIndex + 1] == 'u' && printedText[characterIndex + 2] == 'r' && printedText[characterIndex + 3] == 'l' && printedText[characterIndex + 4] == '=')
 			{
 				num = characterIndex;
 			}
 			else
 			{
-				num = this.mText.LastIndexOf("[url=", characterIndex);
+				num = printedText.LastIndexOf("[url=", characterIndex);
 			}
 			if (num == -1)
 			{
 				return null;
 			}
 			num += 5;
-			int num2 = this.mText.IndexOf("]", num);
+			int num2 = printedText.IndexOf("]", num);
 			if (num2 == -1)
 			{
 				return null;
 			}
-			int num3 = this.mText.IndexOf("[/url]", num2);
+			int num3 = printedText.IndexOf("[/url]", num2);
 			if (num3 == -1 || characterIndex <= num3)
 			{
-				return this.mText.Substring(num, num2 - num);
+				return printedText.Substring(num, num2 - num);
 			}
 		}
 		return null;
@@ -1390,11 +1594,12 @@ public class UILabel : UIWidget
 			int defaultFontSize = this.defaultFontSize;
 			this.UpdateNGUIText();
 			NGUIText.PrintApproximateCharacterPositions(processedText, UILabel.mTempVerts, UILabel.mTempIndices);
-			if (UILabel.mTempVerts.size > 0)
+			if (UILabel.mTempVerts.Count > 0)
 			{
 				this.ApplyOffset(UILabel.mTempVerts, 0);
 				int i = 0;
-				while (i < UILabel.mTempIndices.size)
+				int count = UILabel.mTempIndices.Count;
+				while (i < count)
 				{
 					if (UILabel.mTempIndices[i] == currentIndex)
 					{
@@ -1462,21 +1667,24 @@ public class UILabel : UIWidget
 		}
 		string processedText = this.processedText;
 		this.UpdateNGUIText();
-		int size = caret.verts.size;
+		int count = caret.verts.Count;
 		Vector2 item = new Vector2(0.5f, 0.5f);
 		float finalAlpha = this.finalAlpha;
 		if (highlight != null && start != end)
 		{
-			int size2 = highlight.verts.size;
+			int count2 = highlight.verts.Count;
 			NGUIText.PrintCaretAndSelection(processedText, start, end, caret.verts, highlight.verts);
-			if (highlight.verts.size > size2)
+			if (highlight.verts.Count > count2)
 			{
-				this.ApplyOffset(highlight.verts, size2);
-				Color32 item2 = new Color(highlightColor.r, highlightColor.g, highlightColor.b, highlightColor.a * finalAlpha);
-				for (int i = size2; i < highlight.verts.size; i++)
+				this.ApplyOffset(highlight.verts, count2);
+				Color item2 = new Color(highlightColor.r, highlightColor.g, highlightColor.b, highlightColor.a * finalAlpha);
+				int i = count2;
+				int count3 = highlight.verts.Count;
+				while (i < count3)
 				{
 					highlight.uvs.Add(item);
 					highlight.cols.Add(item2);
+					i++;
 				}
 			}
 		}
@@ -1484,81 +1692,90 @@ public class UILabel : UIWidget
 		{
 			NGUIText.PrintCaretAndSelection(processedText, start, end, caret.verts, null);
 		}
-		this.ApplyOffset(caret.verts, size);
-		Color32 item3 = new Color(caretColor.r, caretColor.g, caretColor.b, caretColor.a * finalAlpha);
-		for (int j = size; j < caret.verts.size; j++)
+		this.ApplyOffset(caret.verts, count);
+		Color item3 = new Color(caretColor.r, caretColor.g, caretColor.b, caretColor.a * finalAlpha);
+		int j = count;
+		int count4 = caret.verts.Count;
+		while (j < count4)
 		{
 			caret.uvs.Add(item);
 			caret.cols.Add(item3);
+			j++;
 		}
 		NGUIText.bitmapFont = null;
 		NGUIText.dynamicFont = null;
 	}
 
-	public override void OnFill(BetterList<Vector3> verts, BetterList<Vector2> uvs, BetterList<Color32> cols)
+	public override void OnFill(List<Vector3> verts, List<Vector2> uvs, List<Color> cols)
 	{
 		if (!this.isValid)
 		{
 			return;
 		}
-		int num = verts.size;
+		int num = verts.Count;
 		Color color = base.color;
 		color.a = this.finalAlpha;
 		if (this.mFont != null && this.mFont.premultipliedAlphaShader)
 		{
 			color = NGUITools.ApplyPMA(color);
 		}
-		if (QualitySettings.activeColorSpace == ColorSpace.Linear)
-		{
-			color.r = Mathf.GammaToLinearSpace(color.r);
-			color.g = Mathf.GammaToLinearSpace(color.g);
-			color.b = Mathf.GammaToLinearSpace(color.b);
-			color.a = Mathf.GammaToLinearSpace(color.a);
-		}
 		string processedText = this.processedText;
-		int size = verts.size;
+		int count = verts.Count;
 		this.UpdateNGUIText();
 		NGUIText.tint = color;
 		NGUIText.Print(processedText, verts, uvs, cols);
 		NGUIText.bitmapFont = null;
 		NGUIText.dynamicFont = null;
-		Vector2 vector = this.ApplyOffset(verts, size);
+		Vector2 vector = this.ApplyOffset(verts, count);
 		if (this.mFont != null && this.mFont.packedFontShader)
 		{
 			return;
 		}
 		if (this.effectStyle != UILabel.Effect.None)
 		{
-			int size2 = verts.size;
+			int count2 = verts.Count;
 			vector.x = this.mEffectDistance.x;
 			vector.y = this.mEffectDistance.y;
-			this.ApplyShadow(verts, uvs, cols, num, size2, vector.x, -vector.y);
+			this.ApplyShadow(verts, uvs, cols, num, count2, vector.x, -vector.y);
 			if (this.effectStyle == UILabel.Effect.Outline || this.effectStyle == UILabel.Effect.Outline8)
 			{
-				num = size2;
-				size2 = verts.size;
-				this.ApplyShadow(verts, uvs, cols, num, size2, -vector.x, vector.y);
-				num = size2;
-				size2 = verts.size;
-				this.ApplyShadow(verts, uvs, cols, num, size2, vector.x, vector.y);
-				num = size2;
-				size2 = verts.size;
-				this.ApplyShadow(verts, uvs, cols, num, size2, -vector.x, -vector.y);
+				num = count2;
+				count2 = verts.Count;
+				this.ApplyShadow(verts, uvs, cols, num, count2, -vector.x, vector.y);
+				num = count2;
+				count2 = verts.Count;
+				this.ApplyShadow(verts, uvs, cols, num, count2, vector.x, vector.y);
+				num = count2;
+				count2 = verts.Count;
+				this.ApplyShadow(verts, uvs, cols, num, count2, -vector.x, -vector.y);
 				if (this.effectStyle == UILabel.Effect.Outline8)
 				{
-					num = size2;
-					size2 = verts.size;
-					this.ApplyShadow(verts, uvs, cols, num, size2, -vector.x, 0f);
-					num = size2;
-					size2 = verts.size;
-					this.ApplyShadow(verts, uvs, cols, num, size2, vector.x, 0f);
-					num = size2;
-					size2 = verts.size;
-					this.ApplyShadow(verts, uvs, cols, num, size2, 0f, vector.y);
-					num = size2;
-					size2 = verts.size;
-					this.ApplyShadow(verts, uvs, cols, num, size2, 0f, -vector.y);
+					num = count2;
+					count2 = verts.Count;
+					this.ApplyShadow(verts, uvs, cols, num, count2, -vector.x, 0f);
+					num = count2;
+					count2 = verts.Count;
+					this.ApplyShadow(verts, uvs, cols, num, count2, vector.x, 0f);
+					num = count2;
+					count2 = verts.Count;
+					this.ApplyShadow(verts, uvs, cols, num, count2, 0f, vector.y);
+					num = count2;
+					count2 = verts.Count;
+					this.ApplyShadow(verts, uvs, cols, num, count2, 0f, -vector.y);
 				}
+			}
+		}
+		if (NGUIText.symbolStyle == NGUIText.SymbolStyle.NoOutline)
+		{
+			int i = 0;
+			int count3 = cols.Count;
+			while (i < count3)
+			{
+				if (cols[i].r == -1f)
+				{
+					cols[i] = Color.white;
+				}
+				i++;
 			}
 		}
 		if (this.onPostFill != null)
@@ -1567,49 +1784,54 @@ public class UILabel : UIWidget
 		}
 	}
 
-	public Vector2 ApplyOffset(BetterList<Vector3> verts, int start)
+	public Vector2 ApplyOffset(List<Vector3> verts, int start)
 	{
 		Vector2 pivotOffset = base.pivotOffset;
 		float num = Mathf.Lerp(0f, (float)(-(float)this.mWidth), pivotOffset.x);
 		float num2 = Mathf.Lerp((float)this.mHeight, 0f, pivotOffset.y) + Mathf.Lerp(this.mCalculatedSize.y - (float)this.mHeight, 0f, pivotOffset.y);
 		num = Mathf.Round(num);
 		num2 = Mathf.Round(num2);
-		for (int i = start; i < verts.size; i++)
+		int i = start;
+		int count = verts.Count;
+		while (i < count)
 		{
-			Vector3[] expr_80_cp_0 = verts.buffer;
-			int expr_80_cp_1 = i;
-			expr_80_cp_0[expr_80_cp_1].x = expr_80_cp_0[expr_80_cp_1].x + num;
-			Vector3[] expr_99_cp_0 = verts.buffer;
-			int expr_99_cp_1 = i;
-			expr_99_cp_0[expr_99_cp_1].y = expr_99_cp_0[expr_99_cp_1].y + num2;
+			Vector3 value = verts[i];
+			value.x += num;
+			value.y += num2;
+			verts[i] = value;
+			i++;
 		}
 		return new Vector2(num, num2);
 	}
 
-	public void ApplyShadow(BetterList<Vector3> verts, BetterList<Vector2> uvs, BetterList<Color32> cols, int start, int end, float x, float y)
+	public void ApplyShadow(List<Vector3> verts, List<Vector2> uvs, List<Color> cols, int start, int end, float x, float y)
 	{
 		Color color = this.mEffectColor;
 		color.a *= this.finalAlpha;
-		Color32 color2 = (!(this.bitmapFont != null) || !this.bitmapFont.premultipliedAlphaShader) ? color : NGUITools.ApplyPMA(color);
+		if (this.bitmapFont != null && this.bitmapFont.premultipliedAlphaShader)
+		{
+			color = NGUITools.ApplyPMA(color);
+		}
+		Color value = color;
 		for (int i = start; i < end; i++)
 		{
-			verts.Add(verts.buffer[i]);
-			uvs.Add(uvs.buffer[i]);
-			cols.Add(cols.buffer[i]);
-			Vector3 vector = verts.buffer[i];
-			vector.x += x;
-			vector.y += y;
-			verts.buffer[i] = vector;
-			Color32 color3 = cols.buffer[i];
-			if (color3.a == 255)
+			verts.Add(verts[i]);
+			uvs.Add(uvs[i]);
+			cols.Add(cols[i]);
+			Vector3 value2 = verts[i];
+			value2.x += x;
+			value2.y += y;
+			verts[i] = value2;
+			Color color2 = cols[i];
+			if (color2.a == 1f)
 			{
-				cols.buffer[i] = color2;
+				cols[i] = value;
 			}
 			else
 			{
-				Color color4 = color;
-				color4.a = (float)color3.a / 255f * color.a;
-				cols.buffer[i] = ((!(this.bitmapFont != null) || !this.bitmapFont.premultipliedAlphaShader) ? color4 : NGUITools.ApplyPMA(color4));
+				Color value3 = color;
+				value3.a = color2.a * color.a;
+				cols[i] = value3;
 			}
 		}
 	}
@@ -1645,7 +1867,7 @@ public class UILabel : UIWidget
 	{
 		if (UIPopupList.current != null)
 		{
-			this.text = ((!UIPopupList.current.isLocalized) ? UIPopupList.current.value : Localization.Get(UIPopupList.current.value));
+			this.text = ((!UIPopupList.current.isLocalized) ? UIPopupList.current.value : Localization.Get(UIPopupList.current.value, true));
 		}
 	}
 

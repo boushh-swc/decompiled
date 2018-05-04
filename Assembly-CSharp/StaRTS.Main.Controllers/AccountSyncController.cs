@@ -15,7 +15,7 @@ using UnityEngine;
 
 namespace StaRTS.Main.Controllers
 {
-	public class AccountSyncController : IAccountSyncController, IEventObserver
+	public class AccountSyncController : IEventObserver, IAccountSyncController
 	{
 		private GetExternalAccountsResponse externalAccountInfo;
 
@@ -408,18 +408,18 @@ namespace StaRTS.Main.Controllers
 
 		private void OnAccountUnregisterSuccess(DefaultResponse response, object cookie)
 		{
-			switch ((int)cookie)
+			switch ((AccountProvider)cookie)
 			{
-			case 0:
+			case AccountProvider.FACEBOOK:
 				this.externalAccountInfo.DerivedFacebookAccountId = null;
 				break;
-			case 1:
+			case AccountProvider.GAMECENTER:
 				this.externalAccountInfo.DerivedGameCenterAccountId = null;
 				break;
-			case 2:
+			case AccountProvider.GOOGLEPLAY:
 				this.externalAccountInfo.DerivedGooglePlayAccountId = null;
 				break;
-			case 3:
+			case AccountProvider.RECOVERY:
 				this.externalAccountInfo.DerivedRecoveryId = null;
 				break;
 			}
@@ -427,16 +427,16 @@ namespace StaRTS.Main.Controllers
 
 		public EatResponse OnEvent(EventId id, object cookie)
 		{
-			if (id != EventId.StartupTasksCompleted)
+			if (id != EventId.GameServicesSignedIn)
 			{
-				if (id == EventId.GameServicesSignedIn)
+				if (id == EventId.StartupTasksCompleted)
 				{
-					this.RegisterGameServicesAccount();
+					this.RegisterRecoveryAccount();
 				}
 			}
 			else
 			{
-				this.RegisterRecoveryAccount();
+				this.RegisterGameServicesAccount();
 			}
 			return EatResponse.NotEaten;
 		}

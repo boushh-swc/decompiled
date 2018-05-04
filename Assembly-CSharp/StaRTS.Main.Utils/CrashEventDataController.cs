@@ -116,27 +116,27 @@ namespace StaRTS.Main.Utils
 		{
 			switch (id)
 			{
-			case EventId.PlayerFactionChanged:
-			case EventId.PlayerIdSet:
-			case EventId.PlayerLoginSuccess:
-				goto IL_6C;
-			case EventId.PvpRatingChanged:
-			case EventId.PvpNewBattleOccured:
-				IL_22:
+			case EventId.ScreenClosing:
+				if (cookie != null && cookie is ScreenBase)
+				{
+					string str = (cookie as ScreenBase).GetType().Name;
+					Crittercism.LeaveBreadcrumb("Screen closed: " + str);
+				}
+				return EatResponse.NotEaten;
+			case EventId.ScreenClosed:
+				IL_1C:
 				switch (id)
 				{
-				case EventId.ScreenClosing:
-					if (cookie != null && cookie is ScreenBase)
-					{
-						string str = (cookie as ScreenBase).GetType().Name;
-						Crittercism.LeaveBreadcrumb("Screen closed: " + str);
-					}
-					return EatResponse.NotEaten;
-				case EventId.ScreenClosed:
-					IL_3E:
+				case EventId.PlayerFactionChanged:
+				case EventId.PlayerIdSet:
+				case EventId.PlayerLoginSuccess:
+					goto IL_6D;
+				case EventId.PvpRatingChanged:
+				case EventId.PvpNewBattleOccured:
+					IL_3C:
 					if (id == EventId.MetaDataLoadEnd)
 					{
-						goto IL_6C;
+						goto IL_6D;
 					}
 					if (id == EventId.GameStateChanged)
 					{
@@ -148,28 +148,28 @@ namespace StaRTS.Main.Utils
 					{
 						return EatResponse.NotEaten;
 					}
-					goto IL_6C;
-				case EventId.ScreenOverlayClosing:
-					if (cookie != null)
-					{
-						string str = (string)cookie;
-						Crittercism.LeaveBreadcrumb("Screen overlay closed: " + str);
-					}
-					return EatResponse.NotEaten;
-				case EventId.ScreenLoaded:
-					if (cookie != null && cookie is ScreenBase)
-					{
-						string str = (cookie as ScreenBase).GetType().Name;
-						Crittercism.LeaveBreadcrumb("Screen opened: " + str);
-					}
-					return EatResponse.NotEaten;
+					goto IL_6D;
 				}
-				goto IL_3E;
+				goto IL_3C;
+				IL_6D:
+				this.RefreshData(Service.CurrentPlayer);
+				return EatResponse.NotEaten;
+			case EventId.ScreenOverlayClosing:
+				if (cookie != null)
+				{
+					string str = (string)cookie;
+					Crittercism.LeaveBreadcrumb("Screen overlay closed: " + str);
+				}
+				return EatResponse.NotEaten;
+			case EventId.ScreenLoaded:
+				if (cookie != null && cookie is ScreenBase)
+				{
+					string str = (cookie as ScreenBase).GetType().Name;
+					Crittercism.LeaveBreadcrumb("Screen opened: " + str);
+				}
+				return EatResponse.NotEaten;
 			}
-			goto IL_22;
-			IL_6C:
-			this.RefreshData(Service.CurrentPlayer);
-			return EatResponse.NotEaten;
+			goto IL_1C;
 		}
 	}
 }

@@ -18,8 +18,12 @@ using UnityEngine;
 
 namespace StaRTS.Main.Views.UX.Screens
 {
-	public class EpisodeInfoScreen : ClosableScreen, IEventObserver, IViewClockTimeObserver, IViewFrameTimeObserver
+	public class EpisodeInfoScreen : ClosableScreen, IViewFrameTimeObserver, IEventObserver, IViewClockTimeObserver
 	{
+		private float DEFAULT_DELAY_EPISODES_PLAY_TASK_STORY_ACTION = 3f;
+
+		private float DELAY_INITIAL_BOTTOM = 0.3f;
+
 		private const float MINIMUM_RESEARCH_PIE_SLICE = 0.02f;
 
 		private const int SLIDER_GRANULARITY = 1000;
@@ -142,6 +146,10 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		private const int MAX_TASK_REWARDS_SHOWN = 7;
 
+		private UXLabel taskTimeRemainingLabel;
+
+		private UXSlider taskTimeGateSlider;
+
 		private const string LABEL_EPISODE_PROGRESS = "LabelEpisodeProgress";
 
 		private const string CRATE_OPEN = "CRATE_FLYOUT_OPEN_CTA";
@@ -247,14 +255,6 @@ namespace StaRTS.Main.Views.UX.Screens
 		private const string ANIM_PARAM_TASKS = "Tasks";
 
 		private const string ANIM_PARAM_TIME_GATE = "TimeGate";
-
-		private float DEFAULT_DELAY_EPISODES_PLAY_TASK_STORY_ACTION = 3f;
-
-		private float DELAY_INITIAL_BOTTOM = 0.3f;
-
-		private UXLabel taskTimeRemainingLabel;
-
-		private UXSlider taskTimeGateSlider;
 
 		private EpisodeProgressInfo progressInfo;
 
@@ -380,7 +380,7 @@ namespace StaRTS.Main.Views.UX.Screens
 				return EatResponse.NotEaten;
 			case EventId.EpisodeProgressInfoRefreshed:
 			case EventId.EpisodeProgressMade:
-				IL_3C:
+				IL_3A:
 				if (id != EventId.NewTopScreen)
 				{
 					return EatResponse.NotEaten;
@@ -397,7 +397,7 @@ namespace StaRTS.Main.Views.UX.Screens
 				eventManager.UnregisterObserver(this, id);
 				return EatResponse.NotEaten;
 			}
-			goto IL_3C;
+			goto IL_3A;
 		}
 
 		private void DelayedPlayTaskStoryAction(uint id, object cookie)
@@ -968,17 +968,23 @@ namespace StaRTS.Main.Views.UX.Screens
 			{
 				num13 = 3;
 			}
-			switch (num13)
+			if (num13 != 1)
 			{
-			case 1:
+				if (num13 != 2)
+				{
+					if (num13 == 3)
+					{
+						this.Animate("RewardActive", this.widgetProgress);
+					}
+				}
+				else
+				{
+					this.Animate("ResearchActive", this.widgetProgress);
+				}
+			}
+			else
+			{
 				this.Animate("TaskActive", this.widgetProgress);
-				break;
-			case 2:
-				this.Animate("ResearchActive", this.widgetProgress);
-				break;
-			case 3:
-				this.Animate("RewardActive", this.widgetProgress);
-				break;
 			}
 			if (this.currentViewState.ShowTop)
 			{

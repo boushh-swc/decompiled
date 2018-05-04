@@ -33,12 +33,19 @@ public class UIProgressBar : UIWidgetContainer
 	[HideInInspector, SerializeField]
 	protected UIProgressBar.FillDirection mFill;
 
+	[NonSerialized]
+	protected bool mStarted;
+
+	[NonSerialized]
 	protected Transform mTrans;
 
+	[NonSerialized]
 	protected bool mIsDirty;
 
+	[NonSerialized]
 	protected Camera mCam;
 
+	[NonSerialized]
 	protected float mOffset;
 
 	public int numberOfSteps;
@@ -112,7 +119,10 @@ public class UIProgressBar : UIWidgetContainer
 			if (this.mFill != value)
 			{
 				this.mFill = value;
-				this.ForceUpdate();
+				if (this.mStarted)
+				{
+					this.ForceUpdate();
+				}
 			}
 		}
 	}
@@ -129,22 +139,7 @@ public class UIProgressBar : UIWidgetContainer
 		}
 		set
 		{
-			float num = Mathf.Clamp01(value);
-			if (this.mValue != num)
-			{
-				float value2 = this.value;
-				this.mValue = num;
-				if (value2 != this.value)
-				{
-					this.ForceUpdate();
-					if (NGUITools.GetActive(this) && EventDelegate.IsValid(this.onChange))
-					{
-						UIProgressBar.current = this;
-						EventDelegate.Execute(this.onChange);
-						UIProgressBar.current = null;
-					}
-				}
-			}
+			this.Set(value, true);
 		}
 	}
 
@@ -223,8 +218,33 @@ public class UIProgressBar : UIWidgetContainer
 		}
 	}
 
-	protected void Start()
+	public void Set(float val, bool notify = true)
 	{
+		val = Mathf.Clamp01(val);
+		if (this.mValue != val)
+		{
+			float value = this.value;
+			this.mValue = val;
+			if (this.mStarted && value != this.value)
+			{
+				if (notify && NGUITools.GetActive(this) && EventDelegate.IsValid(this.onChange))
+				{
+					UIProgressBar.current = this;
+					EventDelegate.Execute(this.onChange);
+					UIProgressBar.current = null;
+				}
+				this.ForceUpdate();
+			}
+		}
+	}
+
+	public void Start()
+	{
+		if (this.mStarted)
+		{
+			return;
+		}
+		this.mStarted = true;
 		this.Upgrade();
 		if (Application.isPlaying)
 		{
@@ -274,9 +294,9 @@ public class UIProgressBar : UIWidgetContainer
 			{
 				this.numberOfSteps = 0;
 			}
-			else if (this.numberOfSteps > 20)
+			else if (this.numberOfSteps > 21)
 			{
-				this.numberOfSteps = 20;
+				this.numberOfSteps = 21;
 			}
 			this.ForceUpdate();
 		}
@@ -291,9 +311,9 @@ public class UIProgressBar : UIWidgetContainer
 			{
 				this.numberOfSteps = 0;
 			}
-			else if (this.numberOfSteps > 20)
+			else if (this.numberOfSteps > 21)
 			{
-				this.numberOfSteps = 20;
+				this.numberOfSteps = 21;
 			}
 		}
 	}
@@ -404,15 +424,15 @@ public class UIProgressBar : UIWidgetContainer
 			}
 			if (this.isHorizontal)
 			{
-				Vector3 from = Vector3.Lerp(array[0], array[1], 0.5f);
-				Vector3 to = Vector3.Lerp(array[2], array[3], 0.5f);
-				this.SetThumbPosition(Vector3.Lerp(from, to, (!this.isInverted) ? this.value : (1f - this.value)));
+				Vector3 a = Vector3.Lerp(array[0], array[1], 0.5f);
+				Vector3 b = Vector3.Lerp(array[2], array[3], 0.5f);
+				this.SetThumbPosition(Vector3.Lerp(a, b, (!this.isInverted) ? this.value : (1f - this.value)));
 			}
 			else
 			{
-				Vector3 from2 = Vector3.Lerp(array[0], array[3], 0.5f);
-				Vector3 to2 = Vector3.Lerp(array[1], array[2], 0.5f);
-				this.SetThumbPosition(Vector3.Lerp(from2, to2, (!this.isInverted) ? this.value : (1f - this.value)));
+				Vector3 a2 = Vector3.Lerp(array[0], array[3], 0.5f);
+				Vector3 b2 = Vector3.Lerp(array[1], array[2], 0.5f);
+				this.SetThumbPosition(Vector3.Lerp(a2, b2, (!this.isInverted) ? this.value : (1f - this.value)));
 			}
 		}
 		if (flag)

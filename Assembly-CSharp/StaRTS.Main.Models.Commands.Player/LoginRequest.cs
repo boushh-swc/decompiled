@@ -41,7 +41,7 @@ namespace StaRTS.Main.Models.Commands.Player
 			serializer.AddString("deviceType", "a");
 			serializer.Add<double>("timeZoneOffset", this.TimeZoneOffset);
 			EnvironmentController environmentController = Service.EnvironmentController;
-			serializer.AddString("clientVersion", "5.2.0.10309");
+			serializer.AddString("clientVersion", "6.0.0.10394");
 			serializer.AddString("model", environmentController.GetModel());
 			serializer.AddString("os", environmentController.GetOS());
 			serializer.AddString("osVersion", environmentController.GetOSVersion());

@@ -13,7 +13,7 @@ using UnityEngine;
 
 namespace StaRTS.Main.Controllers
 {
-	public class ScreenController : IEventObserver, IViewFrameTimeObserver
+	public class ScreenController : IViewFrameTimeObserver, IEventObserver
 	{
 		private List<ScreenInfo> screens;
 

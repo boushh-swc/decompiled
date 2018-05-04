@@ -44,21 +44,18 @@ namespace StaRTS.Main.Story.Actions
 
 		public EatResponse OnEvent(EventId id, object cookie)
 		{
-			if (id != EventId.StoreScreenReady)
+			if (id != EventId.ScreenLoaded)
 			{
-				if (id == EventId.ScreenLoaded)
+				if (id == EventId.StoreScreenReady)
 				{
-					if (cookie is StoreScreen)
-					{
-						Service.EventManager.RegisterObserver(this, EventId.StoreScreenReady, EventPriority.Default);
-						this.PerformStoreLookup(cookie as StoreScreen);
-					}
+					this.RemoveListeners();
+					this.parent.ChildComplete(this);
 				}
 			}
-			else
+			else if (cookie is StoreScreen)
 			{
-				this.RemoveListeners();
-				this.parent.ChildComplete(this);
+				Service.EventManager.RegisterObserver(this, EventId.StoreScreenReady, EventPriority.Default);
+				this.PerformStoreLookup(cookie as StoreScreen);
 			}
 			return EatResponse.NotEaten;
 		}

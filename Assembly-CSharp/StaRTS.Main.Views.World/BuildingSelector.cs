@@ -2,7 +2,6 @@ using Net.RichardLord.Ash.Core;
 using StaRTS.Main.Controllers;
 using StaRTS.Main.Controllers.GameStates;
 using StaRTS.Main.Models.Entities;
-using StaRTS.Main.Models.Entities.Components;
 using StaRTS.Main.Utils;
 using StaRTS.Main.Utils.Events;
 using StaRTS.Main.Views.Entities;
@@ -17,7 +16,7 @@ using UnityEngine;
 
 namespace StaRTS.Main.Views.World
 {
-	public class BuildingSelector : IEventObserver, IUserInputObserver
+	public class BuildingSelector : IUserInputObserver, IEventObserver
 	{
 		private const int FINGER_ID = 0;
 
@@ -27,9 +26,9 @@ namespace StaRTS.Main.Views.World
 
 		private const float PULSATE_FREQUENCY = 1f;
 
-		private Entity selectedBuilding;
+		private SmartEntity selectedBuilding;
 
-		private List<Entity> additionalSelectedBuildings;
+		private List<SmartEntity> additionalSelectedBuildings;
 
 		private Vector3 grabPoint;
 
@@ -39,7 +38,7 @@ namespace StaRTS.Main.Views.World
 
 		private uint liftTimerId;
 
-		private Entity liftingBuilding;
+		private SmartEntity liftingBuilding;
 
 		private uint editModeTimerId;
 
@@ -65,7 +64,7 @@ namespace StaRTS.Main.Views.World
 			}
 		}
 
-		public Entity SelectedBuilding
+		public SmartEntity SelectedBuilding
 		{
 			get
 			{
@@ -73,7 +72,7 @@ namespace StaRTS.Main.Views.World
 			}
 		}
 
-		public List<Entity> AdditionalSelectedBuildings
+		public List<SmartEntity> AdditionalSelectedBuildings
 		{
 			get
 			{
@@ -103,10 +102,10 @@ namespace StaRTS.Main.Views.World
 			Service.EventManager.RegisterObserver(this, EventId.BuildingViewReady, EventPriority.Default);
 			Service.EventManager.RegisterObserver(this, EventId.GameStateChanged, EventPriority.Default);
 			this.longPress = new LongPressView();
-			this.additionalSelectedBuildings = new List<Entity>();
+			this.additionalSelectedBuildings = new List<SmartEntity>();
 		}
 
-		public bool IsPartOfSelection(Entity building)
+		public bool IsPartOfSelection(SmartEntity building)
 		{
 			return building == this.selectedBuilding || this.additionalSelectedBuildings.Contains(building);
 		}
@@ -123,8 +122,8 @@ namespace StaRTS.Main.Views.World
 					{
 						this.EnsureDeselectSelectedBuilding();
 					}
-					Entity entity = (!(currentState is HomeState) && !(currentState is EditBaseState)) ? null : this.selectedBuilding;
-					Service.UXController.HUD.ShowContextButtons(entity);
+					SmartEntity smartEntity = (!(currentState is HomeState) && !(currentState is EditBaseState)) ? null : this.selectedBuilding;
+					Service.UXController.HUD.ShowContextButtons(smartEntity);
 				}
 			}
 			else
@@ -146,7 +145,7 @@ namespace StaRTS.Main.Views.World
 			}
 			this.pressScreenPosition = screenPosition;
 			this.dragged = false;
-			Entity buildingEntity = this.GetBuildingEntity(target);
+			SmartEntity buildingEntity = this.GetBuildingEntity(target);
 			if (buildingEntity == null)
 			{
 				this.StartEditModeTimer(groundPosition);
@@ -195,15 +194,15 @@ namespace StaRTS.Main.Views.World
 				}
 				else
 				{
-					Entity entity = this.liftingBuilding;
+					SmartEntity smartEntity = this.liftingBuilding;
 					this.CancelLiftingBuilding();
-					if (this.selectedBuilding != null && Service.UserInputInhibitor.IsAllowable(entity))
+					if (this.selectedBuilding != null && Service.UserInputInhibitor.IsAllowable(smartEntity))
 					{
-						if (entity != this.selectedBuilding && !this.additionalSelectedBuildings.Contains(entity))
+						if (smartEntity != this.selectedBuilding && !this.additionalSelectedBuildings.Contains(smartEntity))
 						{
 							this.DeselectSelectedBuilding();
 						}
-						else if (!Service.ICurrencyController.TryCollectCurrencyOnSelection(entity))
+						else if (!Service.ICurrencyController.TryCollectCurrencyOnSelection(smartEntity))
 						{
 							Service.EventManager.SendEvent(EventId.BuildingSelected, this.selectedBuilding);
 							Service.EventManager.SendEvent(EventId.BuildingSelectedSound, this.selectedBuilding);
@@ -211,9 +210,9 @@ namespace StaRTS.Main.Views.World
 					}
 					if (this.selectedBuilding == null)
 					{
-						if (!Service.ICurrencyController.TryCollectCurrencyOnSelection(entity) && this.CanSelectBuilding((SmartEntity)entity))
+						if (!Service.ICurrencyController.TryCollectCurrencyOnSelection(smartEntity) && this.CanSelectBuilding(smartEntity))
 						{
-							this.SelectBuilding(entity, this.grabPoint);
+							this.SelectBuilding(smartEntity, this.grabPoint);
 						}
 					}
 					else if (!Service.UserInputInhibitor.IsDenying())
@@ -248,7 +247,7 @@ namespace StaRTS.Main.Views.World
 			return EatResponse.NotEaten;
 		}
 
-		public Entity GetBuildingEntity(GameObject target)
+		public SmartEntity GetBuildingEntity(GameObject target)
 		{
 			if (target == null)
 			{
@@ -259,21 +258,22 @@ namespace StaRTS.Main.Views.World
 			{
 				return null;
 			}
-			if (component.Entity.Get<BuildingComponent>() == null)
+			SmartEntity smartEntity = (SmartEntity)component.Entity;
+			if (smartEntity.BuildingComp == null)
 			{
 				return null;
 			}
-			return component.Entity;
+			return smartEntity;
 		}
 
-		public void SelectAdjacentWalls(Entity building)
+		public void SelectAdjacentWalls(SmartEntity building)
 		{
 			WallConnector wallConnector = Service.EntityViewManager.WallConnector;
-			List<Entity> wallChains = wallConnector.GetWallChains(building, -1, 0);
-			List<Entity> wallChains2 = wallConnector.GetWallChains(building, 1, 0);
-			List<Entity> wallChains3 = wallConnector.GetWallChains(building, 0, -1);
-			List<Entity> wallChains4 = wallConnector.GetWallChains(building, 0, 1);
-			List<Entity> list = new List<Entity>();
+			List<SmartEntity> wallChains = wallConnector.GetWallChains(building, -1, 0);
+			List<SmartEntity> wallChains2 = wallConnector.GetWallChains(building, 1, 0);
+			List<SmartEntity> wallChains3 = wallConnector.GetWallChains(building, 0, -1);
+			List<SmartEntity> wallChains4 = wallConnector.GetWallChains(building, 0, 1);
+			List<SmartEntity> list = new List<SmartEntity>();
 			if (wallChains.Count + wallChains2.Count > wallChains3.Count + wallChains4.Count)
 			{
 				list.AddRange(wallChains);
@@ -290,7 +290,7 @@ namespace StaRTS.Main.Views.World
 			}
 		}
 
-		public void AddBuildingToSelection(Entity building)
+		public void AddBuildingToSelection(SmartEntity building)
 		{
 			if (this.selectedBuilding == null)
 			{
@@ -300,19 +300,19 @@ namespace StaRTS.Main.Views.World
 			{
 				this.additionalSelectedBuildings.Add(building);
 				this.ApplySelectedEffect(building);
-				if (building.Has<SupportViewComponent>())
+				if (building.SupportViewComp != null)
 				{
-					building.Get<SupportViewComponent>().UpdateSelected(true);
+					building.SupportViewComp.UpdateSelected(true);
 				}
 			}
 		}
 
-		public void SelectBuilding(Entity building, Vector3 offset)
+		public void SelectBuilding(SmartEntity building, Vector3 offset)
 		{
 			this.SelectBuilding(building, offset, false);
 		}
 
-		public void SelectBuilding(Entity building, Vector3 offset, bool silent)
+		public void SelectBuilding(SmartEntity building, Vector3 offset, bool silent)
 		{
 			if (this.selectedBuilding != null)
 			{
@@ -322,9 +322,9 @@ namespace StaRTS.Main.Views.World
 			this.GrabBuilding(offset);
 			this.ApplySelectedEffect(this.selectedBuilding);
 			Service.UXController.HUD.ShowContextButtons(this.selectedBuilding);
-			if (this.selectedBuilding.Has<SupportViewComponent>())
+			if (this.selectedBuilding.SupportViewComp != null)
 			{
-				this.selectedBuilding.Get<SupportViewComponent>().UpdateSelected(true);
+				this.selectedBuilding.SupportViewComp.UpdateSelected(true);
 			}
 			Service.EventManager.SendEvent(EventId.BuildingSelected, this.selectedBuilding);
 			if (!silent)
@@ -339,7 +339,7 @@ namespace StaRTS.Main.Views.World
 			this.grabPoint.y = 0f;
 		}
 
-		public void RemoveBuildingFromCurrentSelection(Entity building)
+		public void RemoveBuildingFromCurrentSelection(SmartEntity building)
 		{
 			if (this.additionalSelectedBuildings.Contains(building))
 			{
@@ -349,17 +349,17 @@ namespace StaRTS.Main.Views.World
 			}
 			else if (this.selectedBuilding == building)
 			{
-				List<Entity> list = new List<Entity>();
-				Entity entity = null;
+				List<SmartEntity> list = new List<SmartEntity>();
+				SmartEntity smartEntity = null;
 				if (this.additionalSelectedBuildings.Count > 0)
 				{
-					entity = this.additionalSelectedBuildings[0];
+					smartEntity = this.additionalSelectedBuildings[0];
 					list.AddRange(this.additionalSelectedBuildings.GetRange(1, this.additionalSelectedBuildings.Count - 1));
 				}
 				this.DeselectSelectedBuilding();
-				if (entity != null)
+				if (smartEntity != null)
 				{
-					this.SelectBuilding(entity, Vector3.zero);
+					this.SelectBuilding(smartEntity, Vector3.zero);
 					for (int i = 0; i < list.Count; i++)
 					{
 						this.AddBuildingToSelection(list[i]);
@@ -376,13 +376,13 @@ namespace StaRTS.Main.Views.World
 			}
 			Service.UXController.HUD.ShowContextButtons(null);
 			Service.EventManager.SendEvent(EventId.BuildingDeselected, this.selectedBuilding);
-			Entity entity = this.selectedBuilding;
+			SmartEntity smartEntity = this.selectedBuilding;
 			this.selectedBuilding = null;
 			this.DeselectGroup();
-			this.ApplyDeselectedEffect(entity);
-			if (entity.Has<SupportViewComponent>())
+			this.ApplyDeselectedEffect(smartEntity);
+			if (smartEntity.SupportViewComp != null)
 			{
-				entity.Get<SupportViewComponent>().UpdateSelected(false);
+				smartEntity.SupportViewComp.UpdateSelected(false);
 			}
 		}
 
@@ -390,12 +390,12 @@ namespace StaRTS.Main.Views.World
 		{
 			for (int i = 0; i < this.additionalSelectedBuildings.Count; i++)
 			{
-				Entity entity = this.additionalSelectedBuildings[i];
-				this.ApplyDeselectedEffect(entity);
-				Service.EventManager.SendEvent(EventId.BuildingDeselected, entity);
-				if (entity.Has<SupportViewComponent>())
+				SmartEntity smartEntity = this.additionalSelectedBuildings[i];
+				this.ApplyDeselectedEffect(smartEntity);
+				Service.EventManager.SendEvent(EventId.BuildingDeselected, smartEntity);
+				if (smartEntity.SupportViewComp != null)
 				{
-					entity.Get<SupportViewComponent>().UpdateSelected(false);
+					smartEntity.SupportViewComp.UpdateSelected(false);
 				}
 			}
 			this.additionalSelectedBuildings.Clear();
@@ -413,7 +413,7 @@ namespace StaRTS.Main.Views.World
 			}
 		}
 
-		private void StartLiftingBuilding(Entity building)
+		private void StartLiftingBuilding(SmartEntity building)
 		{
 			if (!Service.UserInputInhibitor.IsDenying())
 			{
@@ -498,21 +498,21 @@ namespace StaRTS.Main.Views.World
 			}
 		}
 
-		public void RedrawRadiusView(Entity building)
+		public void RedrawRadiusView(SmartEntity building)
 		{
 			this.EnsureRadiusView();
 			this.radiusView.HideHighlight();
 			this.radiusView.ShowHighlight(building);
 		}
 
-		public void ApplySelectedEffect(Entity building)
+		public void ApplySelectedEffect(SmartEntity building)
 		{
 			this.buildingController.HighlightBuilding(building);
 			this.RedrawRadiusView(building);
 			this.longPress.KillTimer();
 		}
 
-		private void ApplyDeselectedEffect(Entity building)
+		private void ApplyDeselectedEffect(SmartEntity building)
 		{
 			this.buildingController.ClearBuildingHighlight(building);
 			this.buildingController.UpdateBuildingHighlightForPerks(building);

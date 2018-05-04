@@ -1,5 +1,4 @@
-using Net.RichardLord.Ash.Core;
-using StaRTS.Main.Models.Entities.Components;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.ValueObjects;
 using StaRTS.Main.Utils.Events;
 using StaRTS.Main.Views.UX.Elements;
@@ -19,13 +18,13 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		protected const string FRAGMENT_ICON = "SpriteIconFragmentUpgrade";
 
-		protected Entity selectedBuilding;
+		protected SmartEntity selectedBuilding;
 
 		protected BuildingTypeVO buildingInfo;
 
 		protected UXSprite fragmentSprite;
 
-		protected SelectedBuildingScreen(string assetName, Entity selectedBuilding) : base(assetName)
+		protected SelectedBuildingScreen(string assetName, SmartEntity selectedBuilding) : base(assetName)
 		{
 			this.SetSelectedBuilding(selectedBuilding);
 		}
@@ -83,10 +82,10 @@ namespace StaRTS.Main.Views.UX.Screens
 			Service.EventManager.UnregisterObserver(this, EventId.EntityDestroyed);
 		}
 
-		protected virtual void SetSelectedBuilding(Entity newSelectedBuilding)
+		protected virtual void SetSelectedBuilding(SmartEntity newSelectedBuilding)
 		{
 			this.selectedBuilding = newSelectedBuilding;
-			this.buildingInfo = ((this.selectedBuilding != null) ? this.selectedBuilding.Get<BuildingComponent>().BuildingType : null);
+			this.buildingInfo = ((this.selectedBuilding != null) ? this.selectedBuilding.BuildingComp.BuildingType : null);
 		}
 
 		public override EatResponse OnEvent(EventId id, object cookie)

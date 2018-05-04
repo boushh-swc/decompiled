@@ -14,7 +14,7 @@ using UnityEngine;
 
 namespace StaRTS.Main.Views.UserInput
 {
-	public class BackButtonManager : IEventObserver, IBackButtonManager, IViewFrameTimeObserver
+	public class BackButtonManager : IBackButtonManager, IViewFrameTimeObserver, IEventObserver
 	{
 		private List<IBackButtonHandler> backButtonHandlers;
 

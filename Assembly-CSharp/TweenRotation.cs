@@ -56,7 +56,7 @@ public class TweenRotation : UITweener
 
 	public static TweenRotation Begin(GameObject go, float duration, Quaternion rot)
 	{
-		TweenRotation tweenRotation = UITweener.Begin<TweenRotation>(go, duration);
+		TweenRotation tweenRotation = UITweener.Begin<TweenRotation>(go, duration, 0f);
 		tweenRotation.from = tweenRotation.value.eulerAngles;
 		tweenRotation.to = rot.eulerAngles;
 		if (duration <= 0f)

@@ -27,15 +27,15 @@ namespace StaRTS.Main.Controllers
 
 		private const string PARAM_NEARBY = "listnearby";
 
+		private List<Squad> cachedSquads;
+
+		private List<PlayerLBEntity> cachedPlayers;
+
 		private const int DATA_REFRESH_THROTTLE = 30;
 
 		private const int RECHECK_LB_FRIENDS_COUNT = 0;
 
 		private const int RECHECK_LB_LEADERS_COUNT = 10;
-
-		private List<Squad> cachedSquads;
-
-		private List<PlayerLBEntity> cachedPlayers;
 
 		public List<PlayerLBEntity> topPlayers;
 
@@ -494,14 +494,28 @@ namespace StaRTS.Main.Controllers
 		{
 			leaderboardList = null;
 			nearbyLeaderboardList = null;
-			switch (listType)
+			if (listType != PlayerListType.Friends)
 			{
-			case PlayerListType.Friends:
-				leaderboardList = this.Friends;
-				nearbyLeaderboardList = this.Friends;
-				break;
-			case PlayerListType.Leaders:
-				if (planetId == null)
+				if (listType != PlayerListType.Leaders)
+				{
+					if (listType == PlayerListType.TournamentLeaders)
+					{
+						if (!string.IsNullOrEmpty(planetId))
+						{
+							if (!this.TournamentLeadersByPlanet.ContainsKey(planetId))
+							{
+								this.InitTournamentListForPlanet(planetId);
+							}
+							leaderboardList = this.TournamentLeadersByPlanet[planetId];
+							nearbyLeaderboardList = this.TournamentLeadersNearMeByPlanet[planetId];
+						}
+						else
+						{
+							Service.Logger.Error("planetId value is null or empty in tournament leaderboard response handling");
+						}
+					}
+				}
+				else if (planetId == null)
 				{
 					leaderboardList = this.GlobalLeaders;
 					nearbyLeaderboardList = this.GlobalNearMeLeaders;
@@ -511,22 +525,11 @@ namespace StaRTS.Main.Controllers
 					leaderboardList = this.LeadersByPlanet[planetId];
 					nearbyLeaderboardList = this.LeadersNearMeByPlanet[planetId];
 				}
-				break;
-			case PlayerListType.TournamentLeaders:
-				if (!string.IsNullOrEmpty(planetId))
-				{
-					if (!this.TournamentLeadersByPlanet.ContainsKey(planetId))
-					{
-						this.InitTournamentListForPlanet(planetId);
-					}
-					leaderboardList = this.TournamentLeadersByPlanet[planetId];
-					nearbyLeaderboardList = this.TournamentLeadersNearMeByPlanet[planetId];
-				}
-				else
-				{
-					Service.Logger.Error("planetId value is null or empty in tournament leaderboard response handling");
-				}
-				break;
+			}
+			else
+			{
+				leaderboardList = this.Friends;
+				nearbyLeaderboardList = this.Friends;
 			}
 		}
 
@@ -629,12 +632,14 @@ namespace StaRTS.Main.Controllers
 
 		public EatResponse OnEvent(EventId id, object cookie)
 		{
-			switch (id)
+			if (id != EventId.SquadJoinedByCurrentPlayer)
 			{
-			case EventId.SquadLeft:
-				this.TopSquads.AlwaysRefresh = false;
-				break;
-			case EventId.SquadJoinedByCurrentPlayer:
+				if (id == EventId.SquadLeft)
+				{
+					this.TopSquads.AlwaysRefresh = false;
+				}
+			}
+			else
 			{
 				string squadID = Service.SquadController.StateManager.GetCurrentSquad().SquadID;
 				int i = 0;
@@ -648,8 +653,6 @@ namespace StaRTS.Main.Controllers
 					}
 					i++;
 				}
-				break;
-			}
 			}
 			return EatResponse.NotEaten;
 		}

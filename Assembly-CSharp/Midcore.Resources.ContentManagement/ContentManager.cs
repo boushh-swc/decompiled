@@ -36,16 +36,16 @@ namespace Midcore.Resources.ContentManagement
 			this.onFailure = onFailure;
 			IManifestLoader manifestLoader = null;
 			ContentManagerMode mode = this.Options.Mode;
-			if (mode != ContentManagerMode.Local)
+			if (mode != ContentManagerMode.Remote)
 			{
-				if (mode == ContentManagerMode.Remote)
+				if (mode == ContentManagerMode.Local)
 				{
-					manifestLoader = new RemoteManifestLoader(webManager);
+					manifestLoader = new LocalManifestLoader();
 				}
 			}
 			else
 			{
-				manifestLoader = new LocalManifestLoader();
+				manifestLoader = new RemoteManifestLoader(webManager);
 			}
 			manifestLoader.Load(this.Options, new ManifestLoadDelegate(this.OnManifestSuccess), new ManifestLoadDelegate(this.OnManifestFailure));
 		}

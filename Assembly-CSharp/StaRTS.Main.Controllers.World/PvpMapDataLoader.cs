@@ -12,11 +12,11 @@ namespace StaRTS.Main.Controllers.World
 {
 	public class PvpMapDataLoader : IMapDataLoader
 	{
-		private const WorldType worldType = WorldType.Opponent;
-
 		private BattleInitializationData battleData;
 
 		private PvpTarget pvpTarget;
+
+		private const WorldType worldType = WorldType.Opponent;
 
 		public PvpMapDataLoader()
 		{

@@ -448,7 +448,8 @@ namespace StaRTS.FX
 			{
 				return;
 			}
-			destructionInstance.GetComponent<ParticleSystem>().playbackSpeed = this.speed;
+			ParticleSystem component = destructionInstance.GetComponent<ParticleSystem>();
+			component.main.simulationSpeed = this.speed;
 		}
 
 		private void UnloadByAssetKey(string assetKey)

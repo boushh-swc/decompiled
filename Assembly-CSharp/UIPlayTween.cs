@@ -105,8 +105,35 @@ public class UIPlayTween : MonoBehaviour
 	{
 		if (base.enabled && (this.trigger == Trigger.OnHover || (this.trigger == Trigger.OnHoverTrue && isOver) || (this.trigger == Trigger.OnHoverFalse && !isOver)))
 		{
+			if (isOver == this.mActivated)
+			{
+				return;
+			}
+			if (!isOver && UICamera.hoveredObject != null && UICamera.hoveredObject.transform.IsChildOf(base.transform))
+			{
+				UICamera.onHover = (UICamera.BoolDelegate)Delegate.Combine(UICamera.onHover, new UICamera.BoolDelegate(this.CustomHoverListener));
+				isOver = true;
+				if (this.mActivated)
+				{
+					return;
+				}
+			}
 			this.mActivated = (isOver && this.trigger == Trigger.OnHover);
 			this.Play(isOver);
+		}
+	}
+
+	private void CustomHoverListener(GameObject go, bool isOver)
+	{
+		if (!this)
+		{
+			return;
+		}
+		GameObject gameObject = base.gameObject;
+		if (!gameObject || !go || (!(go == gameObject) && !go.transform.IsChildOf(base.transform)))
+		{
+			this.OnHover(false);
+			UICamera.onHover = (UICamera.BoolDelegate)Delegate.Remove(UICamera.onHover, new UICamera.BoolDelegate(this.CustomHoverListener));
 		}
 	}
 

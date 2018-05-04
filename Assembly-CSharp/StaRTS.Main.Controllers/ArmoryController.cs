@@ -334,69 +334,81 @@ namespace StaRTS.Main.Controllers
 		{
 			switch (id)
 			{
-			case EventId.BattleLoadStart:
-			case EventId.BattleLoadedForDefend:
+			case EventId.BattleReplaySetup:
 			{
-				CurrentBattle currentBattle = Service.BattleController.GetCurrentBattle();
-				ArmoryController.AddEquipmentBuffs(currentBattle.AttackerEquipment, currentBattle.DefenderEquipment);
+				BattleRecord battleRecord = (BattleRecord)cookie;
+				ArmoryController.AddEquipmentBuffs(battleRecord.AttackerEquipment, battleRecord.DefenderEquipment);
 				return EatResponse.NotEaten;
 			}
-			case EventId.BattleLoadEnd:
-			case EventId.BattleEndProcessing:
-			case EventId.BattleEndRecorded:
-			case EventId.BattleCancelRequested:
-			case EventId.BattleCanceled:
-			case EventId.BattleNextRequested:
-			case EventId.BattleReplayRequested:
-				IL_48:
+			case EventId.BattleRecordRetrieved:
+			{
+				GetReplayResponse getReplayResponse = (GetReplayResponse)cookie;
+				BattleRecord replayData = getReplayResponse.ReplayData;
+				ArmoryController.AddEquipmentBuffs(replayData.AttackerEquipment, replayData.DefenderEquipment);
+				return EatResponse.NotEaten;
+			}
+			case EventId.BattleLeftBeforeStarting:
+			case EventId.BattleReplayEnded:
+				goto IL_150;
+			case EventId.BattleLoadedForDefend:
+				break;
+			default:
 				switch (id)
 				{
-				case EventId.ScreenClosing:
-					if (cookie is InventoryCrateCollectionScreen)
+				case EventId.EquipmentUnlocked:
+					this.pendingCelebrationEquipment = (cookie as EquipmentVO);
+					this.UpdateLastEquipmentUnlocked(this.pendingCelebrationEquipment.Uid);
+					if (this.AllowUnlockCelebration)
 					{
-						GameUtils.CloseStoreOrInventoryScreen();
-						Service.EventManager.UnregisterObserver(this, EventId.ScreenClosing);
-						if (this.AllowUnlockCelebration)
+						if (GameUtils.IsUnlockBlockingScreenOpen())
 						{
-							this.ShowEquipmentUnlockedCelebration(false);
+							Service.EventManager.RegisterObserver(this, EventId.ScreenClosing);
+						}
+						else
+						{
+							bool immediate = GameUtils.CanShardUnlockCelebrationPlayImmediately();
+							this.ShowEquipmentUnlockedCelebration(immediate);
 						}
 					}
 					return EatResponse.NotEaten;
-				case EventId.ScreenClosed:
-				case EventId.ScreenOverlayClosing:
-					IL_65:
+				case EventId.EquipmentUpgraded:
+				{
+					ContractEventData contractEventData = cookie as ContractEventData;
+					StaticDataController staticDataController = Service.StaticDataController;
+					EquipmentVO equipmentVO = staticDataController.Get<EquipmentVO>(contractEventData.Contract.ProductUid);
+					this.UpdateActiveArmoryLevel(equipmentVO);
+					return EatResponse.NotEaten;
+				}
+				case EventId.EquipmentActivated:
+				case EventId.EquipmentDeactivated:
+					this.UpdateArmoryBuildingTooltip();
+					return EatResponse.NotEaten;
+				default:
 					switch (id)
 					{
-					case EventId.EquipmentUnlocked:
-						this.pendingCelebrationEquipment = (cookie as EquipmentVO);
-						this.UpdateLastEquipmentUnlocked(this.pendingCelebrationEquipment.Uid);
-						if (this.AllowUnlockCelebration)
+					case EventId.ScreenClosing:
+						if (cookie is InventoryCrateCollectionScreen)
 						{
-							if (GameUtils.IsUnlockBlockingScreenOpen())
+							GameUtils.CloseStoreOrInventoryScreen();
+							Service.EventManager.UnregisterObserver(this, EventId.ScreenClosing);
+							if (this.AllowUnlockCelebration)
 							{
-								Service.EventManager.RegisterObserver(this, EventId.ScreenClosing);
-							}
-							else
-							{
-								bool immediate = GameUtils.CanShardUnlockCelebrationPlayImmediately();
-								this.ShowEquipmentUnlockedCelebration(immediate);
+								this.ShowEquipmentUnlockedCelebration(false);
 							}
 						}
 						return EatResponse.NotEaten;
-					case EventId.EquipmentUpgraded:
+					case EventId.ScreenClosed:
+					case EventId.ScreenOverlayClosing:
 					{
-						ContractEventData contractEventData = cookie as ContractEventData;
-						StaticDataController staticDataController = Service.StaticDataController;
-						EquipmentVO equipmentVO = staticDataController.Get<EquipmentVO>(contractEventData.Contract.ProductUid);
-						this.UpdateActiveArmoryLevel(equipmentVO);
-						return EatResponse.NotEaten;
-					}
-					case EventId.EquipmentActivated:
-					case EventId.EquipmentDeactivated:
-						this.UpdateArmoryBuildingTooltip();
-						return EatResponse.NotEaten;
-					default:
-					{
+						IL_58:
+						if (id == EventId.BattleLoadStart)
+						{
+							goto IL_E3;
+						}
+						if (id == EventId.BattleEndFullyProcessed)
+						{
+							goto IL_150;
+						}
 						if (id != EventId.PlanetConfirmRelocate)
 						{
 							return EatResponse.NotEaten;
@@ -413,36 +425,24 @@ namespace StaRTS.Main.Controllers
 						}
 						return EatResponse.NotEaten;
 					}
+					case EventId.ScreenLoaded:
+						if (cookie is ArmoryScreen)
+						{
+							this.UpdateLastEquipmentUnlocked("false");
+						}
+						return EatResponse.NotEaten;
 					}
-					break;
-				case EventId.ScreenLoaded:
-					if (cookie is ArmoryScreen)
-					{
-						this.UpdateLastEquipmentUnlocked("false");
-					}
-					return EatResponse.NotEaten;
+					goto IL_58;
 				}
-				goto IL_65;
-			case EventId.BattleEndFullyProcessed:
-			case EventId.BattleLeftBeforeStarting:
-			case EventId.BattleReplayEnded:
-				Service.BuffController.ClearEquipmentBuffs();
-				return EatResponse.NotEaten;
-			case EventId.BattleReplaySetup:
-			{
-				BattleRecord battleRecord = (BattleRecord)cookie;
-				ArmoryController.AddEquipmentBuffs(battleRecord.AttackerEquipment, battleRecord.DefenderEquipment);
-				return EatResponse.NotEaten;
+				break;
 			}
-			case EventId.BattleRecordRetrieved:
-			{
-				GetReplayResponse getReplayResponse = (GetReplayResponse)cookie;
-				BattleRecord replayData = getReplayResponse.ReplayData;
-				ArmoryController.AddEquipmentBuffs(replayData.AttackerEquipment, replayData.DefenderEquipment);
-				return EatResponse.NotEaten;
-			}
-			}
-			goto IL_48;
+			IL_E3:
+			CurrentBattle currentBattle = Service.BattleController.GetCurrentBattle();
+			ArmoryController.AddEquipmentBuffs(currentBattle.AttackerEquipment, currentBattle.DefenderEquipment);
+			return EatResponse.NotEaten;
+			IL_150:
+			Service.BuffController.ClearEquipmentBuffs();
+			return EatResponse.NotEaten;
 		}
 
 		private void UpdateLastEquipmentUnlocked(string equipmentUid)

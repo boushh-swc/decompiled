@@ -6,6 +6,7 @@ using StaRTS.Main.Utils;
 using StaRTS.Main.Views.UX.Elements;
 using StaRTS.Utils.Core;
 using System;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace StaRTS.Main.Views.UX.Screens
@@ -48,6 +49,9 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		private bool doBackendAuthentication;
 
+		[CompilerGenerated]
+		private static UIInput.OnValidate <>f__mg$cache0;
+
 		protected override bool AllowGarbageCollection
 		{
 			get
@@ -88,7 +92,12 @@ namespace StaRTS.Main.Views.UX.Screens
 			this.inputTextField = base.GetElement<UXInput>("LabelInput");
 			this.inputTextField.InitText(this.lang.Get("CALL_SIGN_TYPE_HERE", new object[0]));
 			this.inputScript = this.inputTextField.GetUIInputComponent();
-			this.inputScript.onValidate = new UIInput.OnValidate(LangUtils.OnValidate);
+			UIInput arg_17C_0 = this.inputScript;
+			if (SetCallsignScreen.<>f__mg$cache0 == null)
+			{
+				SetCallsignScreen.<>f__mg$cache0 = new UIInput.OnValidate(LangUtils.OnValidate);
+			}
+			arg_17C_0.onValidate = SetCallsignScreen.<>f__mg$cache0;
 			this.inputScript.characterLimit = GameConstants.USER_NAME_MAX_CHARACTERS;
 			this.inputScript.label.maxLineCount = 1;
 			EventDelegate item = new EventDelegate(new EventDelegate.Callback(this.OnSubmit));

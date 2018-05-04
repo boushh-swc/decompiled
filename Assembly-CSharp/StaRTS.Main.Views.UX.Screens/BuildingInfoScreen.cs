@@ -1,8 +1,8 @@
-using Net.RichardLord.Ash.Core;
 using StaRTS.Main.Controllers;
 using StaRTS.Main.Models;
 using StaRTS.Main.Models.Commands.Player.Building.Contracts;
 using StaRTS.Main.Models.Commands.Player.Building.Upgrade;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.Entities.Components;
 using StaRTS.Main.Models.Player;
 using StaRTS.Main.Models.Static;
@@ -23,7 +23,7 @@ using UnityEngine;
 
 namespace StaRTS.Main.Views.UX.Screens
 {
-	public class BuildingInfoScreen : SelectedBuildingScreen, IEventObserver, IViewClockTimeObserver
+	public class BuildingInfoScreen : SelectedBuildingScreen, IViewClockTimeObserver, IEventObserver
 	{
 		protected const string GROUP_BUILDING_INFO = "BuildingInfo";
 
@@ -303,18 +303,18 @@ namespace StaRTS.Main.Views.UX.Screens
 			}
 		}
 
-		public BuildingInfoScreen(Entity selectedBuilding) : this(selectedBuilding, false)
+		public BuildingInfoScreen(SmartEntity selectedBuilding) : this(selectedBuilding, false)
 		{
 		}
 
-		public BuildingInfoScreen(Entity selectedBuilding, bool useUpgradeGroup) : base("gui_building", selectedBuilding)
+		public BuildingInfoScreen(SmartEntity selectedBuilding, bool useUpgradeGroup) : base("gui_building", selectedBuilding)
 		{
 			this.useUpgradeGroup = useUpgradeGroup;
 			this.projector = null;
 			this.troopTooltipHelper = new TroopTooltipHelper();
 		}
 
-		protected override void SetSelectedBuilding(Entity newSelectedBuilding)
+		protected override void SetSelectedBuilding(SmartEntity newSelectedBuilding)
 		{
 			base.SetSelectedBuilding(newSelectedBuilding);
 			BuildingUpgradeCatalog buildingUpgradeCatalog = Service.BuildingUpgradeCatalog;
@@ -635,10 +635,10 @@ namespace StaRTS.Main.Views.UX.Screens
 			}
 			int health = this.buildingInfo.Health;
 			int num = health;
-			HealthViewComponent healthViewComponent = this.selectedBuilding.Get<HealthViewComponent>();
-			if (healthViewComponent != null && healthViewComponent.IsInitialized)
+			HealthViewComponent healthViewComp = this.selectedBuilding.HealthViewComp;
+			if (healthViewComp != null && healthViewComp.IsInitialized)
 			{
-				num = healthViewComponent.HealthAmount;
+				num = healthViewComp.HealthAmount;
 			}
 			UXLabel currentLabel = this.sliders[this.hitpointSliderIndex].CurrentLabel;
 			currentLabel.Text = this.lang.Get("FRACTION", new object[]
@@ -766,7 +766,7 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		private void OnTroopItemClicked(UXButton button)
 		{
-			Entity availableTroopResearchLab = Service.BuildingLookupController.GetAvailableTroopResearchLab();
+			SmartEntity availableTroopResearchLab = Service.BuildingLookupController.GetAvailableTroopResearchLab();
 			TroopUpgradeTag troopUpgradeTag = button.Tag as TroopUpgradeTag;
 			bool showUpgradeControls = !string.IsNullOrEmpty(troopUpgradeTag.Troop.UpgradeShardUid);
 			Service.ScreenController.AddScreen(new DeployableInfoScreen(troopUpgradeTag, this.troopList, showUpgradeControls, availableTroopResearchLab));
@@ -864,7 +864,7 @@ namespace StaRTS.Main.Views.UX.Screens
 			Service.DMOAnalyticsController.LogInAppCurrencyAction(currencyAmount, itemType, uid, itemCount, type, subType);
 			EventManager eventManager = Service.EventManager;
 			eventManager.RegisterObserver(this, EventId.MissionCollecting, EventPriority.Default);
-			this.instantUpgradeBuildingKey = this.selectedBuilding.Get<BuildingComponent>().BuildingTO.Key;
+			this.instantUpgradeBuildingKey = this.selectedBuilding.BuildingComp.BuildingTO.Key;
 			this.instantUpgradeBuildingUid = this.nextBuildingInfo.Uid;
 			try
 			{

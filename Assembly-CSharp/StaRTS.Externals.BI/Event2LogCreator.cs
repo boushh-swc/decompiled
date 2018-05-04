@@ -144,7 +144,6 @@ namespace StaRTS.Externals.BI
 		{
 			this.headers.Clear();
 			this.headers["Authorization"] = "FD B276DCA8-9CD5-4493-85D6-75D2E500BCC9:19042B0A0628EF36039165C24A240F78F6EDBDFB8BD86BA3";
-			this.headers["Expect"] = string.Empty;
 			this.headers["Content-Type"] = "application/json";
 			this.guest = Serializer.Start();
 			if (Service.CurrentPlayer != null)
@@ -164,7 +163,7 @@ namespace StaRTS.Externals.BI
 			EnvironmentController environmentController = Service.EnvironmentController;
 			this.app = new Dictionary<string, string>();
 			this.app.Add("p", environmentController.GetPlatform());
-			this.app.Add("v", "5.2.0.10309");
+			this.app.Add("v", "6.0.0.10394");
 			this.app.Add("llv", "2.0");
 			this.app.Add("n", "starts");
 			this.session = new Dictionary<string, string>();
@@ -246,12 +245,11 @@ namespace StaRTS.Externals.BI
 			string tier4 = string.Empty;
 			string tier5 = string.Empty;
 			Serializer serializer = Serializer.Start();
-			string text2 = text;
-			if (text2 != null)
+			if (text != null)
 			{
-				if (Event2LogCreator.<>f__switch$map6 == null)
+				if (Event2LogCreator.<>f__switch$map3 == null)
 				{
-					Event2LogCreator.<>f__switch$map6 = new Dictionary<string, int>(11)
+					Event2LogCreator.<>f__switch$map3 = new Dictionary<string, int>(11)
 					{
 						{
 							"authorization",
@@ -300,7 +298,7 @@ namespace StaRTS.Externals.BI
 					};
 				}
 				int num;
-				if (Event2LogCreator.<>f__switch$map6.TryGetValue(text2, out num))
+				if (Event2LogCreator.<>f__switch$map3.TryGetValue(text, out num))
 				{
 					string val;
 					switch (num)
@@ -347,12 +345,12 @@ namespace StaRTS.Externals.BI
 						serializer.AddString("c", valueFromLog);
 						string valueFromLog2 = this.GetValueFromLog(log, "location");
 						serializer.AddString("l", valueFromLog2);
-						string text3 = this.GetValueFromLog(log, "path_name");
-						if (string.IsNullOrEmpty(text3))
+						string text2 = this.GetValueFromLog(log, "path_name");
+						if (string.IsNullOrEmpty(text2))
 						{
-							text3 = "u";
+							text2 = "u";
 						}
-						serializer.AddString("pn", text3);
+						serializer.AddString("pn", text2);
 						string valueFromLog3 = this.GetValueFromLog(log, "elapsed_time_ms");
 						int num2 = 0;
 						int.TryParse(valueFromLog3, out num2);
@@ -397,8 +395,10 @@ namespace StaRTS.Externals.BI
 						tier5 = this.GetValueFromLog(log, "num_sent");
 						this.SerializeActionEventProperties(serializer, empty, tier, tier2, tier3, tier4, tier5);
 						break;
+					case 11:
+						goto IL_4AC;
 					default:
-						goto IL_4AD;
+						goto IL_4AC;
 					}
 					if (this.app == null)
 					{
@@ -434,7 +434,7 @@ namespace StaRTS.Externals.BI
 					};
 				}
 			}
-			IL_4AD:
+			IL_4AC:
 			this.LogIgnoredEvent(text);
 			return null;
 		}

@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace StaRTS.Main.Models.Leaderboard
 {
-	public class PlayerLBEntity : IComparable<PlayerLBEntity>, ISerializable
+	public class PlayerLBEntity : ISerializable, IComparable<PlayerLBEntity>
 	{
 		public string PlayerID
 		{

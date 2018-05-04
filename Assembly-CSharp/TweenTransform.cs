@@ -55,7 +55,7 @@ public class TweenTransform : UITweener
 
 	public static TweenTransform Begin(GameObject go, float duration, Transform from, Transform to)
 	{
-		TweenTransform tweenTransform = UITweener.Begin<TweenTransform>(go, duration);
+		TweenTransform tweenTransform = UITweener.Begin<TweenTransform>(go, duration, 0f);
 		tweenTransform.from = from;
 		tweenTransform.to = to;
 		if (duration <= 0f)

@@ -472,7 +472,7 @@ namespace StaRTS.Main.Controllers.Squads
 						}
 						else
 						{
-							SquadWarStatusType squadWarStatusType = (SquadWarStatusType)((int)cookie);
+							SquadWarStatusType squadWarStatusType = (SquadWarStatusType)cookie;
 							this.UpdateCurrentSquadWar();
 							if (squadWarStatusType == SquadWarStatusType.PhaseCooldown)
 							{

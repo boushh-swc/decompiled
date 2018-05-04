@@ -80,11 +80,8 @@ namespace StaRTS.Main.Controllers
 				if (dictionary.ContainsKey(num3))
 				{
 					Dictionary<int, int> dictionary2;
-					Dictionary<int, int> expr_FE = dictionary2 = dictionary;
-					int num4;
-					int expr_103 = num4 = num3;
-					num4 = dictionary2[num4];
-					expr_FE[expr_103] = num4 + 1;
+					int key;
+					(dictionary2 = dictionary)[key = num3] = dictionary2[key] + 1;
 				}
 				else
 				{
@@ -184,19 +181,18 @@ namespace StaRTS.Main.Controllers
 				}
 				i++;
 			}
-			switch (strIntState)
+			if (strIntState != StrIntState.StrStart)
 			{
-			case StrIntState.StrStart:
-				goto IL_215;
-			case StrIntState.IntEnd:
-			{
-				string s2 = blob.Substring(num);
-				this.AddPair(ref result, strKey, int.Parse(s2));
-				goto IL_215;
+				if (strIntState != StrIntState.IntEnd)
+				{
+					this.AddError(ref list, "String-int mismatch");
+				}
+				else
+				{
+					string s2 = blob.Substring(num);
+					this.AddPair(ref result, strKey, int.Parse(s2));
+				}
 			}
-			}
-			this.AddError(ref list, "String-int mismatch");
-			IL_215:
 			if (list != null)
 			{
 				string text = string.Format("Formatting errors in {0} '{1}'", uid, blob);

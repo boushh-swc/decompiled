@@ -3,6 +3,7 @@ using StaRTS.Externals.Manimal;
 using StaRTS.Main.Controllers.GameStates;
 using StaRTS.Main.Controllers.Squads;
 using StaRTS.Main.Models;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.Entities.Components;
 using StaRTS.Main.Models.Entities.Nodes;
 using StaRTS.Main.Models.Perks;
@@ -206,29 +207,29 @@ namespace StaRTS.Main.Controllers.Notifications
 			StaticDataController staticDataController = Service.StaticDataController;
 			string displayName = null;
 			int level = 0;
-			switch (contractType)
+			if (contractType != DeliveryType.UpgradeTroop)
 			{
-			case DeliveryType.UpgradeTroop:
+				if (contractType != DeliveryType.UpgradeStarship)
+				{
+					if (contractType == DeliveryType.UpgradeEquipment)
+					{
+						EquipmentVO equipmentVO = staticDataController.Get<EquipmentVO>(productUid);
+						displayName = LangUtils.GetEquipmentDisplayName(equipmentVO);
+						level = equipmentVO.Lvl;
+					}
+				}
+				else
+				{
+					SpecialAttackTypeVO specialAttackTypeVO = staticDataController.Get<SpecialAttackTypeVO>(productUid);
+					displayName = LangUtils.GetStarshipDisplayName(specialAttackTypeVO);
+					level = specialAttackTypeVO.Lvl;
+				}
+			}
+			else
 			{
 				TroopTypeVO troopTypeVO = staticDataController.Get<TroopTypeVO>(productUid);
 				displayName = LangUtils.GetTroopDisplayName(troopTypeVO);
 				level = troopTypeVO.Lvl;
-				break;
-			}
-			case DeliveryType.UpgradeStarship:
-			{
-				SpecialAttackTypeVO specialAttackTypeVO = staticDataController.Get<SpecialAttackTypeVO>(productUid);
-				displayName = LangUtils.GetStarshipDisplayName(specialAttackTypeVO);
-				level = specialAttackTypeVO.Lvl;
-				break;
-			}
-			case DeliveryType.UpgradeEquipment:
-			{
-				EquipmentVO equipmentVO = staticDataController.Get<EquipmentVO>(productUid);
-				displayName = LangUtils.GetEquipmentDisplayName(equipmentVO);
-				level = equipmentVO.Lvl;
-				break;
-			}
 			}
 			return this.CreateSupportNotification(productUid, remainingTime, buildingKey, "notif3", displayName, level);
 		}
@@ -308,14 +309,15 @@ namespace StaRTS.Main.Controllers.Notifications
 			ISupportController iSupportController = Service.ISupportController;
 			for (SupportNode supportNode = nodeList.Head; supportNode != null; supportNode = supportNode.Next)
 			{
+				SmartEntity smartEntity = (SmartEntity)supportNode.Entity;
 				BuildingComponent buildingComp = supportNode.BuildingComp;
 				string key = buildingComp.BuildingTO.Key;
-				if (!ContractUtils.IsBuildingUpgrading(supportNode.Entity) && !ContractUtils.IsBuildingConstructing(supportNode.Entity) && !iSupportController.IsBuildingFrozen(key))
+				if (!ContractUtils.IsBuildingUpgrading(smartEntity) && !ContractUtils.IsBuildingConstructing(smartEntity) && !iSupportController.IsBuildingFrozen(key))
 				{
 					Contract contract = iSupportController.FindCurrentContract(key);
 					if (contract != null && iSupportController.IsContractValidForStorage(contract))
 					{
-						int num2 = ContractUtils.CalculateRemainingTimeOfAllTroopContracts(supportNode.Entity);
+						int num2 = ContractUtils.CalculateRemainingTimeOfAllTroopContracts(smartEntity);
 						if (num2 > num)
 						{
 							num = num2;

@@ -26,6 +26,12 @@ namespace StaRTS.Main.Configs
 
 		public const ushort AREA_TRIGGER = 21845;
 
+		public static readonly ushort ENTITY_RENDER = (!HardwareProfile.IsLowEndDevice()) ? 65535 : 21845;
+
+		public static readonly ushort TRACKING_RENDER = (!HardwareProfile.IsLowEndDevice()) ? 65535 : 4369;
+
+		public static readonly ushort HEALTH_RENDER = (!HardwareProfile.IsLowEndDevice()) ? 65535 : 4369;
+
 		public const ushort DROID_RENDER = 65535;
 
 		public const ushort GENERATOR_RENDER = 65535;
@@ -33,11 +39,5 @@ namespace StaRTS.Main.Configs
 		public const ushort SUPPORT_RENDER = 65535;
 
 		public const ushort TRANSPORT_RENDER = 65535;
-
-		public static readonly ushort ENTITY_RENDER = (!HardwareProfile.IsLowEndDevice()) ? 65535 : 21845;
-
-		public static readonly ushort TRACKING_RENDER = (!HardwareProfile.IsLowEndDevice()) ? 65535 : 4369;
-
-		public static readonly ushort HEALTH_RENDER = (!HardwareProfile.IsLowEndDevice()) ? 65535 : 4369;
 	}
 }

@@ -1,4 +1,4 @@
-using Net.RichardLord.Ash.Core;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.Entities.Components;
 using StaRTS.Main.Models.Static;
 using StaRTS.Main.Utils;
@@ -9,7 +9,7 @@ namespace StaRTS.Main.Views.UX.Screens
 {
 	public class GeneratorUpgradeScreen : GeneratorInfoScreen
 	{
-		public GeneratorUpgradeScreen(Entity selectedBuilding) : base(selectedBuilding)
+		public GeneratorUpgradeScreen(SmartEntity selectedBuilding) : base(selectedBuilding)
 		{
 			this.useUpgradeGroup = true;
 		}

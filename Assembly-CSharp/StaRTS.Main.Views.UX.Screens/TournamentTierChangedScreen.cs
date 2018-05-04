@@ -10,6 +10,8 @@ namespace StaRTS.Main.Views.UX.Screens
 {
 	public class TournamentTierChangedScreen : ScreenBase
 	{
+		private TournamentRank playerRank;
+
 		private const string LABEL_TITLE = "DialogTournamentsTitle";
 
 		private const string LABEL_NEW_TIER = "LabelYourTier";
@@ -21,8 +23,6 @@ namespace StaRTS.Main.Views.UX.Screens
 		private const float ANIMATION_TIME = 3f;
 
 		private const string ANIMATION_TRIGGER = "Show";
-
-		private TournamentRank playerRank;
 
 		protected override bool IsFullScreen
 		{

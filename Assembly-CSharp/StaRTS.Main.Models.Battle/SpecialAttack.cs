@@ -10,15 +10,15 @@ namespace StaRTS.Main.Models.Battle
 {
 	public class SpecialAttack
 	{
+		public AssetHandle Handle;
+
+		public AssetHandle AttachmentHandle;
+
 		private const string ATTACHED_SHADOW_TRIGGER = "Stored";
 
 		private const string FALLING_SHADOW_TRIGGER = "Drop";
 
 		private const string GROUND_SHADOW_TRIGGER = "Idle";
-
-		public AssetHandle Handle;
-
-		public AssetHandle AttachmentHandle;
 
 		private int shotIndex;
 
@@ -158,17 +158,23 @@ namespace StaRTS.Main.Models.Battle
 		{
 			if (this.DetachableShadowAnimation != null)
 			{
-				switch (state)
+				if (state != SpecialAttackDetachableObjectState.Attached)
 				{
-				case SpecialAttackDetachableObjectState.Attached:
+					if (state != SpecialAttackDetachableObjectState.Falling)
+					{
+						if (state == SpecialAttackDetachableObjectState.OnGround)
+						{
+							this.DetachableShadowAnimation.Play("Idle");
+						}
+					}
+					else
+					{
+						this.DetachableShadowAnimation.Play("Drop");
+					}
+				}
+				else
+				{
 					this.DetachableShadowAnimation.Play("Stored");
-					break;
-				case SpecialAttackDetachableObjectState.Falling:
-					this.DetachableShadowAnimation.Play("Drop");
-					break;
-				case SpecialAttackDetachableObjectState.OnGround:
-					this.DetachableShadowAnimation.Play("Idle");
-					break;
 				}
 			}
 		}

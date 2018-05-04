@@ -22,7 +22,7 @@ using UnityEngine;
 
 namespace StaRTS.Main.Controllers.Objectives
 {
-	public class ObjectiveController : IEventObserver, IViewClockTimeObserver
+	public class ObjectiveController : IViewClockTimeObserver, IEventObserver
 	{
 		public delegate void OnUpdate(int timeRemaining);
 
@@ -161,16 +161,16 @@ namespace StaRTS.Main.Controllers.Objectives
 			if (objectiveContainerLEI != null)
 			{
 				FactionType faction = Service.CurrentPlayer.Faction;
-				if (faction != FactionType.Empire)
+				if (faction != FactionType.Rebel)
 				{
-					if (faction == FactionType.Rebel)
+					if (faction == FactionType.Empire)
 					{
-						value = optional.RebelLEIUid;
+						value = optional.EmpireLEIUid;
 					}
 				}
 				else
 				{
-					value = optional.EmpireLEIUid;
+					value = optional.RebelLEIUid;
 				}
 			}
 			if (objectiveBgCollected == null || objectiveContainer == null || objectiveContainerLEI == null || objectiveBgComplete == null || objectiveBgExpired == null)
@@ -179,44 +179,48 @@ namespace StaRTS.Main.Controllers.Objectives
 			}
 			else
 			{
-				switch (objective.State)
+				ObjectiveState state = objective.State;
+				if (state != ObjectiveState.Active)
 				{
-				case ObjectiveState.Active:
-					if (isGrace)
+					if (state != ObjectiveState.Complete)
 					{
-						objectiveBgExpired.Visible = true;
-						objectiveBgCollected.Visible = false;
-						objectiveContainer.Visible = false;
-						objectiveContainerLEI.Visible = false;
-						objectiveBgComplete.Visible = false;
-						objectiveBgActive.Visible = false;
+						if (state == ObjectiveState.Rewarded)
+						{
+							objectiveBgCollected.Visible = true;
+							objectiveBgExpired.Visible = false;
+							objectiveContainer.Visible = false;
+							objectiveContainerLEI.Visible = false;
+							objectiveBgComplete.Visible = false;
+							objectiveBgActive.Visible = false;
+						}
 					}
 					else
 					{
-						objectiveContainerLEI.Visible = !string.IsNullOrEmpty(value);
-						objectiveContainer.Visible = string.IsNullOrEmpty(value);
-						objectiveBgActive.Visible = true;
+						objectiveBgComplete.Visible = true;
 						objectiveBgExpired.Visible = false;
+						objectiveContainer.Visible = false;
+						objectiveContainerLEI.Visible = false;
 						objectiveBgCollected.Visible = false;
-						objectiveBgComplete.Visible = false;
+						objectiveBgActive.Visible = false;
 					}
-					break;
-				case ObjectiveState.Complete:
-					objectiveBgComplete.Visible = true;
-					objectiveBgExpired.Visible = false;
-					objectiveContainer.Visible = false;
-					objectiveContainerLEI.Visible = false;
+				}
+				else if (isGrace)
+				{
+					objectiveBgExpired.Visible = true;
 					objectiveBgCollected.Visible = false;
-					objectiveBgActive.Visible = false;
-					break;
-				case ObjectiveState.Rewarded:
-					objectiveBgCollected.Visible = true;
-					objectiveBgExpired.Visible = false;
 					objectiveContainer.Visible = false;
 					objectiveContainerLEI.Visible = false;
 					objectiveBgComplete.Visible = false;
 					objectiveBgActive.Visible = false;
-					break;
+				}
+				else
+				{
+					objectiveContainerLEI.Visible = !string.IsNullOrEmpty(value);
+					objectiveContainer.Visible = string.IsNullOrEmpty(value);
+					objectiveBgActive.Visible = true;
+					objectiveBgExpired.Visible = false;
+					objectiveBgCollected.Visible = false;
+					objectiveBgComplete.Visible = false;
 				}
 			}
 			if (progressSlider != null)
@@ -253,40 +257,44 @@ namespace StaRTS.Main.Controllers.Objectives
 			}
 			if (statusLabel != null)
 			{
-				switch (objective.State)
+				ObjectiveState state2 = objective.State;
+				if (state2 != ObjectiveState.Active)
 				{
-				case ObjectiveState.Active:
-					if (isGrace)
+					if (state2 != ObjectiveState.Complete)
 					{
-						statusLabel.TextColor = ObjectiveController.TEXT_RED_DIM_COLOR;
-						statusLabel.Text = lang.Get("OBJECTIVE_EXPIRED", new object[0]);
+						if (state2 == ObjectiveState.Rewarded)
+						{
+							statusLabel.TextColor = ((!flag) ? ObjectiveController.TEXT_GREEN_DIM_COLOR : ObjectiveController.TEXT_GREEN_COLOR);
+							statusLabel.Text = lang.Get("OBJECTIVE_COLLECTED", new object[]
+							{
+								lang.ThousandsSeparated(objective.Count),
+								lang.ThousandsSeparated(objective.Target)
+							});
+						}
 					}
 					else
 					{
 						statusLabel.TextColor = ((!flag) ? ObjectiveController.TEXT_GREEN_DIM_COLOR : ObjectiveController.TEXT_GREEN_COLOR);
-						statusLabel.Text = lang.Get("OBJECTIVE_PROGRESS", new object[]
+						statusLabel.Text = lang.Get("OBJECTIVE_ACTIVE_UNLOCKED", new object[]
 						{
 							lang.ThousandsSeparated(objective.Count),
 							lang.ThousandsSeparated(objective.Target)
 						});
 					}
-					break;
-				case ObjectiveState.Complete:
+				}
+				else if (isGrace)
+				{
+					statusLabel.TextColor = ObjectiveController.TEXT_RED_DIM_COLOR;
+					statusLabel.Text = lang.Get("OBJECTIVE_EXPIRED", new object[0]);
+				}
+				else
+				{
 					statusLabel.TextColor = ((!flag) ? ObjectiveController.TEXT_GREEN_DIM_COLOR : ObjectiveController.TEXT_GREEN_COLOR);
-					statusLabel.Text = lang.Get("OBJECTIVE_ACTIVE_UNLOCKED", new object[]
+					statusLabel.Text = lang.Get("OBJECTIVE_PROGRESS", new object[]
 					{
 						lang.ThousandsSeparated(objective.Count),
 						lang.ThousandsSeparated(objective.Target)
 					});
-					break;
-				case ObjectiveState.Rewarded:
-					statusLabel.TextColor = ((!flag) ? ObjectiveController.TEXT_GREEN_DIM_COLOR : ObjectiveController.TEXT_GREEN_COLOR);
-					statusLabel.Text = lang.Get("OBJECTIVE_COLLECTED", new object[]
-					{
-						lang.ThousandsSeparated(objective.Count),
-						lang.ThousandsSeparated(objective.Target)
-					});
-					break;
 				}
 			}
 			if (titleLabel != null)
@@ -303,47 +311,61 @@ namespace StaRTS.Main.Controllers.Objectives
 			{
 				spriteSupplyCrate.Tag = objectiveData;
 				uXSprite2 = spriteSupplyCrate;
-				switch (objective.State)
+				ObjectiveState state3 = objective.State;
+				if (state3 != ObjectiveState.Active)
 				{
-				case ObjectiveState.Active:
+					if (state3 != ObjectiveState.Complete)
+					{
+						if (state3 == ObjectiveState.Rewarded)
+						{
+							spriteCheckmark.Visible = true;
+							spriteCheckmark.SpriteName = "IcoCheck";
+							spriteSupplyCrate.Alpha = 0.6f;
+							spriteSupplyCrate.Visible = true;
+						}
+					}
+					else
+					{
+						spriteCheckmark.Visible = false;
+						spriteSupplyCrate.Alpha = 1f;
+						spriteSupplyCrate.Visible = true;
+					}
+				}
+				else
+				{
 					spriteCheckmark.Visible = false;
 					spriteSupplyCrate.Visible = !isGrace;
-					break;
-				case ObjectiveState.Complete:
-					spriteCheckmark.Visible = false;
-					spriteSupplyCrate.Alpha = 1f;
-					spriteSupplyCrate.Visible = true;
-					break;
-				case ObjectiveState.Rewarded:
-					spriteCheckmark.Visible = true;
-					spriteCheckmark.SpriteName = "IcoCheck";
-					spriteSupplyCrate.Alpha = 0.6f;
-					spriteSupplyCrate.Visible = true;
-					break;
 				}
 			}
 			if (spritePreview != null)
 			{
 				spritePreview.Tag = objectiveData;
-				switch (objective.State)
+				ObjectiveState state4 = objective.State;
+				if (state4 != ObjectiveState.Active)
 				{
-				case ObjectiveState.Active:
+					if (state4 != ObjectiveState.Complete)
+					{
+						if (state4 == ObjectiveState.Rewarded)
+						{
+							uXSprite2 = spritePreview;
+							uXSprite = null;
+							spriteCheckmark.Visible = true;
+							spriteCheckmark.SpriteName = "IcoCheck";
+						}
+					}
+					else
+					{
+						uXSprite2 = spritePreview;
+						uXSprite = null;
+						spriteCheckmark.Visible = false;
+					}
+				}
+				else
+				{
 					uXSprite = spritePreview;
 					uXSprite2 = null;
 					spriteCheckmark.Visible = isGrace;
 					spriteCheckmark.SpriteName = "icoCancelRed";
-					break;
-				case ObjectiveState.Complete:
-					uXSprite2 = spritePreview;
-					uXSprite = null;
-					spriteCheckmark.Visible = false;
-					break;
-				case ObjectiveState.Rewarded:
-					uXSprite2 = spritePreview;
-					uXSprite = null;
-					spriteCheckmark.Visible = true;
-					spriteCheckmark.SpriteName = "IcoCheck";
-					break;
 				}
 			}
 			if (spriteObjectiveIcon != null)
@@ -400,7 +422,7 @@ namespace StaRTS.Main.Controllers.Objectives
 				return EatResponse.NotEaten;
 			case EventId.ShowObjectiveToast:
 			{
-				IL_1E:
+				IL_1C:
 				if (id == EventId.GameStateChanged)
 				{
 					IState currentState = Service.GameStateMachine.CurrentState;
@@ -429,7 +451,7 @@ namespace StaRTS.Main.Controllers.Objectives
 				this.currentlyClaiming = false;
 				return EatResponse.NotEaten;
 			}
-			goto IL_1E;
+			goto IL_1C;
 		}
 
 		public ObjectiveProgress GetNextCompletedObjective()
@@ -445,17 +467,19 @@ namespace StaRTS.Main.Controllers.Objectives
 
 		private AnimState GetAnimStateFromObjectiveState(ObjectiveState state)
 		{
-			switch (state)
+			if (state == ObjectiveState.Active)
 			{
-			case ObjectiveState.Active:
-				return AnimState.Closed;
-			case ObjectiveState.Complete:
-				return AnimState.Unlocked;
-			case ObjectiveState.Rewarded:
-				return AnimState.Idle;
-			default:
 				return AnimState.Closed;
 			}
+			if (state == ObjectiveState.Complete)
+			{
+				return AnimState.Unlocked;
+			}
+			if (state != ObjectiveState.Rewarded)
+			{
+				return AnimState.Closed;
+			}
+			return AnimState.Idle;
 		}
 
 		public void addTestDataForToast(int count)

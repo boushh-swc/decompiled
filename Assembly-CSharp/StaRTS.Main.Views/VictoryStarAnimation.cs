@@ -6,6 +6,7 @@ using StaRTS.Utils.Animation.Anims;
 using StaRTS.Utils.Core;
 using StaRTS.Utils.Scheduling;
 using System;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace StaRTS.Main.Views
@@ -31,6 +32,9 @@ namespace StaRTS.Main.Views
 		private Vector3 originalLocation;
 
 		private StarAnimationCompleteDelegate onComplete;
+
+		[CompilerGenerated]
+		private static Easing.EasingDelegate <>f__mg$cache0;
 
 		public VictoryStarAnimation(int starNumber, string message)
 		{
@@ -72,7 +76,12 @@ namespace StaRTS.Main.Views
 		{
 			this.originalLocation = this.starAnimator.LocalPosition;
 			AnimUXPosition animUXPosition = new AnimUXPosition(this.starAnimator, 0.5f, Vector3.right * (float)Screen.width * 0.5f + Vector3.up * 100f * this.starAnimator.UXCamera.Scale);
-			animUXPosition.EaseFunction = new Easing.EasingDelegate(Easing.SineEaseIn);
+			Anim arg_83_0 = animUXPosition;
+			if (VictoryStarAnimation.<>f__mg$cache0 == null)
+			{
+				VictoryStarAnimation.<>f__mg$cache0 = new Easing.EasingDelegate(Easing.SineEaseIn);
+			}
+			arg_83_0.EaseFunction = VictoryStarAnimation.<>f__mg$cache0;
 			animUXPosition.OnCompleteCallback = new Action<Anim>(this.OnTweenFinished);
 			Service.AnimController.Animate(animUXPosition);
 		}

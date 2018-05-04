@@ -26,6 +26,20 @@ namespace StaRTS.Main.Controllers
 {
 	public class TransportController : IEventObserver
 	{
+		private static readonly Vector3 SPAWN_POSITION = new Vector3(60f, 12f, 60f);
+
+		private static readonly Vector3 FACTORY_ORIENTATION = new Vector3(-1f, 0f, 0f);
+
+		private static readonly Vector3 STARPORT_ORIENTATION = new Vector3(-1f, 0f, 0f);
+
+		private static readonly Vector3 DOCK_OFFSET = new Vector3(0f, 1f, 3.8f);
+
+		private static readonly float FACTORY_WALL_HEIGHT = 1.7f;
+
+		private string TRANSPORT_SHIP_EMPIRE = "ThetaClassBarge1";
+
+		private string TRANSPORT_SHIP_REBEL = "Cr25transport1";
+
 		private const string FACTORY_PRODUCT = "FactoryProduct";
 
 		private const float VEHICLE_SCALE = 0.8f;
@@ -46,22 +60,6 @@ namespace StaRTS.Main.Controllers
 
 		private const float VEHICLE_SPAWN_DELAY = 3f;
 
-		private const int MAX_TROOP_EFFECTS_PER_STARPORT = 10;
-
-		private static readonly Vector3 SPAWN_POSITION = new Vector3(60f, 12f, 60f);
-
-		private static readonly Vector3 FACTORY_ORIENTATION = new Vector3(-1f, 0f, 0f);
-
-		private static readonly Vector3 STARPORT_ORIENTATION = new Vector3(-1f, 0f, 0f);
-
-		private static readonly Vector3 DOCK_OFFSET = new Vector3(0f, 1f, 3.8f);
-
-		private static readonly float FACTORY_WALL_HEIGHT = 1.7f;
-
-		private string TRANSPORT_SHIP_EMPIRE = "ThetaClassBarge1";
-
-		private string TRANSPORT_SHIP_REBEL = "Cr25transport1";
-
 		private Dictionary<int, GameObject> landingFxObjects;
 
 		private Dictionary<int, GameObject> takeOffFxObjects;
@@ -71,6 +69,8 @@ namespace StaRTS.Main.Controllers
 		private Dictionary<int, AssetHandle> takeOffFxHandles;
 
 		private int activeEffectsCount;
+
+		private const int MAX_TROOP_EFFECTS_PER_STARPORT = 10;
 
 		private EntityController entityController;
 
@@ -137,11 +137,11 @@ namespace StaRTS.Main.Controllers
 		private void StarportReached(object cookie)
 		{
 			KeyValuePair<Entity, ContractEventData> keyValuePair = (KeyValuePair<Entity, ContractEventData>)cookie;
-			Entity key = keyValuePair.Key;
+			SmartEntity starport = (SmartEntity)keyValuePair.Key;
 			ContractEventData value = keyValuePair.Value;
 			this.RemoveTransportRequest(value);
 			TroopTypeVO troop = this.sdc.Get<TroopTypeVO>(value.Contract.ProductUid);
-			StorageSpreadUtils.AddTroopToStarportVisually(key, troop);
+			StorageSpreadUtils.AddTroopToStarportVisually(starport, troop);
 			Service.EventManager.SendEvent(EventId.TransportDeparted, null);
 		}
 
@@ -323,15 +323,15 @@ namespace StaRTS.Main.Controllers
 			return entity;
 		}
 
-		private Entity FindIdleStarport(ContractEventData contractData)
+		private SmartEntity FindIdleStarport(ContractEventData contractData)
 		{
-			Entity entity = StorageSpreadUtils.FindLeastFullStarport();
-			if (entity != null)
+			SmartEntity smartEntity = StorageSpreadUtils.FindLeastFullStarport();
+			if (smartEntity != null)
 			{
 				TroopTypeVO troop = this.sdc.Get<TroopTypeVO>(contractData.Contract.ProductUid);
-				StorageSpreadUtils.AddTroopToStarportReserve(entity, troop);
+				StorageSpreadUtils.AddTroopToStarportReserve(smartEntity, troop);
 			}
-			return entity;
+			return smartEntity;
 		}
 
 		private bool DespawnVehicle(Entity factoryEntity)
@@ -412,90 +412,99 @@ namespace StaRTS.Main.Controllers
 
 		private void SpawnInfantry(ContractEventData contractData)
 		{
-			Entity entity = this.FindIdleStarport(contractData);
-			if (entity == null)
+			SmartEntity smartEntity = this.FindIdleStarport(contractData);
+			if (smartEntity == null)
 			{
 				return;
 			}
-			Entity entity2 = contractData.Entity;
-			TransformComponent transformComponent = entity2.Get<TransformComponent>();
+			Entity entity = contractData.Entity;
+			TransformComponent transformComponent = entity.Get<TransformComponent>();
 			BoardCell boardCell = null;
 			IntPosition boardPosition = new IntPosition(transformComponent.X, transformComponent.Z);
 			TroopTypeVO troopTypeVO = this.sdc.Get<TroopTypeVO>(contractData.Contract.ProductUid);
-			Service.TroopController.FinalizeSafeBoardPosition(troopTypeVO, ref entity2, ref boardPosition, ref boardCell, TeamType.Defender, TroopSpawnMode.Unleashed, true);
-			SmartEntity smartEntity = Service.EntityFactory.CreateTroopEntity(troopTypeVO, TeamType.Defender, boardPosition, entity2, TroopSpawnMode.Unleashed, false, true);
-			BoardItemComponent boardItemComp = smartEntity.BoardItemComp;
+			Service.TroopController.FinalizeSafeBoardPosition(troopTypeVO, ref entity, ref boardPosition, ref boardCell, TeamType.Defender, TroopSpawnMode.Unleashed, true);
+			SmartEntity smartEntity2 = Service.EntityFactory.CreateTroopEntity(troopTypeVO, TeamType.Defender, boardPosition, entity, TroopSpawnMode.Unleashed, false, true);
+			BoardItemComponent boardItemComp = smartEntity2.BoardItemComp;
 			Service.BoardController.Board.AddChild(boardItemComp.BoardItem, boardCell.X, boardCell.Z, null, false);
-			Service.EntityController.AddEntity(smartEntity);
-			TroopComponent troopComp = smartEntity.TroopComp;
-			TeamComponent teamComp = smartEntity.TeamComp;
+			Service.EntityController.AddEntity(smartEntity2);
+			TroopComponent troopComp = smartEntity2.TroopComp;
+			TeamComponent teamComp = smartEntity2.TeamComp;
 			bool flag = false;
 			PathingManager pathingManager = Service.PathingManager;
-			pathingManager.StartPathing(smartEntity, (SmartEntity)entity, smartEntity.TransformComp, false, out flag, 0, new PathTroopParams
+			pathingManager.StartPathing(smartEntity2, smartEntity, smartEntity2.TransformComp, false, out flag, 0, new PathTroopParams
 			{
-				TroopWidth = smartEntity.SizeComp.Width,
+				TroopWidth = smartEntity2.SizeComp.Width,
+				DPS = 0,
+				MinRange = 0u,
 				MaxRange = 2u,
 				MaxSpeed = troopComp.SpeedVO.MaxSpeed,
 				PathSearchWidth = troopComp.TroopType.PathSearchWidth,
 				IsMelee = true,
+				IsOverWall = false,
+				IsHealer = false,
+				CrushesWalls = false,
+				IsTargetShield = false,
 				TargetInRangeModifier = troopComp.TroopType.TargetInRangeModifier
 			}, new PathBoardParams
 			{
-				IgnoreWall = teamComp != null && teamComp.IsDefender()
+				IgnoreWall = teamComp != null && teamComp.IsDefender(),
+				Destructible = false
 			}, false, true);
 			if (!flag)
 			{
-				pathingManager.StartPathing(smartEntity, (SmartEntity)entity, smartEntity.TransformComp, false, out flag, 0, new PathTroopParams
+				pathingManager.StartPathing(smartEntity2, smartEntity, smartEntity2.TransformComp, false, out flag, 0, new PathTroopParams
 				{
-					TroopWidth = smartEntity.SizeComp.Width,
+					TroopWidth = smartEntity2.SizeComp.Width,
+					DPS = 0,
+					MinRange = 0u,
 					MaxRange = 2u,
 					MaxSpeed = troopComp.SpeedVO.MaxSpeed,
 					PathSearchWidth = troopComp.TroopType.PathSearchWidth,
 					IsMelee = true,
+					IsOverWall = false,
+					IsHealer = false,
+					CrushesWalls = false,
+					IsTargetShield = false,
 					TargetInRangeModifier = troopComp.TroopType.TargetInRangeModifier
 				}, new PathBoardParams
 				{
-					IgnoreWall = true
+					IgnoreWall = true,
+					Destructible = false
 				}, false, true);
 			}
-			smartEntity.StateComp.CurState = EntityState.Moving;
+			smartEntity2.StateComp.CurState = EntityState.Moving;
 			bool showFullEffect = true;
 			if (this.numTroopEffectsByStarport == null)
 			{
 				this.numTroopEffectsByStarport = new Dictionary<Entity, int>();
 			}
-			if (this.numTroopEffectsByStarport.ContainsKey(entity))
+			if (this.numTroopEffectsByStarport.ContainsKey(smartEntity))
 			{
 				Dictionary<Entity, int> dictionary;
-				Dictionary<Entity, int> expr_24E = dictionary = this.numTroopEffectsByStarport;
-				Entity key;
-				Entity expr_252 = key = entity;
-				int num = dictionary[key];
-				int num2;
-				expr_24E[expr_252] = (num2 = num) + 1;
-				if (num2 >= 10)
+				SmartEntity key;
+				int num;
+				(dictionary = this.numTroopEffectsByStarport)[key = smartEntity] = (num = dictionary[key]) + 1;
+				if (num >= 10)
 				{
 					showFullEffect = false;
 				}
 			}
 			else
 			{
-				this.numTroopEffectsByStarport.Add(entity, 1);
+				this.numTroopEffectsByStarport.Add(smartEntity, 1);
 			}
 			if (this.troopEffectsByEntity == null)
 			{
 				this.troopEffectsByEntity = new Dictionary<Entity, TransportTroopEffect>();
 			}
-			this.troopEffectsByEntity.Add(smartEntity, new TransportTroopEffect(smartEntity, troopTypeVO, entity, this.entityFader, new TransportTroopEffect.OnEffectFinished(this.OnTroopEffectFinished), showFullEffect));
+			this.troopEffectsByEntity.Add(smartEntity2, new TransportTroopEffect(smartEntity2, troopTypeVO, smartEntity, this.entityFader, new TransportTroopEffect.OnEffectFinished(this.OnTroopEffectFinished), showFullEffect));
 		}
 
 		private void OnTroopEffectFinished(Entity troopEntity, Entity starportEntity)
 		{
 			this.troopEffectsByEntity.Remove(troopEntity);
 			Dictionary<Entity, int> dictionary;
-			Dictionary<Entity, int> expr_13 = dictionary = this.numTroopEffectsByStarport;
-			int num = dictionary[starportEntity];
-			expr_13[starportEntity] = num - 1;
+			(dictionary = this.numTroopEffectsByStarport)[starportEntity] = dictionary[starportEntity] - 1;
 		}
 
 		private bool CountTransportRequest(ContractEventData contractData)
@@ -626,15 +635,15 @@ namespace StaRTS.Main.Controllers
 					}
 					else
 					{
-						Entity entity2 = (Entity)cookie;
-						StarportComponent starportComponent = entity2.Get<StarportComponent>();
-						if (starportComponent != null && this.numTroopEffectsByStarport != null)
+						SmartEntity smartEntity = (SmartEntity)cookie;
+						StarportComponent starportComp = smartEntity.StarportComp;
+						if (starportComp != null && this.numTroopEffectsByStarport != null)
 						{
 							foreach (KeyValuePair<Entity, int> current2 in this.numTroopEffectsByStarport)
 							{
 								if (current2.Key.Get<StarportComponent>() == null)
 								{
-									this.numTroopEffectsByStarport[entity2] = current2.Value;
+									this.numTroopEffectsByStarport[smartEntity] = current2.Value;
 									this.numTroopEffectsByStarport.Remove(current2.Key);
 									break;
 								}
@@ -646,20 +655,17 @@ namespace StaRTS.Main.Controllers
 				{
 					ContractEventData contractEventData2 = cookie as ContractEventData;
 					DeliveryType deliveryType2 = contractEventData2.Contract.DeliveryType;
-					if (deliveryType2 != DeliveryType.Infantry)
+					if (deliveryType2 != DeliveryType.Vehicle)
 					{
-						if (deliveryType2 == DeliveryType.Vehicle)
+						if (deliveryType2 == DeliveryType.Infantry || deliveryType2 == DeliveryType.Mercenary)
 						{
-							this.SpawnTransport(contractEventData2);
-							goto IL_9D;
-						}
-						if (deliveryType2 != DeliveryType.Mercenary)
-						{
-							goto IL_9D;
+							this.SpawnInfantry(contractEventData2);
 						}
 					}
-					this.SpawnInfantry(contractEventData2);
-					IL_9D:;
+					else
+					{
+						this.SpawnTransport(contractEventData2);
+					}
 				}
 			}
 			else

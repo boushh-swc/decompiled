@@ -16,7 +16,11 @@ public class TweenAlpha : UITweener
 
 	private Material mMat;
 
+	private Light mLight;
+
 	private SpriteRenderer mSr;
+
+	private float mBaseIntensity = 1f;
 
 	[Obsolete("Use 'value' instead")]
 	public float alpha
@@ -71,6 +75,10 @@ public class TweenAlpha : UITweener
 				color2.a = value;
 				this.mMat.color = color2;
 			}
+			else if (this.mLight != null)
+			{
+				this.mLight.intensity = this.mBaseIntensity * value;
+			}
 		}
 	}
 
@@ -81,14 +89,22 @@ public class TweenAlpha : UITweener
 		this.mSr = base.GetComponent<SpriteRenderer>();
 		if (this.mRect == null && this.mSr == null)
 		{
-			Renderer component = base.GetComponent<Renderer>();
-			if (component != null)
+			this.mLight = base.GetComponent<Light>();
+			if (this.mLight == null)
 			{
-				this.mMat = component.material;
+				Renderer component = base.GetComponent<Renderer>();
+				if (component != null)
+				{
+					this.mMat = component.material;
+				}
+				if (this.mMat == null)
+				{
+					this.mRect = base.GetComponentInChildren<UIRect>();
+				}
 			}
-			if (this.mMat == null)
+			else
 			{
-				this.mRect = base.GetComponentInChildren<UIRect>();
+				this.mBaseIntensity = this.mLight.intensity;
 			}
 		}
 	}
@@ -98,9 +114,9 @@ public class TweenAlpha : UITweener
 		this.value = Mathf.Lerp(this.from, this.to, factor);
 	}
 
-	public static TweenAlpha Begin(GameObject go, float duration, float alpha)
+	public static TweenAlpha Begin(GameObject go, float duration, float alpha, float delay = 0f)
 	{
-		TweenAlpha tweenAlpha = UITweener.Begin<TweenAlpha>(go, duration);
+		TweenAlpha tweenAlpha = UITweener.Begin<TweenAlpha>(go, duration, delay);
 		tweenAlpha.from = tweenAlpha.value;
 		tweenAlpha.to = alpha;
 		if (duration <= 0f)

@@ -124,32 +124,32 @@ namespace StaRTS.Main.Story.Trigger
 		{
 			switch (id)
 			{
-			case EventId.ScreenClosing:
+			case EventId.ContractAdded:
 			{
-				UXFactory uXFactory = cookie as UXFactory;
-				string text = (uXFactory != null && !(uXFactory.Root == null)) ? uXFactory.Root.name : string.Empty;
-				if (text.Equals(this.eventData[0], StringComparison.InvariantCultureIgnoreCase))
+				ContractEventData contractEventData = (ContractEventData)cookie;
+				if (contractEventData.Contract.ProductUid.Equals(this.eventData[0], StringComparison.InvariantCultureIgnoreCase))
 				{
 					this.CountEvent();
 				}
 				return EatResponse.NotEaten;
 			}
-			case EventId.ScreenClosed:
-			case EventId.ScreenOverlayClosing:
-				IL_20:
+			case EventId.ContractBacklogUpdated:
+				IL_18:
 				switch (id)
 				{
-				case EventId.ContractAdded:
+				case EventId.ScreenClosing:
 				{
-					ContractEventData contractEventData = (ContractEventData)cookie;
-					if (contractEventData.Contract.ProductUid.Equals(this.eventData[0], StringComparison.InvariantCultureIgnoreCase))
+					UXFactory uXFactory = cookie as UXFactory;
+					string text = (uXFactory != null && !(uXFactory.Root == null)) ? uXFactory.Root.name : string.Empty;
+					if (text.Equals(this.eventData[0], StringComparison.InvariantCultureIgnoreCase))
 					{
 						this.CountEvent();
 					}
 					return EatResponse.NotEaten;
 				}
-				case EventId.ContractBacklogUpdated:
-					IL_39:
+				case EventId.ScreenClosed:
+				case EventId.ScreenOverlayClosing:
+					IL_34:
 					if (id != EventId.BuildingPurchaseSuccess)
 					{
 						if (id != EventId.BuildingSelected)
@@ -162,7 +162,7 @@ namespace StaRTS.Main.Story.Trigger
 									{
 										if (id == EventId.TroopDonationTrackRewardReceived)
 										{
-											goto IL_3D2;
+											goto IL_3C0;
 										}
 										if (id == EventId.SpecialAttackDeployed)
 										{
@@ -206,7 +206,7 @@ namespace StaRTS.Main.Story.Trigger
 											{
 												return EatResponse.NotEaten;
 											}
-											goto IL_3D2;
+											goto IL_3C0;
 										}
 									}
 									Entity entity = (Entity)cookie;
@@ -246,7 +246,7 @@ namespace StaRTS.Main.Story.Trigger
 								}
 								return EatResponse.NotEaten;
 							}
-							IL_3D2:
+							IL_3C0:
 							this.CountEvent();
 							return EatResponse.NotEaten;
 						}
@@ -279,29 +279,29 @@ namespace StaRTS.Main.Story.Trigger
 						return EatResponse.NotEaten;
 					}
 					break;
-				case EventId.ContractStarted:
+				case EventId.ScreenLoaded:
 				{
-					ContractEventData contractEventData2 = (ContractEventData)cookie;
-					if (contractEventData2.Contract.ProductUid.Equals(this.eventData[0], StringComparison.InvariantCultureIgnoreCase))
+					UXFactory uXFactory2 = cookie as UXFactory;
+					string name = uXFactory2.Root.name;
+					if (name.Equals(this.eventData[0], StringComparison.InvariantCultureIgnoreCase))
 					{
 						this.CountEvent();
 					}
 					return EatResponse.NotEaten;
 				}
 				}
-				goto IL_39;
-			case EventId.ScreenLoaded:
+				goto IL_34;
+			case EventId.ContractStarted:
 			{
-				UXFactory uXFactory2 = cookie as UXFactory;
-				string name = uXFactory2.Root.name;
-				if (name.Equals(this.eventData[0], StringComparison.InvariantCultureIgnoreCase))
+				ContractEventData contractEventData2 = (ContractEventData)cookie;
+				if (contractEventData2.Contract.ProductUid.Equals(this.eventData[0], StringComparison.InvariantCultureIgnoreCase))
 				{
 					this.CountEvent();
 				}
 				return EatResponse.NotEaten;
 			}
 			}
-			goto IL_20;
+			goto IL_18;
 		}
 
 		private void CountEvent()

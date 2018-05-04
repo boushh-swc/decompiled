@@ -10,10 +10,6 @@ namespace StaRTS.Main.Controllers.Entities.Systems
 {
 	public class BattleSystem : SimSystemBase
 	{
-		private const uint SMALL_AUDIO_RESET_DELTA = 33u;
-
-		private const uint LARGE_AUDIO_RESET_DELTA = 330u;
-
 		private EntityController entityController;
 
 		private BattleController battleController;
@@ -29,6 +25,10 @@ namespace StaRTS.Main.Controllers.Entities.Systems
 		private NodeList<BuildingNode> buildingNodeList;
 
 		private NodeList<TroopNode> troopNodeList;
+
+		private const uint SMALL_AUDIO_RESET_DELTA = 33u;
+
+		private const uint LARGE_AUDIO_RESET_DELTA = 330u;
 
 		private uint audioResetDeltaMax;
 

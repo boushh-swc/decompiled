@@ -5,6 +5,7 @@ using StaRTS.Main.Configs;
 using StaRTS.Main.Controllers;
 using StaRTS.Main.Controllers.ShardShop;
 using StaRTS.Main.Models;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.Entities.Components;
 using StaRTS.Main.Models.Player;
 using StaRTS.Main.Models.Player.Misc;
@@ -23,6 +24,7 @@ using StaRTS.Utils.Core;
 using StaRTS.Utils.Scheduling;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace StaRTS.Main.Views.UX.Screens
@@ -374,7 +376,12 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		private ShopStickerViewModule stickersViewModule;
 
+		private List<GeometryProjector> projectorCleanupList;
+
 		private string backButtonStringId;
+
+		[CompilerGenerated]
+		private static Comparison<UXElement> <>f__mg$cache0;
 
 		public override bool ShowCurrencyTray
 		{
@@ -433,6 +440,7 @@ namespace StaRTS.Main.Views.UX.Screens
 			this.requiresRefresh = false;
 			this.visibleSale = null;
 			base.OnTransitionInComplete = new OnTransInComplete(this.onScreenTransitionInComplete);
+			this.projectorCleanupList = new List<GeometryProjector>();
 		}
 
 		private void onScreenTransitionInComplete()
@@ -501,6 +509,7 @@ namespace StaRTS.Main.Views.UX.Screens
 				this.tabHelper.Destroy();
 				this.tabHelper = null;
 			}
+			this.CleanupProjectors();
 			EventManager eventManager = Service.EventManager;
 			eventManager.UnregisterObserver(this, EventId.PlayerFactionChanged);
 			eventManager.UnregisterObserver(this, EventId.ButtonHighlightActivated);
@@ -664,33 +673,36 @@ namespace StaRTS.Main.Views.UX.Screens
 			base.GetElement<UXTexture>(textureHolderName).LoadTexture(textureAssetName);
 			UXButton element = base.GetElement<UXButton>(tabName);
 			this.SetupTab(tab, element);
-			if (tab != StoreTab.Crystals)
+			if (tab != StoreTab.Fragments)
 			{
-				if (tab == StoreTab.Fragments)
+				if (tab == StoreTab.Crystals)
 				{
-					bool flag = Service.ShardShopController.IsShardShopUnlocked();
-					if (flag)
+					if (this.HasInAppPurchaseItems())
 					{
-						base.GetElement<UXElement>("WidgetTabFragmentsLocked").Visible = false;
+						base.GetElement<UXElement>("WidgetTabFCrystalsLocked").Visible = false;
 					}
 					else
 					{
-						int sHARD_SHOP_MINIMUM_HQ = GameConstants.SHARD_SHOP_MINIMUM_HQ;
-						base.GetElement<UXLabel>("LabelTabFragmentsLocked").Text = this.lang.Get("shardShopMinHqMessage", new object[]
-						{
-							sHARD_SHOP_MINIMUM_HQ
-						});
-						element.OnClicked = null;
+						base.GetElement<UXLabel>("LabelTabCrystalsLocked").Text = this.GetLockedCrystalLabelString();
 					}
 				}
 			}
-			else if (this.HasInAppPurchaseItems())
-			{
-				base.GetElement<UXElement>("WidgetTabFCrystalsLocked").Visible = false;
-			}
 			else
 			{
-				base.GetElement<UXLabel>("LabelTabCrystalsLocked").Text = this.GetLockedCrystalLabelString();
+				bool flag = Service.ShardShopController.IsShardShopUnlocked();
+				if (flag)
+				{
+					base.GetElement<UXElement>("WidgetTabFragmentsLocked").Visible = false;
+				}
+				else
+				{
+					int sHARD_SHOP_MINIMUM_HQ = GameConstants.SHARD_SHOP_MINIMUM_HQ;
+					base.GetElement<UXLabel>("LabelTabFragmentsLocked").Text = this.lang.Get("shardShopMinHqMessage", new object[]
+					{
+						sHARD_SHOP_MINIMUM_HQ
+					});
+					element.OnClicked = null;
+				}
 			}
 		}
 
@@ -839,13 +851,13 @@ namespace StaRTS.Main.Views.UX.Screens
 				this.titleLabel.Text = this.lang.Get("s_Store", new object[0]);
 				this.itemGrid2Rows.Clear();
 				this.itemGrid1Row.Clear();
+				this.CleanupProjectors();
 				this.SetupJewel(StoreTab.Fragments);
 				this.SetupJewel(StoreTab.Treasure);
 				this.SetupJewel(StoreTab.Structures);
 				this.SetupJewel(StoreTab.Turrets);
 			}
-			StoreTab storeTab = tab;
-			if (storeTab != StoreTab.Fragments)
+			if (tab != StoreTab.Fragments)
 			{
 				this.RegisterForEventsWithoutModal();
 				if (this.ssView.IsModalVisible())
@@ -924,7 +936,8 @@ namespace StaRTS.Main.Views.UX.Screens
 				geometryVO = ProjectorUtils.DetermineVOForEquipment((EquipmentVO)geometryVO);
 			}
 			ProjectorConfig config = ProjectorUtils.GenerateGeometryConfig(geometryVO, subElement5);
-			ProjectorUtils.GenerateProjector(config);
+			GeometryProjector item2 = ProjectorUtils.GenerateProjector(config);
+			this.projectorCleanupList.Add(item2);
 			if (!flag)
 			{
 				UXLabel subElement6 = grid.GetSubElement<UXLabel>(name, "LabelFragmentCost");
@@ -961,6 +974,16 @@ namespace StaRTS.Main.Views.UX.Screens
 			component.SetBool("Visible", true);
 			component.SetBool("Locked", vto.State != "unlocked");
 			component.SetBool("Upgradeable", upgradeable);
+		}
+
+		private void CleanupProjectors()
+		{
+			int count = this.projectorCleanupList.Count;
+			for (int i = 0; i < count; i++)
+			{
+				this.projectorCleanupList[i].Destroy();
+			}
+			this.projectorCleanupList.Clear();
 		}
 
 		public static int AddShardItems(List<UXElement> list, StoreTab tab, UXGrid grid, StoreScreen.AddShardItemHandler OnItemAdded)
@@ -1051,7 +1074,11 @@ namespace StaRTS.Main.Views.UX.Screens
 			}
 			if (list != null)
 			{
-				list.Sort(new Comparison<UXElement>(StoreScreen.CompareBuildingItem));
+				if (StoreScreen.<>f__mg$cache0 == null)
+				{
+					StoreScreen.<>f__mg$cache0 = new Comparison<UXElement>(StoreScreen.CompareBuildingItem);
+				}
+				list.Sort(StoreScreen.<>f__mg$cache0);
 			}
 			return num;
 		}
@@ -1334,20 +1361,26 @@ namespace StaRTS.Main.Views.UX.Screens
 				array2 = new bool[num];
 				int num2 = 0;
 				int num3 = 0;
-				switch (currencyType)
+				if (currencyType != CurrencyType.Credits)
 				{
-				case CurrencyType.Credits:
+					if (currencyType != CurrencyType.Materials)
+					{
+						if (currencyType == CurrencyType.Contraband)
+						{
+							num2 = currentPlayer.CurrentContrabandAmount;
+							num3 = currentPlayer.MaxContrabandAmount;
+						}
+					}
+					else
+					{
+						num2 = currentPlayer.CurrentMaterialsAmount;
+						num3 = currentPlayer.MaxMaterialsAmount;
+					}
+				}
+				else
+				{
 					num2 = currentPlayer.CurrentCreditsAmount;
 					num3 = currentPlayer.MaxCreditsAmount;
-					break;
-				case CurrencyType.Materials:
-					num2 = currentPlayer.CurrentMaterialsAmount;
-					num3 = currentPlayer.MaxMaterialsAmount;
-					break;
-				case CurrencyType.Contraband:
-					num2 = currentPlayer.CurrentContrabandAmount;
-					num3 = currentPlayer.MaxContrabandAmount;
-					break;
 				}
 				for (int i = 0; i < num; i++)
 				{
@@ -1355,20 +1388,26 @@ namespace StaRTS.Main.Views.UX.Screens
 					int num5 = (num4 != 100) ? (num3 * num4 / 100) : (num3 - num2);
 					array3[i] = num5;
 					int num6 = 0;
-					switch (currencyType)
+					if (currencyType != CurrencyType.Credits)
 					{
-					case CurrencyType.Credits:
+						if (currencyType != CurrencyType.Materials)
+						{
+							if (currencyType == CurrencyType.Contraband)
+							{
+								array[i] = "Contraband" + num4;
+								num6 = GameUtils.ContrabandCrystalCost(num5);
+							}
+						}
+						else
+						{
+							array[i] = "Materials" + num4;
+							num6 = GameUtils.MaterialsCrystalCost(num5);
+						}
+					}
+					else
+					{
 						array[i] = "Credits" + num4;
 						num6 = GameUtils.CreditsCrystalCost(num5);
-						break;
-					case CurrencyType.Materials:
-						array[i] = "Materials" + num4;
-						num6 = GameUtils.MaterialsCrystalCost(num5);
-						break;
-					case CurrencyType.Contraband:
-						array[i] = "Contraband" + num4;
-						num6 = GameUtils.ContrabandCrystalCost(num5);
-						break;
 					}
 					array4[i] = num6;
 					array2[i] = (num5 > 0 && num3 > 0 && num2 + num5 <= num3);
@@ -1386,10 +1425,10 @@ namespace StaRTS.Main.Views.UX.Screens
 				storeItemTag.ReqMet = (forProtection || array2[j]);
 				if (forProtection)
 				{
-					StoreItemTag arg_21C_0 = storeItemTag;
+					StoreItemTag arg_216_0 = storeItemTag;
 					bool flag = this.IsProtectionPackAvailable(num8);
 					storeItemTag.ReqMet = flag;
-					arg_21C_0.CanPurchase = flag;
+					arg_216_0.CanPurchase = flag;
 				}
 				if (!forProtection && array != null)
 				{
@@ -1550,7 +1589,7 @@ namespace StaRTS.Main.Views.UX.Screens
 		{
 			InAppPurchaseController inAppPurchaseController = Service.InAppPurchaseController;
 			List<InAppPurchaseTypeVO> validIAPTypes = inAppPurchaseController.GetValidIAPTypes();
-			CurrencyType currencyType = CurrencyType.Crystals;
+			CurrencyType currency = CurrencyType.Crystals;
 			List<SaleItemTypeVO> currentItemsOnSale = this.GetCurrentItemsOnSale();
 			int count = validIAPTypes.Count;
 			for (int i = 0; i < count; i++)
@@ -1561,7 +1600,7 @@ namespace StaRTS.Main.Views.UX.Screens
 				string text2 = this.lang.Get("iap_desc_" + inAppPurchaseTypeVO.Uid, new object[0]);
 				StoreItemTag storeItemTag = new StoreItemTag();
 				storeItemTag.Amount = inAppPurchaseTypeVO.Amount;
-				storeItemTag.Currency = currencyType;
+				storeItemTag.Currency = currency;
 				storeItemTag.IAPType = inAppPurchaseTypeVO;
 				storeItemTag.IAPProduct = iAPProduct;
 				string uid = inAppPurchaseTypeVO.Uid;
@@ -1592,7 +1631,7 @@ namespace StaRTS.Main.Views.UX.Screens
 				subElement8.Text = this.lang.Get("CURRENCY_VALUE_NAME", new object[]
 				{
 					this.lang.ThousandsSeparated(storeItemTag.Amount),
-					this.lang.Get(currencyType.ToString().ToUpper(), new object[0])
+					this.lang.Get(currency.ToString().ToUpper(), new object[0])
 				});
 				UXSprite subElement9 = this.itemGrid2Rows.GetSubElement<UXSprite>(uid, "SpriteDim");
 				subElement9.Visible = false;
@@ -1650,6 +1689,7 @@ namespace StaRTS.Main.Views.UX.Screens
 			this.itemGrid2Rows.Clear();
 			this.itemGrid1Row.Clear();
 			this.itemGridFiltered.Clear();
+			this.CleanupProjectors();
 			UXGrid activeGrid = this.GetActiveGrid();
 			this.tabHelper.HideTabs(this);
 			if (this.curTab == StoreTab.Fragments)
@@ -1681,24 +1721,24 @@ namespace StaRTS.Main.Views.UX.Screens
 				}
 				this.AddCurrencyOrProtectionItems(list, false, CurrencyType.Credits);
 				this.AddCurrencyOrProtectionItems(list, false, CurrencyType.Materials);
-				goto IL_2DF;
+				goto IL_2E6;
 			case StoreTab.Protection:
 				base.GetElement<UXButton>("BtnBack").Visible = false;
 				this.AddLEItems(list, this.curTab, validLEIs);
 				this.AddCurrencyOrProtectionItems(list, true, CurrencyType.Crystals);
-				goto IL_2DF;
+				goto IL_2E6;
 			case StoreTab.EventPrizes:
 				this.AddLEItems(list, this.curTab, validLEIs);
 				this.AddEventPrizeItems(list);
-				goto IL_2DF;
+				goto IL_2E6;
 			case StoreTab.Turrets:
 				this.AddLEItems(list, this.curTab, validLEIs);
 				StoreScreen.AddOrCountBuildingItems(list, StoreTab.Decorations, new StoreScreen.AddBuildingItemDelegate(this.AddBuildingItem), activeGrid);
-				goto IL_2DF;
+				goto IL_2E6;
 			case StoreTab.Crystals:
 				this.AddIAPItems(list);
 				this.AddLEItems(list, this.curTab, validLEIs);
-				goto IL_2DF;
+				goto IL_2E6;
 			case StoreTab.Fragments:
 			{
 				ShardShopData currentShopData = Service.ShardShopController.CurrentShopData;
@@ -1708,7 +1748,7 @@ namespace StaRTS.Main.Views.UX.Screens
 					this.CreateShardShopCountdown(currentShopData);
 					this.expirationLabel.Visible = true;
 				}
-				goto IL_2DF;
+				goto IL_2E6;
 			}
 			case StoreTab.Structures:
 				this.filterPanel.Visible = true;
@@ -1717,11 +1757,11 @@ namespace StaRTS.Main.Views.UX.Screens
 				StoreScreen.AddOrCountBuildingItems(list, StoreTab.Army, new StoreScreen.AddBuildingItemDelegate(this.AddBuildingItem), activeGrid);
 				StoreScreen.AddOrCountBuildingItems(list, StoreTab.Resources, new StoreScreen.AddBuildingItemDelegate(this.AddBuildingItem), activeGrid);
 				StoreScreen.AddOrCountBuildingItems(list, StoreTab.Defenses, new StoreScreen.AddBuildingItemDelegate(this.AddBuildingItem), activeGrid);
-				goto IL_2DF;
+				goto IL_2E6;
 			}
 			this.AddLEItems(list, this.curTab, validLEIs);
 			StoreScreen.AddOrCountBuildingItems(list, this.curTab, new StoreScreen.AddBuildingItemDelegate(this.AddBuildingItem), activeGrid);
-			IL_2DF:
+			IL_2E6:
 			if (this.curTab == StoreTab.Turrets && list.Count > 0 && this.turretSwappingUnlocked)
 			{
 				StoreItemTag storeItemTag = (StoreItemTag)list[0].Tag;
@@ -1841,7 +1881,7 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		private void OnTabButtonClicked(UXButton button)
 		{
-			StoreTab storeTab = (StoreTab)((int)button.Tag);
+			StoreTab storeTab = (StoreTab)button.Tag;
 			this.backButtonStringId = "s_Back";
 			if (storeTab != this.curTab)
 			{
@@ -1979,12 +2019,12 @@ namespace StaRTS.Main.Views.UX.Screens
 						BuildingLookupController buildingLookupController = Service.BuildingLookupController;
 						BuildingUpgradeCatalog buildingUpgradeCatalog = Service.BuildingUpgradeCatalog;
 						int num = 0;
-						List<Entity> buildingListByType = buildingLookupController.GetBuildingListByType(reqBuilding.Type);
+						List<SmartEntity> buildingListByType = buildingLookupController.GetBuildingListByType(reqBuilding.Type);
 						int i = 0;
 						int count = buildingListByType.Count;
 						while (i < count)
 						{
-							num = Math.Max(num, buildingListByType[i].Get<BuildingComponent>().BuildingType.Lvl);
+							num = Math.Max(num, buildingListByType[i].BuildingComp.BuildingType.Lvl);
 							i++;
 						}
 						int lvl = buildingUpgradeCatalog.GetMaxLevel(reqBuilding.UpgradeGroup).Lvl;
@@ -2017,13 +2057,20 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		public virtual void OnViewClockTime(float dt)
 		{
-			switch (this.curTab)
+			StoreTab storeTab = this.curTab;
+			if (storeTab != StoreTab.NotInStore)
 			{
-			case StoreTab.NotInStore:
-				this.stickersViewModule.CheckForStickerExpiration();
-				break;
-			case StoreTab.Treasure:
-				if (this.visibleSale != null)
+				if (storeTab != StoreTab.Treasure)
+				{
+					if (storeTab == StoreTab.Protection)
+					{
+						if (this.enableTimer)
+						{
+							this.RefreshProtectionCooldownTimer();
+						}
+					}
+				}
+				else if (this.visibleSale != null)
 				{
 					if (!TimedEventUtils.IsTimedEventActive(this.visibleSale))
 					{
@@ -2040,13 +2087,10 @@ namespace StaRTS.Main.Views.UX.Screens
 						});
 					}
 				}
-				break;
-			case StoreTab.Protection:
-				if (this.enableTimer)
-				{
-					this.RefreshProtectionCooldownTimer();
-				}
-				break;
+			}
+			else
+			{
+				this.stickersViewModule.CheckForStickerExpiration();
 			}
 		}
 
@@ -2305,7 +2349,7 @@ namespace StaRTS.Main.Views.UX.Screens
 								{
 									this.RefreshAfterCurrencyChange();
 								}
-								goto IL_1DC;
+								goto IL_1EC;
 							}
 							if (id == EventId.ButtonHighlightActivated)
 							{
@@ -2313,12 +2357,12 @@ namespace StaRTS.Main.Views.UX.Screens
 								base.GetOptionalElement<UXElement>("ContainerJewel" + StoreTab.Treasure.ToString()).Visible = false;
 								base.GetOptionalElement<UXElement>("ContainerJewel" + StoreTab.Structures.ToString()).Visible = false;
 								base.GetOptionalElement<UXElement>("ContainerJewel" + StoreTab.Turrets.ToString()).Visible = false;
-								goto IL_1DC;
+								goto IL_1EC;
 							}
 							if (id == EventId.PlayerFactionChanged)
 							{
 								this.SetTab(this.curTab);
-								goto IL_1DC;
+								goto IL_1EC;
 							}
 							if (id == EventId.EquipmentUnlocked)
 							{
@@ -2326,18 +2370,18 @@ namespace StaRTS.Main.Views.UX.Screens
 								{
 									this.UnregisterForCrateFlyoutReOpen();
 								}
-								goto IL_1DC;
+								goto IL_1EC;
 							}
 							if (id != EventId.EquipmentUnlockCelebrationPlayed)
 							{
 								if (id != EventId.InventoryCrateCollectionClosed)
 								{
-									goto IL_1DC;
+									goto IL_1EC;
 								}
 								string planetId = Service.CurrentPlayer.PlanetId;
 								this.OpenCrateModalFlyoutForStore(this.crateToReOpenInFlyout, planetId);
 								this.UnregisterForCrateFlyoutReOpen();
-								goto IL_1DC;
+								goto IL_1EC;
 							}
 						}
 						if (!this.ssView.IsModalVisible())
@@ -2363,7 +2407,7 @@ namespace StaRTS.Main.Views.UX.Screens
 			{
 				this.SetTab(this.curTab);
 			}
-			IL_1DC:
+			IL_1EC:
 			return base.OnEvent(id, cookie);
 		}
 	}

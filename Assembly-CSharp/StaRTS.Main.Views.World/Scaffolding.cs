@@ -50,12 +50,13 @@ namespace StaRTS.Main.Views.World
 		{
 			if (!this.viewObjects.ContainsKey(building))
 			{
-				BuildingComponent buildingComponent = building.Get<BuildingComponent>();
-				if (buildingComponent == null)
+				SmartEntity smartEntity = (SmartEntity)building;
+				BuildingComponent buildingComp = smartEntity.BuildingComp;
+				if (buildingComp == null)
 				{
 					return;
 				}
-				BuildingTypeVO buildingType = buildingComponent.BuildingType;
+				BuildingTypeVO buildingType = buildingComp.BuildingType;
 				FactionType faction = buildingType.Faction;
 				string text;
 				if (faction != FactionType.Empire)
@@ -235,7 +236,7 @@ namespace StaRTS.Main.Views.World
 				return EatResponse.NotEaten;
 			}
 			case EventId.BuildingViewFailed:
-				IL_1C:
+				IL_18:
 				switch (id)
 				{
 				case EventId.BuildingLevelUpgraded:
@@ -251,7 +252,7 @@ namespace StaRTS.Main.Views.World
 					{
 						if (id == EventId.ChampionRepaired)
 						{
-							goto IL_AE;
+							goto IL_A3;
 						}
 						if (id == EventId.ViewObjectsPurged)
 						{
@@ -261,13 +262,10 @@ namespace StaRTS.Main.Views.World
 						if (id == EventId.ContractStarted)
 						{
 							ContractEventData contractEventData2 = (ContractEventData)cookie;
-							switch (contractEventData2.Contract.DeliveryType)
+							DeliveryType deliveryType = contractEventData2.Contract.DeliveryType;
+							if (deliveryType == DeliveryType.Building || deliveryType == DeliveryType.UpgradeBuilding || deliveryType == DeliveryType.SwapBuilding)
 							{
-							case DeliveryType.Building:
-							case DeliveryType.UpgradeBuilding:
-							case DeliveryType.SwapBuilding:
 								this.ShowScaffold(contractEventData2.Entity);
-								break;
 							}
 							return EatResponse.NotEaten;
 						}
@@ -284,13 +282,13 @@ namespace StaRTS.Main.Views.World
 				this.HideScaffold(((ContractEventData)cookie).Entity);
 				return EatResponse.NotEaten;
 			case EventId.TroopCancelled:
-				goto IL_AE;
+				goto IL_A3;
 			}
-			goto IL_1C;
-			IL_AE:
+			goto IL_18;
+			IL_A3:
 			ContractEventData contractEventData3 = cookie as ContractEventData;
-			SmartEntity smartEntity = (SmartEntity)contractEventData3.Entity;
-			if (smartEntity.BuildingComp.BuildingType.Type == BuildingType.ChampionPlatform)
+			SmartEntity entity2 = contractEventData3.Entity;
+			if (entity2.BuildingComp.BuildingType.Type == BuildingType.ChampionPlatform)
 			{
 				this.HideScaffold(contractEventData3.Entity);
 			}

@@ -12,7 +12,7 @@ namespace StaRTS.Main.Utils.Events
 		public EventManager()
 		{
 			Service.EventManager = this;
-			int num = 532;
+			int num = 533;
 			this.eventIdToObservers = new EventObservers[num];
 			for (int i = 0; i < num; i++)
 			{

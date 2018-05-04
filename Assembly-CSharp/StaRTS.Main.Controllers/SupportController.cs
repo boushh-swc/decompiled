@@ -29,18 +29,17 @@ using StaRTS.Utils.Core;
 using StaRTS.Utils.Scheduling;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace StaRTS.Main.Controllers
 {
-	public class SupportController : ISupportController, IEventObserver, IViewFrameTimeObserver
+	public class SupportController : IEventObserver, ISupportController, IViewFrameTimeObserver
 	{
 		private delegate int ProductDeliveryDelegate(Contract contract, Building buildingTO, BuildingTypeVO buildingVO);
 
 		private delegate bool ContractValidationDelegate(Contract contract);
 
 		private delegate void FinishContractOnServerDelegate(string buildingKey, string productUid, int amount);
-
-		public const float UPDATE_TIME_THRESHOLD = 0.1f;
 
 		private Dictionary<DeliveryType, SupportController.ProductDeliveryDelegate> deliveryMethods;
 
@@ -75,6 +74,35 @@ namespace StaRTS.Main.Controllers
 		private Dictionary<string, int> temporaryInventorySizeServerDeltas;
 
 		private float accumulatedUpdateDt;
+
+		public const float UPDATE_TIME_THRESHOLD = 0.1f;
+
+		[CompilerGenerated]
+		private static SupportController.ContractValidationDelegate <>f__mg$cache0;
+
+		[CompilerGenerated]
+		private static SupportController.ContractValidationDelegate <>f__mg$cache1;
+
+		[CompilerGenerated]
+		private static SupportController.ContractValidationDelegate <>f__mg$cache2;
+
+		[CompilerGenerated]
+		private static SupportController.ContractValidationDelegate <>f__mg$cache3;
+
+		[CompilerGenerated]
+		private static SupportController.ContractValidationDelegate <>f__mg$cache4;
+
+		[CompilerGenerated]
+		private static SupportController.ContractValidationDelegate <>f__mg$cache5;
+
+		[CompilerGenerated]
+		private static SupportController.ContractValidationDelegate <>f__mg$cache6;
+
+		[CompilerGenerated]
+		private static SupportController.ContractValidationDelegate <>f__mg$cache7;
+
+		[CompilerGenerated]
+		private static SupportController.ContractValidationDelegate <>f__mg$cache8;
 
 		public SupportController()
 		{
@@ -198,45 +226,71 @@ namespace StaRTS.Main.Controllers
 					new SupportController.ProductDeliveryDelegate(this.ClearClearable)
 				}
 			};
-			this.validationMethods = new Dictionary<DeliveryType, SupportController.ContractValidationDelegate>
+			Dictionary<DeliveryType, SupportController.ContractValidationDelegate> dictionary = new Dictionary<DeliveryType, SupportController.ContractValidationDelegate>();
+			Dictionary<DeliveryType, SupportController.ContractValidationDelegate> arg_228_0 = dictionary;
+			DeliveryType arg_228_1 = DeliveryType.Infantry;
+			if (SupportController.<>f__mg$cache0 == null)
 			{
-				{
-					DeliveryType.Infantry,
-					new SupportController.ContractValidationDelegate(ContractUtils.IsArmyContractValid)
-				},
-				{
-					DeliveryType.Vehicle,
-					new SupportController.ContractValidationDelegate(ContractUtils.IsArmyContractValid)
-				},
-				{
-					DeliveryType.Mercenary,
-					new SupportController.ContractValidationDelegate(ContractUtils.IsArmyContractValid)
-				},
-				{
-					DeliveryType.Starship,
-					new SupportController.ContractValidationDelegate(ContractUtils.IsArmyContractValid)
-				},
-				{
-					DeliveryType.Hero,
-					new SupportController.ContractValidationDelegate(ContractUtils.IsArmyContractValid)
-				},
-				{
-					DeliveryType.Champion,
-					new SupportController.ContractValidationDelegate(ContractUtils.IsArmyContractValid)
-				},
-				{
-					DeliveryType.UpgradeTroop,
-					new SupportController.ContractValidationDelegate(ContractUtils.IsUpgradeTroopContractValid)
-				},
-				{
-					DeliveryType.UpgradeStarship,
-					new SupportController.ContractValidationDelegate(ContractUtils.IsUpgradeStarshipContractValid)
-				},
-				{
-					DeliveryType.UpgradeEquipment,
-					new SupportController.ContractValidationDelegate(ContractUtils.IsUpgradeEquipmentContractValid)
-				}
-			};
+				SupportController.<>f__mg$cache0 = new SupportController.ContractValidationDelegate(ContractUtils.IsArmyContractValid);
+			}
+			arg_228_0.Add(arg_228_1, SupportController.<>f__mg$cache0);
+			Dictionary<DeliveryType, SupportController.ContractValidationDelegate> arg_24C_0 = dictionary;
+			DeliveryType arg_24C_1 = DeliveryType.Vehicle;
+			if (SupportController.<>f__mg$cache1 == null)
+			{
+				SupportController.<>f__mg$cache1 = new SupportController.ContractValidationDelegate(ContractUtils.IsArmyContractValid);
+			}
+			arg_24C_0.Add(arg_24C_1, SupportController.<>f__mg$cache1);
+			Dictionary<DeliveryType, SupportController.ContractValidationDelegate> arg_271_0 = dictionary;
+			DeliveryType arg_271_1 = DeliveryType.Mercenary;
+			if (SupportController.<>f__mg$cache2 == null)
+			{
+				SupportController.<>f__mg$cache2 = new SupportController.ContractValidationDelegate(ContractUtils.IsArmyContractValid);
+			}
+			arg_271_0.Add(arg_271_1, SupportController.<>f__mg$cache2);
+			Dictionary<DeliveryType, SupportController.ContractValidationDelegate> arg_295_0 = dictionary;
+			DeliveryType arg_295_1 = DeliveryType.Starship;
+			if (SupportController.<>f__mg$cache3 == null)
+			{
+				SupportController.<>f__mg$cache3 = new SupportController.ContractValidationDelegate(ContractUtils.IsArmyContractValid);
+			}
+			arg_295_0.Add(arg_295_1, SupportController.<>f__mg$cache3);
+			Dictionary<DeliveryType, SupportController.ContractValidationDelegate> arg_2B9_0 = dictionary;
+			DeliveryType arg_2B9_1 = DeliveryType.Hero;
+			if (SupportController.<>f__mg$cache4 == null)
+			{
+				SupportController.<>f__mg$cache4 = new SupportController.ContractValidationDelegate(ContractUtils.IsArmyContractValid);
+			}
+			arg_2B9_0.Add(arg_2B9_1, SupportController.<>f__mg$cache4);
+			Dictionary<DeliveryType, SupportController.ContractValidationDelegate> arg_2DD_0 = dictionary;
+			DeliveryType arg_2DD_1 = DeliveryType.Champion;
+			if (SupportController.<>f__mg$cache5 == null)
+			{
+				SupportController.<>f__mg$cache5 = new SupportController.ContractValidationDelegate(ContractUtils.IsArmyContractValid);
+			}
+			arg_2DD_0.Add(arg_2DD_1, SupportController.<>f__mg$cache5);
+			Dictionary<DeliveryType, SupportController.ContractValidationDelegate> arg_302_0 = dictionary;
+			DeliveryType arg_302_1 = DeliveryType.UpgradeTroop;
+			if (SupportController.<>f__mg$cache6 == null)
+			{
+				SupportController.<>f__mg$cache6 = new SupportController.ContractValidationDelegate(ContractUtils.IsUpgradeTroopContractValid);
+			}
+			arg_302_0.Add(arg_302_1, SupportController.<>f__mg$cache6);
+			Dictionary<DeliveryType, SupportController.ContractValidationDelegate> arg_327_0 = dictionary;
+			DeliveryType arg_327_1 = DeliveryType.UpgradeStarship;
+			if (SupportController.<>f__mg$cache7 == null)
+			{
+				SupportController.<>f__mg$cache7 = new SupportController.ContractValidationDelegate(ContractUtils.IsUpgradeStarshipContractValid);
+			}
+			arg_327_0.Add(arg_327_1, SupportController.<>f__mg$cache7);
+			Dictionary<DeliveryType, SupportController.ContractValidationDelegate> arg_34C_0 = dictionary;
+			DeliveryType arg_34C_1 = DeliveryType.UpgradeEquipment;
+			if (SupportController.<>f__mg$cache8 == null)
+			{
+				SupportController.<>f__mg$cache8 = new SupportController.ContractValidationDelegate(ContractUtils.IsUpgradeEquipmentContractValid);
+			}
+			arg_34C_0.Add(arg_34C_1, SupportController.<>f__mg$cache8);
+			this.validationMethods = dictionary;
 			this.eventManager.RegisterObserver(this, EventId.WorldLoadComplete, EventPriority.Notification);
 			this.eventManager.RegisterObserver(this, EventId.GameStateChanged, EventPriority.Default);
 			this.eventManager.RegisterObserver(this, EventId.ContractsCompletedWhileOffline, EventPriority.Default);
@@ -369,38 +423,44 @@ namespace StaRTS.Main.Controllers
 					case DeliveryType.Building:
 					case DeliveryType.UpgradeBuilding:
 					case DeliveryType.SwapBuilding:
-						this.DisableBuilding(supportNode.Entity);
+						this.DisableBuilding((SmartEntity)supportNode.Entity);
 						break;
 					}
-					ContractEventData cookie = new ContractEventData(contract, supportNode.Entity, true);
+					ContractEventData cookie = new ContractEventData(contract, (SmartEntity)supportNode.Entity, true);
 					this.eventManager.SendEvent(EventId.ContractContinued, cookie);
 				}
 			}
 		}
 
-		public void DisableBuilding(Entity building)
+		public void DisableBuilding(SmartEntity building)
 		{
 			Service.EventManager.SendEvent(EventId.ShowScaffolding, building);
-			building.Remove<ShooterComponent>();
-			building.Remove<TurretShooterComponent>();
-			if (building.Has<ShieldGeneratorComponent>())
+			if (building.ShooterComp != null)
+			{
+				building.Remove<ShooterComponent>();
+			}
+			if (building.TurretShooterComp != null)
+			{
+				building.Remove<TurretShooterComponent>();
+			}
+			if (building.ShieldGeneratorComp != null)
 			{
 				Service.ShieldController.StopAllEffects();
 				Service.ShieldController.RecalculateFlagStampsForShieldBorder(building, false);
 				Service.ShieldController.RemoveShieldEffect(building);
-				Service.EntityFactory.DestroyEntity(building.Get<ShieldGeneratorComponent>().ShieldBorderEntity, true, true);
+				Service.EntityFactory.DestroyEntity(building.ShieldGeneratorComp.ShieldBorderEntity, true, true);
 				building.Remove<ShieldGeneratorComponent>();
 				Service.EventManager.SendEvent(EventId.ShieldDisabled, null);
 			}
 		}
 
-		private void EnableBuilding(Entity building)
+		private void EnableBuilding(SmartEntity building)
 		{
-			BuildingTypeVO buildingType = building.Get<BuildingComponent>().BuildingType;
+			BuildingTypeVO buildingType = building.BuildingComp.BuildingType;
 			if (buildingType.Type == BuildingType.Turret)
 			{
 				TurretTypeVO turretType = Service.StaticDataController.Get<TurretTypeVO>(buildingType.TurretUid);
-				Service.EntityFactory.AddTurretComponentsToEntity((SmartEntity)building, turretType);
+				Service.EntityFactory.AddTurretComponentsToEntity(building, turretType);
 			}
 			if (buildingType.Type == BuildingType.ShieldGenerator)
 			{
@@ -701,11 +761,8 @@ namespace StaRTS.Main.Controllers
 			if (this.temporaryInventorySizeServerDeltas.ContainsKey(inventoryStorage.Key) && this.temporaryInventorySizeServerDeltas[inventoryStorage.Key] < 0)
 			{
 				Dictionary<string, int> dictionary;
-				Dictionary<string, int> expr_33 = dictionary = this.temporaryInventorySizeServerDeltas;
 				string key;
-				string expr_3B = key = inventoryStorage.Key;
-				int num = dictionary[key];
-				expr_33[expr_3B] = num + deployableVO.Size;
+				(dictionary = this.temporaryInventorySizeServerDeltas)[key = inventoryStorage.Key] = dictionary[key] + deployableVO.Size;
 			}
 			else
 			{
@@ -806,41 +863,41 @@ namespace StaRTS.Main.Controllers
 			return 0;
 		}
 
-		public Contract StartHeroMobilization(TroopTypeVO hero, Entity building)
+		public Contract StartHeroMobilization(TroopTypeVO hero, SmartEntity building)
 		{
-			BuildingComponent buildingComponent = building.Get<BuildingComponent>();
+			BuildingComponent buildingComp = building.BuildingComp;
 			Contract result = this.StartTroopContract(hero.Uid, DeliveryType.Hero, hero.Size, building);
 			this.SpendCurrencyForDeployableContract(hero, building);
-			DeployableContractRequest request = new DeployableContractRequest(buildingComponent.BuildingTO.Key, hero.Uid, 1);
+			DeployableContractRequest request = new DeployableContractRequest(buildingComp.BuildingTO.Key, hero.Uid, 1);
 			this.serverAPI.Enqueue(new DeployableStartContractCommand(request));
 			return result;
 		}
 
-		public Contract StartChampionRepair(TroopTypeVO champion, Entity building)
+		public Contract StartChampionRepair(TroopTypeVO champion, SmartEntity building)
 		{
-			BuildingComponent buildingComponent = building.Get<BuildingComponent>();
+			BuildingComponent buildingComp = building.BuildingComp;
 			Contract result = this.StartTroopContract(champion.Uid, DeliveryType.Champion, champion.Size, building);
 			this.SpendCurrencyForDeployableContract(champion, building);
-			DeployableContractRequest request = new DeployableContractRequest(buildingComponent.BuildingTO.Key, champion.Uid, 1);
+			DeployableContractRequest request = new DeployableContractRequest(buildingComp.BuildingTO.Key, champion.Uid, 1);
 			this.serverAPI.Enqueue(new DeployableStartContractCommand(request));
 			this.eventManager.SendEvent(EventId.ChampionStartedRepairing, building);
 			return result;
 		}
 
-		public Contract StartStarshipMobilization(SpecialAttackTypeVO starship, Entity building)
+		public Contract StartStarshipMobilization(SpecialAttackTypeVO starship, SmartEntity building)
 		{
-			BuildingComponent buildingComponent = building.Get<BuildingComponent>();
+			BuildingComponent buildingComp = building.BuildingComp;
 			Contract result = this.StartTroopContract(starship.Uid, DeliveryType.Starship, starship.Size, building);
 			this.SpendCurrencyForDeployableContract(starship, building);
-			DeployableContractRequest request = new DeployableContractRequest(buildingComponent.BuildingTO.Key, starship.Uid, 1);
+			DeployableContractRequest request = new DeployableContractRequest(buildingComp.BuildingTO.Key, starship.Uid, 1);
 			this.serverAPI.Enqueue(new DeployableStartContractCommand(request));
 			return result;
 		}
 
-		public void StartClearingBuilding(Entity building)
+		public void StartClearingBuilding(SmartEntity building)
 		{
-			BuildingComponent buildingComponent = building.Get<BuildingComponent>();
-			BuildingTypeVO buildingType = buildingComponent.BuildingType;
+			BuildingComponent buildingComp = building.BuildingComp;
+			BuildingTypeVO buildingType = buildingComp.BuildingType;
 			if (!this.StartBuildingContract(buildingType.Uid, DeliveryType.ClearClearable, buildingType.Time, building))
 			{
 				return;
@@ -849,13 +906,13 @@ namespace StaRTS.Main.Controllers
 			this.eventManager.SendEvent(EventId.ClearableStarted, building);
 			BuildingClearCommand command = new BuildingClearCommand(new BuildingClearRequest
 			{
-				InstanceId = buildingComponent.BuildingTO.Key,
+				InstanceId = buildingComp.BuildingTO.Key,
 				PayWithHardCurrency = false
 			});
 			this.serverAPI.Enqueue(command);
 		}
 
-		public void StartTurretCrossgrade(BuildingTypeVO swapBuildingInfo, Entity turret)
+		public void StartTurretCrossgrade(BuildingTypeVO swapBuildingInfo, SmartEntity turret)
 		{
 			if (!this.StartBuildingContract(swapBuildingInfo.Uid, DeliveryType.SwapBuilding, swapBuildingInfo.SwapTime, turret))
 			{
@@ -868,16 +925,16 @@ namespace StaRTS.Main.Controllers
 			BuildingSwapCommand command = new BuildingSwapCommand(new BuildingSwapRequest
 			{
 				goingToBuildingUid = swapBuildingInfo.Uid,
-				InstanceId = turret.Get<BuildingComponent>().BuildingTO.Key
+				InstanceId = turret.BuildingComp.BuildingTO.Key
 			});
 			this.serverAPI.Enqueue(command);
 			this.eventManager.SendEvent(EventId.BuildingStartedUpgrading, turret);
 		}
 
-		public void InstantBuildingConstruct(BuildingTypeVO buildingType, Entity selectedBuilding, int x, int z, string tag)
+		public void InstantBuildingConstruct(BuildingTypeVO buildingType, SmartEntity selectedBuilding, int x, int z, string tag)
 		{
-			BuildingComponent buildingComponent = selectedBuilding.Get<BuildingComponent>();
-			this.serverAPI.Enqueue(new BuildingConstructCommand(new BuildingConstructRequest(buildingComponent.BuildingTO.Key, buildingComponent.BuildingTO.Uid, new Position
+			BuildingComponent buildingComp = selectedBuilding.BuildingComp;
+			this.serverAPI.Enqueue(new BuildingConstructCommand(new BuildingConstructRequest(buildingComp.BuildingTO.Key, buildingComp.BuildingTO.Uid, new Position
 			{
 				X = x,
 				Z = z
@@ -887,27 +944,27 @@ namespace StaRTS.Main.Controllers
 			Service.EventManager.SendEvent(EventId.BuildingConstructed, cookie);
 		}
 
-		public void StartBuildingConstruct(BuildingTypeVO buildingType, Entity selectedBuilding, int x, int z, string tag)
+		public void StartBuildingConstruct(BuildingTypeVO buildingType, SmartEntity selectedBuilding, int x, int z, string tag)
 		{
-			BuildingComponent buildingComponent = selectedBuilding.Get<BuildingComponent>();
+			BuildingComponent buildingComp = selectedBuilding.BuildingComp;
 			if (buildingType.Type == BuildingType.Resource)
 			{
-				buildingComponent.BuildingTO.LastCollectTime = ServerTime.Time;
+				buildingComp.BuildingTO.LastCollectTime = ServerTime.Time;
 			}
 			this.StartBuildingContract(buildingType.Uid, DeliveryType.Building, buildingType.Time, selectedBuilding);
-			this.serverAPI.Enqueue(new BuildingConstructCommand(new BuildingConstructRequest(buildingComponent.BuildingTO.Key, buildingComponent.BuildingTO.Uid, new Position
+			this.serverAPI.Enqueue(new BuildingConstructCommand(new BuildingConstructRequest(buildingComp.BuildingTO.Key, buildingComp.BuildingTO.Uid, new Position
 			{
 				X = x,
 				Z = z
-			}, false, buildingComponent.BuildingType.Time == 0, tag)));
+			}, false, buildingComp.BuildingType.Time == 0, tag)));
 		}
 
-		public void StartBuildingUpgrade(BuildingTypeVO nextUpgradeType, Entity selectedBuilding, bool isInstant)
+		public void StartBuildingUpgrade(BuildingTypeVO nextUpgradeType, SmartEntity selectedBuilding, bool isInstant)
 		{
 			this.StartBuildingUpgrade(nextUpgradeType, selectedBuilding, isInstant, string.Empty);
 		}
 
-		public void StartBuildingUpgrade(BuildingTypeVO nextUpgradeType, Entity selectedBuilding, bool isInstant, string tag)
+		public void StartBuildingUpgrade(BuildingTypeVO nextUpgradeType, SmartEntity selectedBuilding, bool isInstant, string tag)
 		{
 			int totalTime = (!isInstant) ? nextUpgradeType.Time : 0;
 			if (!this.StartBuildingContract(nextUpgradeType.Uid, DeliveryType.UpgradeBuilding, totalTime, selectedBuilding, true, tag))
@@ -925,12 +982,12 @@ namespace StaRTS.Main.Controllers
 			this.eventManager.SendEvent(EventId.BuildingStartedUpgrading, selectedBuilding);
 			if (!isInstant)
 			{
-				BuildingComponent buildingComp = ((SmartEntity)selectedBuilding).BuildingComp;
+				BuildingComponent buildingComp = selectedBuilding.BuildingComp;
 				this.serverAPI.Enqueue(new BuildingUpgradeCommand(new BuildingContractRequest(buildingComp.BuildingTO.Key, false, tag)));
 			}
 		}
 
-		public void StartAllWallPartBuildingUpgrade(BuildingTypeVO nextUpgradeType, Entity selectedBuilding, bool sendBackendCommand, bool sendBILog)
+		public void StartAllWallPartBuildingUpgrade(BuildingTypeVO nextUpgradeType, SmartEntity selectedBuilding, bool sendBackendCommand, bool sendBILog)
 		{
 			if (!this.StartBuildingContract(nextUpgradeType.Uid, DeliveryType.UpgradeBuilding, nextUpgradeType.Time, selectedBuilding, sendBILog))
 			{
@@ -943,14 +1000,14 @@ namespace StaRTS.Main.Controllers
 				int contraband = nextUpgradeType.Contraband;
 				GameUtils.SpendCurrency(credits, materials, contraband, false);
 			}
-			BuildingComponent buildingComponent = selectedBuilding.Get<BuildingComponent>();
+			BuildingComponent buildingComp = selectedBuilding.BuildingComp;
 			if (sendBackendCommand)
 			{
-				this.serverAPI.Enqueue(new BuildingUpgradeCommand(new BuildingContractRequest(buildingComponent.BuildingTO.Key, false, string.Empty)));
+				this.serverAPI.Enqueue(new BuildingUpgradeCommand(new BuildingContractRequest(buildingComp.BuildingTO.Key, false, string.Empty)));
 			}
 		}
 
-		public bool StartTroopUpgrade(TroopTypeVO troop, Entity building)
+		public bool StartTroopUpgrade(TroopTypeVO troop, SmartEntity building)
 		{
 			this.StartBuildingContract(troop.Uid, DeliveryType.UpgradeTroop, troop.UpgradeTime, building);
 			int upgradeCredits = troop.UpgradeCredits;
@@ -961,11 +1018,11 @@ namespace StaRTS.Main.Controllers
 			{
 				Service.DeployableShardUnlockController.SpendDeployableShard(troop.UpgradeShardUid, troop.UpgradeShardCount);
 			}
-			this.StartDeployableUpgradeOnServer(troop.Uid, building.Get<BuildingComponent>().BuildingTO.Key);
+			this.StartDeployableUpgradeOnServer(troop.Uid, building.BuildingComp.BuildingTO.Key);
 			return true;
 		}
 
-		public bool StartStarshipUpgrade(SpecialAttackTypeVO starship, Entity building)
+		public bool StartStarshipUpgrade(SpecialAttackTypeVO starship, SmartEntity building)
 		{
 			this.StartBuildingContract(starship.Uid, DeliveryType.UpgradeStarship, starship.UpgradeTime, building);
 			int upgradeCredits = starship.UpgradeCredits;
@@ -976,7 +1033,7 @@ namespace StaRTS.Main.Controllers
 			{
 				Service.DeployableShardUnlockController.SpendDeployableShard(starship.UpgradeShardUid, starship.UpgradeShardCount);
 			}
-			this.StartDeployableUpgradeOnServer(starship.Uid, building.Get<BuildingComponent>().BuildingTO.Key);
+			this.StartDeployableUpgradeOnServer(starship.Uid, building.BuildingComp.BuildingTO.Key);
 			return true;
 		}
 
@@ -989,11 +1046,11 @@ namespace StaRTS.Main.Controllers
 			}));
 		}
 
-		public bool StartEquipmentUpgrade(EquipmentVO equipment, Entity building)
+		public bool StartEquipmentUpgrade(EquipmentVO equipment, SmartEntity building)
 		{
 			this.StartBuildingContract(equipment.Uid, DeliveryType.UpgradeEquipment, equipment.UpgradeTime, building);
 			Service.ArmoryController.ChargeEquipmentUpgradeCost(equipment);
-			EquipmentUpgradeStartRequest request = new EquipmentUpgradeStartRequest(building.Get<BuildingComponent>().BuildingTO.Key, equipment.Uid);
+			EquipmentUpgradeStartRequest request = new EquipmentUpgradeStartRequest(building.BuildingComp.BuildingTO.Key, equipment.Uid);
 			EquipmentUpgradeStartCommand equipmentUpgradeStartCommand = new EquipmentUpgradeStartCommand(request);
 			equipmentUpgradeStartCommand.Context = equipment.EquipmentID;
 			equipmentUpgradeStartCommand.AddFailureCallback(new AbstractCommand<EquipmentUpgradeStartRequest, DefaultResponse>.OnFailureCallback(this.OnEquipmentUpgradeFailure));
@@ -1009,21 +1066,28 @@ namespace StaRTS.Main.Controllers
 			});
 		}
 
-		public Contract StartTroopTrainContract(TroopTypeVO troop, Entity building)
+		public Contract StartTroopTrainContract(TroopTypeVO troop, SmartEntity building)
 		{
-			BuildingComponent buildingComponent = building.Get<BuildingComponent>();
+			BuildingComponent buildingComp = building.BuildingComp;
 			DeliveryType deliveryType = DeliveryType.Invalid;
-			switch (troop.Type)
+			TroopType type = troop.Type;
+			if (type != TroopType.Infantry)
 			{
-			case TroopType.Infantry:
+				if (type != TroopType.Vehicle)
+				{
+					if (type == TroopType.Mercenary)
+					{
+						deliveryType = DeliveryType.Mercenary;
+					}
+				}
+				else
+				{
+					deliveryType = DeliveryType.Vehicle;
+				}
+			}
+			else
+			{
 				deliveryType = DeliveryType.Infantry;
-				break;
-			case TroopType.Vehicle:
-				deliveryType = DeliveryType.Vehicle;
-				break;
-			case TroopType.Mercenary:
-				deliveryType = DeliveryType.Mercenary;
-				break;
 			}
 			if (deliveryType == DeliveryType.Invalid)
 			{
@@ -1039,20 +1103,20 @@ namespace StaRTS.Main.Controllers
 				Service.Logger.ErrorFormat("Error Adding contract {0} at {1}", new object[]
 				{
 					troop.Uid,
-					buildingComponent.BuildingTO.Key
+					buildingComp.BuildingTO.Key
 				});
 				return null;
 			}
 			this.SpendCurrencyForDeployableContract(troop, building);
-			DeployableContractRequest request = new DeployableContractRequest(buildingComponent.BuildingTO.Key, troop.Uid, 1);
+			DeployableContractRequest request = new DeployableContractRequest(buildingComp.BuildingTO.Key, troop.Uid, 1);
 			this.serverAPI.Enqueue(new DeployableStartContractCommand(request));
 			return contract;
 		}
 
-		public void CancelTroopTrainContract(string productUid, Entity building)
+		public void CancelTroopTrainContract(string productUid, SmartEntity building)
 		{
-			BuildingComponent buildingComponent = building.Get<BuildingComponent>();
-			string key = buildingComponent.BuildingTO.Key;
+			BuildingComponent buildingComp = building.BuildingComp;
+			string key = buildingComp.BuildingTO.Key;
 			Contract contract = this.FindLastContractById(key, productUid);
 			if (contract == null)
 			{
@@ -1098,15 +1162,15 @@ namespace StaRTS.Main.Controllers
 			this.eventManager.SendEvent(EventId.TroopCancelled, cookie);
 		}
 
-		public void BuyoutAllTroopTrainContracts(Entity entity)
+		public void BuyoutAllTroopTrainContracts(SmartEntity entity)
 		{
 			this.BuyoutAllTroopTrainContracts(entity, false);
 		}
 
-		public void BuyoutAllTroopTrainContracts(Entity entity, bool alreadySpentCrystals)
+		public void BuyoutAllTroopTrainContracts(SmartEntity entity, bool alreadySpentCrystals)
 		{
-			BuildingComponent buildingComponent = entity.Get<BuildingComponent>();
-			List<Contract> list = new List<Contract>(this.FindAllTroopContractsForBuilding(buildingComponent.BuildingTO.Key));
+			BuildingComponent buildingComp = entity.BuildingComp;
+			List<Contract> list = new List<Contract>(this.FindAllTroopContractsForBuilding(buildingComp.BuildingTO.Key));
 			int num = 0;
 			int i = 0;
 			int count = list.Count;
@@ -1150,7 +1214,7 @@ namespace StaRTS.Main.Controllers
 				bool silent = i != 0;
 				if (flag)
 				{
-					this.FinishCurrentContract(entity, silent, 0, new SupportController.FinishContractOnServerDelegate(this.BuyoutDeployableContractOnServer), buildingComponent.BuildingTO.Key, contract.ProductUid, num2);
+					this.FinishCurrentContract(entity, silent, 0, new SupportController.FinishContractOnServerDelegate(this.BuyoutDeployableContractOnServer), buildingComp.BuildingTO.Key, contract.ProductUid, num2);
 				}
 				else
 				{
@@ -1167,20 +1231,20 @@ namespace StaRTS.Main.Controllers
 			this.serverAPI.Enqueue(new DeployableBuyoutContractCommand(request));
 		}
 
-		private bool StartBuildingContract(string productUid, DeliveryType contractType, int totalTime, Entity building)
+		private bool StartBuildingContract(string productUid, DeliveryType contractType, int totalTime, SmartEntity building)
 		{
 			return this.StartBuildingContract(productUid, contractType, totalTime, building, true);
 		}
 
-		private bool StartBuildingContract(string productUid, DeliveryType contractType, int totalTime, Entity building, bool sendBILog)
+		private bool StartBuildingContract(string productUid, DeliveryType contractType, int totalTime, SmartEntity building, bool sendBILog)
 		{
 			return this.StartBuildingContract(productUid, contractType, totalTime, building, sendBILog, string.Empty);
 		}
 
-		private bool StartBuildingContract(string productUid, DeliveryType contractType, int totalTime, Entity building, bool sendBILog, string tag)
+		private bool StartBuildingContract(string productUid, DeliveryType contractType, int totalTime, SmartEntity building, bool sendBILog, string tag)
 		{
-			BuildingComponent buildingComponent = building.Get<BuildingComponent>();
-			string key = buildingComponent.BuildingTO.Key;
+			BuildingComponent buildingComp = building.BuildingComp;
+			string key = buildingComp.BuildingTO.Key;
 			Contract contract = this.FindBuildingContract(key);
 			uint time = ServerTime.Time;
 			if (contract != null)
@@ -1208,28 +1272,30 @@ namespace StaRTS.Main.Controllers
 					}
 				}
 			}
-			this.ShiftTroopContractTimes(key, num);
+			if (buildingComp.BuildingType.Type != BuildingType.Wall)
+			{
+				this.ShiftTroopContractTimes(key, num);
+			}
 			this.AddContract(contract, building);
 			ContractEventData cookie = new ContractEventData(contract, building, false, sendBILog);
 			this.eventManager.SendEvent(EventId.ContractAdded, cookie);
 			this.eventManager.SendEvent(EventId.ContractStarted, cookie);
-			this.eventManager.SendEvent(EventId.ContractBacklogUpdated, cookie);
 			this.UpdateTooltips(building);
-			switch (contract.DeliveryType)
+			if (buildingComp.BuildingType.Type != BuildingType.Wall)
 			{
-			case DeliveryType.Building:
-			case DeliveryType.UpgradeBuilding:
-			case DeliveryType.SwapBuilding:
-				this.DisableBuilding(building);
-				break;
+				DeliveryType deliveryType = contract.DeliveryType;
+				if (deliveryType == DeliveryType.Building || deliveryType == DeliveryType.UpgradeBuilding || deliveryType == DeliveryType.SwapBuilding)
+				{
+					this.DisableBuilding(building);
+				}
 			}
 			return true;
 		}
 
-		private Contract StartTroopContract(string productUid, DeliveryType contractType, int productSize, Entity building)
+		private Contract StartTroopContract(string productUid, DeliveryType contractType, int productSize, SmartEntity building)
 		{
-			BuildingComponent buildingComponent = building.Get<BuildingComponent>();
-			Contract contract = this.FindBuildingContract(buildingComponent.BuildingTO.Key);
+			BuildingComponent buildingComp = building.BuildingComp;
+			Contract contract = this.FindBuildingContract(buildingComp.BuildingTO.Key);
 			if (contract != null)
 			{
 				return null;
@@ -1242,15 +1308,15 @@ namespace StaRTS.Main.Controllers
 			int troopContractTotalTime = ContractUtils.GetTroopContractTotalTime(productUid, contractType, playerActivePerkIds);
 			Contract contract2 = new Contract(productUid, contractType, troopContractTotalTime, this.serverAPI.ServerTimePrecise);
 			contract2.ContractTO = new ContractTO();
-			contract2.ContractTO.BuildingKey = buildingComponent.BuildingTO.Key;
+			contract2.ContractTO.BuildingKey = buildingComp.BuildingTO.Key;
 			contract2.ContractTO.Uid = productUid;
 			contract2.ContractTO.ContractType = ContractUtils.GetContractType(contractType);
 			contract2.ContractTO.PerkIds = playerActivePerkIds;
 			uint time = ServerTime.Time;
-			Contract contract3 = this.FindLastTroopContractForBuilding(buildingComponent.BuildingTO.Key, productUid);
+			Contract contract3 = this.FindLastTroopContractForBuilding(buildingComp.BuildingTO.Key, productUid);
 			if (contract3 != null)
 			{
-				this.ShiftTroopContractTimesAfterThis(buildingComponent.BuildingTO.Key, contract2.TotalTime, contract3.ContractTO.EndTime);
+				this.ShiftTroopContractTimesAfterThis(buildingComp.BuildingTO.Key, contract2.TotalTime, contract3.ContractTO.EndTime);
 				contract2.ContractTO.EndTime = contract3.ContractTO.EndTime + (uint)contract2.TotalTime;
 			}
 			else
@@ -1266,13 +1332,13 @@ namespace StaRTS.Main.Controllers
 			return contract2;
 		}
 
-		private void UpdateTooltips(Entity building)
+		private void UpdateTooltips(SmartEntity building)
 		{
-			Service.BuildingTooltipController.EnsureBuildingTooltip((SmartEntity)building);
+			Service.BuildingTooltipController.EnsureBuildingTooltip(building);
 			Service.UXController.HUD.UpdateDroidCount();
 		}
 
-		public void CancelCurrentBuildingContract(Contract contract, Entity building)
+		public void CancelCurrentBuildingContract(Contract contract, SmartEntity building)
 		{
 			if (contract.GetRemainingTimeForSim() <= 0)
 			{
@@ -1281,15 +1347,15 @@ namespace StaRTS.Main.Controllers
 			this.RefundContractCost(contract);
 			this.CancelContract(building, contract);
 			uint serverTime = this.serverAPI.ServerTime;
-			BuildingComponent buildingComponent = building.Get<BuildingComponent>();
-			string key = buildingComponent.BuildingTO.Key;
+			BuildingComponent buildingComp = building.BuildingComp;
+			string key = buildingComp.BuildingTO.Key;
 			int timeDifferenceSafe = GameUtils.GetTimeDifferenceSafe(serverTime, contract.ContractTO.EndTime);
 			this.ShiftTroopContractTimes(key, timeDifferenceSafe);
 			contract.ContractTO.EndTime = serverTime;
 			this.SortCurrentContracts();
-			if (buildingComponent.BuildingType.Type == BuildingType.Resource)
+			if (buildingComp.BuildingType.Type == BuildingType.Resource)
 			{
-				buildingComponent.BuildingTO.LastCollectTime = serverTime;
+				buildingComp.BuildingTO.LastCollectTime = serverTime;
 			}
 			this.serverAPI.Enqueue(new BuildingContractCancelCommand(new BuildingContractRequest(key, true, string.Empty)));
 			ContractEventData cookie = new ContractEventData(contract, building, false, false);
@@ -1329,7 +1395,7 @@ namespace StaRTS.Main.Controllers
 			BuildingTypeVO buildingVO = null;
 			if (smartEntity != null)
 			{
-				buildingVO = smartEntity.Get<BuildingComponent>().BuildingType;
+				buildingVO = smartEntity.BuildingComp.BuildingType;
 			}
 			ContractUtils.CalculateContractCost(uid, contract.DeliveryType, buildingVO, perkIds, out num, out num2, out num3);
 			GameUtils.MultiplyCurrency(multiplier, ref num, ref num2, ref num3);
@@ -1348,7 +1414,7 @@ namespace StaRTS.Main.Controllers
 			}
 		}
 
-		private Contract CancelContract(Entity entity, Contract contract)
+		private Contract CancelContract(SmartEntity entity, Contract contract)
 		{
 			ContractEventData cookie = new ContractEventData(contract, entity, false);
 			this.eventManager.SendEvent(EventId.ContractCanceled, cookie);
@@ -1358,35 +1424,35 @@ namespace StaRTS.Main.Controllers
 			return contract;
 		}
 
-		public bool FinishCurrentContract(Entity entity, bool silent, bool sendBILog)
+		public bool FinishCurrentContract(SmartEntity entity, bool silent, bool sendBILog)
 		{
 			return this.FinishCurrentContract(entity, silent, 0, null, null, null, 0, sendBILog);
 		}
 
-		public bool FinishCurrentContract(Entity entity, bool silent)
+		public bool FinishCurrentContract(SmartEntity entity, bool silent)
 		{
 			return this.FinishCurrentContract(entity, silent, 0, null, null, null, 0, true);
 		}
 
-		private bool FinishCurrentContract(Entity entity, bool silent, int troopContractShiftTime, SupportController.FinishContractOnServerDelegate serverDelegate, string buildingKey, string productUid, int amount)
+		private bool FinishCurrentContract(SmartEntity entity, bool silent, int troopContractShiftTime, SupportController.FinishContractOnServerDelegate serverDelegate, string buildingKey, string productUid, int amount)
 		{
 			return this.FinishCurrentContract(entity, silent, troopContractShiftTime, serverDelegate, buildingKey, productUid, amount, true);
 		}
 
-		private bool FinishCurrentContract(Entity entity, bool silent, int troopContractShiftTime, SupportController.FinishContractOnServerDelegate serverDelegate, string buildingKey, string productUid, int amount, bool sendBILog)
+		private bool FinishCurrentContract(SmartEntity entity, bool silent, int troopContractShiftTime, SupportController.FinishContractOnServerDelegate serverDelegate, string buildingKey, string productUid, int amount, bool sendBILog)
 		{
 			if (entity == null)
 			{
 				Service.Logger.Error("entity is null in FinishCurrentContract");
 				return false;
 			}
-			BuildingComponent buildingComponent = entity.Get<BuildingComponent>();
-			if (buildingComponent == null)
+			BuildingComponent buildingComp = entity.BuildingComp;
+			if (buildingComp == null)
 			{
 				GameUtils.LogComponentsAsError("buildingComp is null in FinishCurrentContract", entity);
 				return false;
 			}
-			Building buildingTO = buildingComponent.BuildingTO;
+			Building buildingTO = buildingComp.BuildingTO;
 			if (buildingTO == null)
 			{
 				Service.Logger.Error("buildingTO is null in FinishCurrentContract");
@@ -1400,16 +1466,19 @@ namespace StaRTS.Main.Controllers
 			}
 			Contract contract = this.FindCurrentContract(key);
 			ContractEventData cookie = new ContractEventData(contract, entity, silent, sendBILog);
-			if (!this.IsContractValidForStorage(contract))
+			if (buildingComp.BuildingType.Type != BuildingType.Wall && !this.IsContractValidForStorage(contract))
 			{
 				this.eventManager.SendEvent(EventId.ContractInvalidForStorage, cookie);
 				this.eventManager.SendEvent(EventId.ContractStopped, entity);
 				this.FreezeBuilding(key);
 				return false;
 			}
-			this.ShiftTroopContractTimes(key, troopContractShiftTime);
+			if (troopContractShiftTime != 0)
+			{
+				this.ShiftTroopContractTimes(key, troopContractShiftTime);
+			}
 			this.RemoveContract(entity, contract, false);
-			this.DeliverProducts(contract, buildingTO, buildingComponent.BuildingType);
+			this.DeliverProducts(contract, buildingTO, buildingComp.BuildingType);
 			this.UpdateTooltips(entity);
 			if (serverDelegate != null)
 			{
@@ -1445,10 +1514,10 @@ namespace StaRTS.Main.Controllers
 			return contract.DeliveryType == DeliveryType.UpgradeStarship || contract.DeliveryType == DeliveryType.UpgradeTroop;
 		}
 
-		public void BuyOutCurrentBuildingContract(Entity entity, bool sendBackendCommand)
+		public void BuyOutCurrentBuildingContract(SmartEntity entity, bool sendBackendCommand)
 		{
-			BuildingComponent buildingComponent = entity.Get<BuildingComponent>();
-			Contract contract = this.FindCurrentContract(buildingComponent.BuildingTO.Key);
+			BuildingComponent buildingComp = entity.BuildingComp;
+			Contract contract = this.FindCurrentContract(buildingComp.BuildingTO.Key);
 			if (contract == null)
 			{
 				return;
@@ -1462,7 +1531,7 @@ namespace StaRTS.Main.Controllers
 			int troopContractShiftTime = (!flag) ? GameUtils.GetTimeDifferenceSafe(time, contract.ContractTO.EndTime) : 0;
 			contract.ContractTO.EndTime = time;
 			SupportController.FinishContractOnServerDelegate serverDelegate = null;
-			string productUid = (!flag) ? buildingComponent.BuildingTO.Uid : contract.ProductUid;
+			string productUid = (!flag) ? buildingComp.BuildingTO.Uid : contract.ProductUid;
 			if (sendBackendCommand)
 			{
 				if (contract.DeliveryType == DeliveryType.Champion)
@@ -1474,11 +1543,11 @@ namespace StaRTS.Main.Controllers
 					serverDelegate = new SupportController.FinishContractOnServerDelegate(this.BuyoutBuildingOnServer);
 				}
 			}
-			if ((contract.DeliveryType == DeliveryType.Building || contract.DeliveryType == DeliveryType.UpgradeBuilding) && buildingComponent.BuildingType.Type == BuildingType.NavigationCenter)
+			if ((contract.DeliveryType == DeliveryType.Building || contract.DeliveryType == DeliveryType.UpgradeBuilding) && buildingComp.BuildingType.Type == BuildingType.NavigationCenter)
 			{
 				Service.CurrentPlayer.AddUnlockedPlanet(contract.Tag);
 			}
-			this.FinishCurrentContract(entity, false, troopContractShiftTime, serverDelegate, buildingComponent.BuildingTO.Key, productUid, 1);
+			this.FinishCurrentContract(entity, false, troopContractShiftTime, serverDelegate, buildingComp.BuildingTO.Key, productUid, 1);
 		}
 
 		private void BuyoutBuildingOnServer(string buildingKey, string productUid, int amount)
@@ -1515,7 +1584,7 @@ namespace StaRTS.Main.Controllers
 			}
 		}
 
-		private void RemoveContract(Entity buildingEntity, Contract contract, bool isCanceling)
+		private void RemoveContract(SmartEntity buildingEntity, Contract contract, bool isCanceling)
 		{
 			string buildingKey = contract.ContractTO.BuildingKey;
 			int num = this.currentContracts.IndexOf(contract);
@@ -1532,10 +1601,10 @@ namespace StaRTS.Main.Controllers
 			}
 			else
 			{
-				SupportViewComponent supportViewComponent = buildingEntity.Get<SupportViewComponent>();
-				if (supportViewComponent != null)
+				SupportViewComponent supportViewComp = buildingEntity.SupportViewComp;
+				if (supportViewComp != null)
 				{
-					supportViewComponent.TeardownElements();
+					supportViewComp.TeardownElements();
 				}
 				this.eventManager.SendEvent(EventId.ContractStopped, buildingEntity);
 			}
@@ -1619,7 +1688,7 @@ namespace StaRTS.Main.Controllers
 			return EatResponse.NotEaten;
 		}
 
-		private void AddContract(Contract contract, Entity entity)
+		private void AddContract(Contract contract, SmartEntity entity)
 		{
 			this.currentContracts.Add(contract);
 			this.SortCurrentContracts();
@@ -1844,11 +1913,8 @@ namespace StaRTS.Main.Controllers
 									if (dictionary.ContainsKey(inventoryStorage.Key))
 									{
 										Dictionary<string, int> dictionary2;
-										Dictionary<string, int> expr_150 = dictionary2 = dictionary;
 										string key;
-										string expr_15A = key = inventoryStorage.Key;
-										int num2 = dictionary2[key];
-										expr_150[expr_15A] = num2 + num;
+										(dictionary2 = dictionary)[key = inventoryStorage.Key] = dictionary2[key] + num;
 									}
 									else
 									{
@@ -1860,7 +1926,7 @@ namespace StaRTS.Main.Controllers
 									BuildingTypeVO buildingTypeVO = Service.StaticDataController.Get<BuildingTypeVO>(contract.ProductUid);
 									if (buildingTypeVO.Type == BuildingType.Wall)
 									{
-										goto IL_1E1;
+										goto IL_1DE;
 									}
 								}
 								if (finishedContracts == null)
@@ -1872,7 +1938,7 @@ namespace StaRTS.Main.Controllers
 						}
 					}
 				}
-				IL_1E1:
+				IL_1DE:
 				i++;
 			}
 		}
@@ -1951,11 +2017,8 @@ namespace StaRTS.Main.Controllers
 				if (this.temporaryInventorySizeServerDeltas.ContainsKey(storage.Key))
 				{
 					Dictionary<string, int> dictionary3;
-					Dictionary<string, int> expr_13A = dictionary3 = this.temporaryInventorySizeServerDeltas;
 					string key;
-					string expr_143 = key = storage.Key;
-					int num2 = dictionary3[key];
-					expr_13A[expr_143] = num2 + num;
+					(dictionary3 = this.temporaryInventorySizeServerDeltas)[key = storage.Key] = dictionary3[key] + num;
 				}
 				else
 				{
@@ -1969,12 +2032,12 @@ namespace StaRTS.Main.Controllers
 			this.UpdateAllContracts(this.serverAPI.ServerTime, this.serverAPI.ServerTimePrecise);
 		}
 
-		private void SpendCurrencyForDeployableContract(IDeployableVO deployableVO, Entity building)
+		private void SpendCurrencyForDeployableContract(IDeployableVO deployableVO, SmartEntity building)
 		{
 			int credits = deployableVO.Credits;
 			int materials = deployableVO.Materials;
 			int contraband = deployableVO.Contraband;
-			BuildingTypeVO buildingType = building.Get<BuildingComponent>().BuildingType;
+			BuildingTypeVO buildingType = building.BuildingComp.BuildingType;
 			float contractCostMultiplier = Service.PerkManager.GetContractCostMultiplier(buildingType);
 			GameUtils.SpendCurrencyWithMultiplier(credits, materials, contraband, contractCostMultiplier, false);
 		}

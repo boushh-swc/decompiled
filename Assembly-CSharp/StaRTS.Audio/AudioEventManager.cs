@@ -196,17 +196,9 @@ namespace StaRTS.Audio
 		{
 			switch (id)
 			{
-			case EventId.ProjectileViewImpacted:
-			{
-				SmartEntity smartEntity = (SmartEntity)cookie;
-				this.PlayBattleSound(smartEntity, AudioCollectionType.Impact);
-				return EatResponse.NotEaten;
-			}
-			case EventId.ProjectileViewPathComplete:
-			case EventId.DamagePercentUpdated:
-			case EventId.StarportMeterUpdated:
-			case EventId.SquadLeaderboardUpdated:
-			case EventId.HolonetLeaderBoardUpdated:
+			case EventId.HolonetChangeTabs:
+			case EventId.HolonetNextPrevTransmision:
+				goto IL_8E5;
 			case EventId.ClearableCleared:
 			case EventId.ClearableStarted:
 			case EventId.StartupTasksCompleted:
@@ -214,7 +206,7 @@ namespace StaRTS.Audio
 			case EventId.ChampionStartedRepairing:
 			case EventId.ChampionRepaired:
 			case EventId.TroopDonationTrackProgressUpdated:
-				IL_85:
+				IL_69:
 				switch (id)
 				{
 				case EventId.SquadEdited:
@@ -249,156 +241,144 @@ namespace StaRTS.Audio
 				case EventId.MapDataProcessingStart:
 				case EventId.MapDataProcessingEnd:
 				case EventId.WorldLoadComplete:
-					IL_FB:
+					IL_DE:
 					switch (id)
 					{
-					case EventId.GalaxyPlanetTapped:
-						this.audioManager.PlayAudio("sfx_swipe_planet");
+					case EventId.ButtonClicked:
+						this.PlayButtonEffect(cookie.ToString());
 						return EatResponse.NotEaten;
-					case EventId.GalaxyPlanetInfoButton:
-					case EventId.PlanetScoutingStart:
-					case EventId.PlanetUnlocked:
-					case EventId.PlanetsLoadingComplete:
-					case EventId.FacebookLoggedIn:
-					case EventId.SettingsAboutButtonClicked:
-					case EventId.SettingsFacebookLoggedIn:
-					case EventId.SettingsHelpButtonClicked:
-					case EventId.SettingsMusicCheckboxSelected:
-					case EventId.SettingsFanForumsButtonClicked:
-					case EventId.SettingsSfxCheckboxSelected:
-						IL_160:
+					case EventId.ContextButtonClicked:
+					{
+						string a = (string)cookie;
+						string id2 = (!(a == "Move")) ? "sfx_button_context" : "sfx_button_editmode";
+						this.audioManager.PlayAudio(id2);
+						return EatResponse.NotEaten;
+					}
+					case EventId.InfoButtonClicked:
+						this.audioManager.PlayAudio("sfx_button_more_info");
+						return EatResponse.NotEaten;
+					case EventId.UserWantedEditBaseState:
+					case EventId.UserLiftedBuilding:
+					case EventId.UserMovedLiftedBuilding:
+					case EventId.UserLoweredBuilding:
+					case EventId.UserStashedBuilding:
+						IL_11E:
 						switch (id)
 						{
-						case EventId.BuildingPurchaseCanceled:
-							this.audioManager.PlayAudio("sfx_ui_placement_stop");
+						case EventId.HoloEvent:
+							this.audioManager.PlayAudio(cookie as string);
 							return EatResponse.NotEaten;
-						case EventId.BuildingPurchaseConfirmed:
-							this.audioManager.PlayAudio("sfx_ui_placement_confirm");
+						case EventId.StoryTranscriptDisplayed:
+							this.audioManager.PlayAudio(cookie as string);
 							return EatResponse.NotEaten;
-						case EventId.BuildingPurchaseSuccess:
-						case EventId.BuildingPurchaseModeStarted:
-						case EventId.BuildingPurchaseModeEnded:
-						case EventId.BuildingStartedUpgrading:
-						case EventId.BuildingSelected:
-						case EventId.BuildingDeselected:
-						case EventId.BuildingQuickStashed:
-						case EventId.ShardItemSelectedFromStore:
-						case EventId.DroidPurchaseAnimationComplete:
-						case EventId.DroidPurchaseCompleted:
-							IL_1BA:
+						case EventId.HolocommScreenLoadComplete:
+						case EventId.HoloCommScreenDestroyed:
+						case EventId.StoryChainCompleted:
+						case EventId.LogStoryActionExecuted:
+						case EventId.HeroDeployed:
+							IL_15E:
 							switch (id)
 							{
-							case EventId.GameStateChanged:
-								goto IL_6C8;
-							case EventId.GameStateAboutToChange:
-							case EventId.ShooterClipUsed:
-							case EventId.ShooterStoppedAttacking:
-							case EventId.TroopAcquiredFirstTarget:
-							case EventId.TroopReachedPathEnd:
-							case EventId.UserWantedEditBaseState:
-							case EventId.UserLiftedBuilding:
-							case EventId.UserMovedLiftedBuilding:
-							case EventId.UserLoweredBuilding:
-							case EventId.UserStashedBuilding:
-								IL_217:
+							case EventId.GalaxyPlanetTapped:
+								this.audioManager.PlayAudio("sfx_swipe_planet");
+								return EatResponse.NotEaten;
+							case EventId.GalaxyPlanetInfoButton:
+								IL_18A:
 								switch (id)
 								{
-								case EventId.SimulateAudioEvent:
-								{
-									AudioEventData audioEventData = (AudioEventData)cookie;
-									this.OnEvent(audioEventData.EventId, audioEventData.EventCookie);
+								case EventId.PerkSelected:
+									goto IL_831;
+								case EventId.SquadLeveledUpCelebration:
+									this.audioManager.PlayAudio("sfx_stinger_perk_squad_level_up");
 									return EatResponse.NotEaten;
-								}
-								case EventId.MuteEvent:
-									this.eventManager.UnregisterObserver(this, (EventId)((int)cookie));
+								case EventId.PerkActivated:
+									this.audioManager.PlayAudio("sfx_button_perk_activate");
 									return EatResponse.NotEaten;
-								case EventId.UnmuteEvent:
-									this.eventManager.RegisterObserver(this, (EventId)((int)cookie), EventPriority.Default);
+								case EventId.PerkInvested:
+									this.audioManager.PlayAudio("sfx_button_perk_rep_invest");
 									return EatResponse.NotEaten;
-								case EventId.MusicUnmuted:
-									goto IL_6C8;
-								case EventId.IAPProductIDsReady:
-								case EventId.UIIAPDisclaimerClosed:
-								case EventId.UIIAPDisclaimerViewed:
-								case EventId.UIFactionFlipAction:
-								case EventId.UIFactionFlipConfirmAction:
-								case EventId.UIFactionFlipOpened:
-								case EventId.TrapDisarmed:
-								case EventId.PlanetRelocateButtonPressed:
-									IL_264:
+								case EventId.PerkCelebStarted:
+									this.audioManager.PlayAudio("sfx_stinger_perk_upgrade");
+									return EatResponse.NotEaten;
+								case EventId.SquadAdvancementTabSelected:
+								case EventId.TargetedBundleChampionRedeemed:
+								case EventId.TargetedBundleRewardRedeemed:
+								case EventId.TargetedBundleReserve:
+								case EventId.ShardsEarned:
+								case EventId.EquipmentUnlocked:
+									IL_1CA:
 									switch (id)
 									{
-									case EventId.HoloEvent:
-										this.audioManager.PlayAudio(cookie as string);
+									case EventId.ShuttleAnimStateChanged:
+									{
+										ShuttleState state = ((ShuttleAnim)cookie).State;
+										if (state != ShuttleState.Landing)
+										{
+											if (state == ShuttleState.LiftOff)
+											{
+												this.audioManager.PlayAudio("sfx_ui_shuttle_full");
+											}
+										}
+										else
+										{
+											this.audioManager.PlayAudio("sfx_ui_shuttle_arrive");
+										}
 										return EatResponse.NotEaten;
-									case EventId.StoryTranscriptDisplayed:
-										this.audioManager.PlayAudio(cookie as string);
+									}
+									case EventId.ShieldBorderDestroyed:
+										this.audioManager.PlayAudio("sfx_shields_power_down");
 										return EatResponse.NotEaten;
-									case EventId.HolocommScreenLoadComplete:
-									case EventId.HoloCommScreenDestroyed:
-									case EventId.StoryChainCompleted:
-									case EventId.LogStoryActionExecuted:
-									case EventId.HeroDeployed:
-										IL_2A5:
+									case EventId.ShieldStarted:
+										this.audioManager.PlayAudio("sfx_shields_power_up");
+										return EatResponse.NotEaten;
+									case EventId.ShieldDisabled:
+										IL_1F2:
 										switch (id)
 										{
-										case EventId.PerkSelected:
-											goto IL_88E;
-										case EventId.SquadLeveledUpCelebration:
-											this.audioManager.PlayAudio("sfx_stinger_perk_squad_level_up");
+										case EventId.BackButtonClicked:
+											this.audioManager.PlayAudio("sfx_button_back");
 											return EatResponse.NotEaten;
-										case EventId.PerkActivated:
-											this.audioManager.PlayAudio("sfx_button_perk_activate");
-											return EatResponse.NotEaten;
-										case EventId.PerkInvested:
-											this.audioManager.PlayAudio("sfx_button_perk_rep_invest");
-											return EatResponse.NotEaten;
-										case EventId.PerkCelebStarted:
-											this.audioManager.PlayAudio("sfx_stinger_perk_upgrade");
-											return EatResponse.NotEaten;
-										case EventId.SquadAdvancementTabSelected:
-										case EventId.TargetedBundleChampionRedeemed:
-										case EventId.TargetedBundleRewardRedeemed:
-										case EventId.TargetedBundleReserve:
-										case EventId.ShardsEarned:
-										case EventId.EquipmentUnlocked:
-											IL_2E6:
+										case EventId.DroidPurchaseAnimationComplete:
+										case EventId.DroidPurchaseCompleted:
+											IL_217:
 											switch (id)
 											{
-											case EventId.ShuttleAnimStateChanged:
-												switch (((ShuttleAnim)cookie).State)
-												{
-												case ShuttleState.Landing:
-													this.audioManager.PlayAudio("sfx_ui_shuttle_arrive");
-													break;
-												case ShuttleState.LiftOff:
-													this.audioManager.PlayAudio("sfx_ui_shuttle_full");
-													break;
-												}
+											case EventId.BattleLogScreenTabSelected:
+												this.audioManager.PlayAudio("sfx_button_squad_select");
 												return EatResponse.NotEaten;
-											case EventId.ShieldBorderDestroyed:
-												this.audioManager.PlayAudio("sfx_shields_power_down");
+											case EventId.BattleLogScreenShareButtonClicked:
+												this.audioManager.PlayAudio("sfx_button_more_info");
 												return EatResponse.NotEaten;
-											case EventId.ShieldStarted:
-												this.audioManager.PlayAudio("sfx_shields_power_up");
+											case EventId.BattleLogScreenRevengeButtonClicked:
+											case EventId.BattleLogScreenReplayButtonClicked:
+												this.audioManager.PlayAudio("sfx_button_startbattle");
 												return EatResponse.NotEaten;
-											case EventId.ShieldDisabled:
-												IL_30F:
+											default:
 												switch (id)
 												{
-												case EventId.EquipmentUnlockCelebrationPlayed:
-													goto IL_4C4;
-												case EventId.EquipmentBuffShaderRemove:
-												case EventId.EquipmentBuffShaderApply:
-													IL_330:
+												case EventId.SimulateAudioEvent:
+												{
+													AudioEventData audioEventData = (AudioEventData)cookie;
+													this.OnEvent(audioEventData.EventId, audioEventData.EventCookie);
+													return EatResponse.NotEaten;
+												}
+												case EventId.MuteEvent:
+													this.eventManager.UnregisterObserver(this, (EventId)cookie);
+													return EatResponse.NotEaten;
+												case EventId.UnmuteEvent:
+													this.eventManager.RegisterObserver(this, (EventId)cookie, EventPriority.Default);
+													return EatResponse.NotEaten;
+												case EventId.MusicUnmuted:
+													break;
+												default:
 													switch (id)
 													{
-													case EventId.ScreenClosing:
-													case EventId.ScreenOverlayClosing:
-														this.audioManager.PlayAudio("sfx_button_close");
+													case EventId.TrapTriggered:
+														this.PlayTrapSound((TrapComponent)cookie);
 														return EatResponse.NotEaten;
-													case EventId.ScreenClosed:
-														IL_34D:
+													case EventId.TrapDisarmed:
+													case EventId.PlanetRelocateButtonPressed:
+														IL_273:
 														switch (id)
 														{
 														case EventId.ObjectiveDetailsClicked:
@@ -409,306 +389,335 @@ namespace StaRTS.Audio
 															this.audioManager.PlayAudio("sfx_ui_collectcredits_1");
 															return EatResponse.NotEaten;
 														case EventId.ObjectiveRewardDataCardRevealed:
-															goto IL_4C4;
+															break;
 														default:
 															switch (id)
 															{
-															case EventId.CrateRewardIdleHop:
-																this.audioManager.PlayAudio("sfx_rewards_crate_hop");
-																return EatResponse.NotEaten;
-															case EventId.TroopUpgradeScreenOpened:
-																IL_387:
+															case EventId.BuildingSelectedFromStore:
+																goto IL_831;
+															case EventId.BuildingSelected:
+															case EventId.BuildingDeselected:
+															case EventId.BuildingQuickStashed:
+																IL_2B0:
 																switch (id)
 																{
-																case EventId.EntityAttackedTarget:
-																{
-																	SmartEntity smartEntity = cookie as SmartEntity;
-																	if (smartEntity != null && smartEntity.TroopComp != null && smartEntity.TroopComp.IsAbilityModeActive)
+																case EventId.ScreenClosing:
+																case EventId.ScreenOverlayClosing:
+																	this.audioManager.PlayAudio("sfx_button_close");
+																	return EatResponse.NotEaten;
+																case EventId.ScreenClosed:
+																	IL_2CC:
+																	switch (id)
 																	{
-																		TroopAbilityVO abilityVO = smartEntity.TroopComp.AbilityVO;
-																		string randomClip = this.audioManager.GetRandomClip(abilityVO.AudioAbilityAttack);
-																		this.audioManager.PlayAudio(randomClip);
+																	case EventId.EquipmentUnlockCelebrationPlayed:
+																		goto IL_467;
+																	case EventId.EquipmentBuffShaderRemove:
+																	case EventId.EquipmentBuffShaderApply:
+																		IL_2EC:
+																		switch (id)
+																		{
+																		case EventId.CrateRewardIdleHop:
+																			this.audioManager.PlayAudio("sfx_rewards_crate_hop");
+																			return EatResponse.NotEaten;
+																		case EventId.TroopUpgradeScreenOpened:
+																			IL_308:
+																			if (id == EventId.BuildingPurchaseCanceled)
+																			{
+																				this.audioManager.PlayAudio("sfx_ui_placement_stop");
+																				return EatResponse.NotEaten;
+																			}
+																			if (id != EventId.BuildingPurchaseConfirmed)
+																			{
+																				switch (id)
+																				{
+																				case EventId.EntityAttackedTarget:
+																				{
+																					SmartEntity smartEntity = cookie as SmartEntity;
+																					if (smartEntity != null && smartEntity.TroopComp != null && smartEntity.TroopComp.IsAbilityModeActive)
+																					{
+																						TroopAbilityVO abilityVO = smartEntity.TroopComp.AbilityVO;
+																						string randomClip = this.audioManager.GetRandomClip(abilityVO.AudioAbilityAttack);
+																						this.audioManager.PlayAudio(randomClip);
+																					}
+																					else
+																					{
+																						this.PlayBattleSound(smartEntity, AudioCollectionType.Attack);
+																					}
+																					return EatResponse.NotEaten;
+																				}
+																				case EventId.PreEntityKilled:
+																					IL_32D:
+																					switch (id)
+																					{
+																					case EventId.GameStateChanged:
+																						goto IL_66B;
+																					case EventId.GameStateAboutToChange:
+																						IL_345:
+																						if (id == EventId.InitiatedBuyout)
+																						{
+																							this.audioManager.PlayAudio("sfx_button_finishnow");
+																							return EatResponse.NotEaten;
+																						}
+																						if (id == EventId.InventoryResourceUpdated)
+																						{
+																							this.PlayInventoryUpdatedSound((string)cookie);
+																							return EatResponse.NotEaten;
+																						}
+																						if (id == EventId.StarEarned || id == EventId.BattleEndVictoryStarDisplayed)
+																						{
+																							this.PlayStarSound((int)cookie);
+																							return EatResponse.NotEaten;
+																						}
+																						if (id == EventId.ShardUnitUpgraded)
+																						{
+																							goto IL_9B0;
+																						}
+																						if (id == EventId.DeployableUnlockCelebrationPlayed)
+																						{
+																							goto IL_467;
+																						}
+																						if (id == EventId.ApplicationPauseToggled)
+																						{
+																							this.HandleApplicationPause((bool)cookie);
+																							return EatResponse.NotEaten;
+																						}
+																						if (id == EventId.ProjectileViewImpacted)
+																						{
+																							SmartEntity smartEntity = (SmartEntity)cookie;
+																							this.PlayBattleSound(smartEntity, AudioCollectionType.Impact);
+																							return EatResponse.NotEaten;
+																						}
+																						if (id == EventId.UIFilterSelected)
+																						{
+																							goto IL_847;
+																						}
+																						if (id == EventId.ProjectileViewDeflected)
+																						{
+																							BuffTypeVO buffTypeVO = (BuffTypeVO)cookie;
+																							this.audioManager.PlayAudio(this.audioManager.GetRandomClip(buffTypeVO.AudioAbilityEvent));
+																							return EatResponse.NotEaten;
+																						}
+																						if (id == EventId.PlayHoloGreet)
+																						{
+																							this.audioManager.PlayAudio(cookie as string);
+																							return EatResponse.NotEaten;
+																						}
+																						if (id == EventId.MissionActionButtonClicked)
+																						{
+																							this.PlayMissionActionSound(cookie as CampaignMissionVO);
+																							return EatResponse.NotEaten;
+																						}
+																						if (id == EventId.HQCelebrationPlayed)
+																						{
+																							goto IL_467;
+																						}
+																						if (id != EventId.HolonetDevNotes)
+																						{
+																							return EatResponse.NotEaten;
+																						}
+																						goto IL_8E5;
+																					case EventId.ShooterWarmingUp:
+																						this.PlayBattleSound((SmartEntity)cookie, AudioCollectionType.Charge);
+																						return EatResponse.NotEaten;
+																					}
+																					goto IL_345;
+																				case EventId.EntityKilled:
+																				{
+																					SmartEntity smartEntity = cookie as SmartEntity;
+																					if (smartEntity.TroopComp == null || smartEntity.TroopComp.TroopType.Type == TroopType.Vehicle || LangUtils.ShouldPlayVOClips())
+																					{
+																						this.PlayBattleSound(smartEntity, AudioCollectionType.Death);
+																					}
+																					return EatResponse.NotEaten;
+																				}
+																				}
+																				goto IL_32D;
+																			}
+																			this.audioManager.PlayAudio("sfx_ui_placement_confirm");
+																			return EatResponse.NotEaten;
+																		case EventId.InventoryCrateAnimationStateChange:
+																		{
+																			InventoryCrateAnimationState animState = (InventoryCrateAnimationState)cookie;
+																			this.PlayInventoryCrateAnimSFXBasedOnState(animState);
+																			return EatResponse.NotEaten;
+																		}
+																		case EventId.InventoryCrateAnimVFXTriggered:
+																		{
+																			string sfxName = Convert.ToString(cookie);
+																			this.PlayInventoryCrateAnimVfxSfx(sfxName);
+																			return EatResponse.NotEaten;
+																		}
+																		}
+																		goto IL_308;
+																	case EventId.EquipmentDataFragmentEarned:
+																		goto IL_99A;
+																	case EventId.SupplyCrateProgressBar:
+																		this.audioManager.PlayAudio("sfx_button_editmode");
+																		return EatResponse.NotEaten;
 																	}
-																	else
-																	{
-																		this.PlayBattleSound(smartEntity, AudioCollectionType.Attack);
-																	}
+																	goto IL_2EC;
+																case EventId.ScreenLoaded:
+																	this.PlayScreenLoadedSound(cookie as ScreenBase);
 																	return EatResponse.NotEaten;
 																}
-																case EventId.PreEntityKilled:
-																	IL_39D:
-																	if (id == EventId.InitiatedBuyout)
-																	{
-																		this.audioManager.PlayAudio("sfx_button_finishnow");
-																		return EatResponse.NotEaten;
-																	}
-																	if (id == EventId.InventoryResourceUpdated)
-																	{
-																		this.PlayInventoryUpdatedSound((string)cookie);
-																		return EatResponse.NotEaten;
-																	}
-																	if (id == EventId.StarEarned || id == EventId.BattleEndVictoryStarDisplayed)
-																	{
-																		this.PlayStarSound((int)cookie);
-																		return EatResponse.NotEaten;
-																	}
-																	if (id == EventId.ShardUnitUpgraded)
-																	{
-																		goto IL_A0A;
-																	}
-																	if (id == EventId.DeployableUnlockCelebrationPlayed)
-																	{
-																		goto IL_4C4;
-																	}
-																	if (id == EventId.ApplicationPauseToggled)
-																	{
-																		this.HandleApplicationPause((bool)cookie);
-																		return EatResponse.NotEaten;
-																	}
-																	if (id == EventId.UIFilterSelected)
-																	{
-																		goto IL_8A4;
-																	}
-																	if (id == EventId.ProjectileViewDeflected)
-																	{
-																		BuffTypeVO buffTypeVO = (BuffTypeVO)cookie;
-																		this.audioManager.PlayAudio(this.audioManager.GetRandomClip(buffTypeVO.AudioAbilityEvent));
-																		return EatResponse.NotEaten;
-																	}
-																	if (id == EventId.PlayHoloGreet)
-																	{
-																		this.audioManager.PlayAudio(cookie as string);
-																		return EatResponse.NotEaten;
-																	}
-																	if (id == EventId.MissionActionButtonClicked)
-																	{
-																		this.PlayMissionActionSound(cookie as CampaignMissionVO);
-																		return EatResponse.NotEaten;
-																	}
-																	if (id == EventId.HQCelebrationPlayed)
-																	{
-																		goto IL_4C4;
-																	}
-																	if (id != EventId.HolonetDevNotes)
-																	{
-																		return EatResponse.NotEaten;
-																	}
-																	goto IL_942;
-																case EventId.EntityKilled:
-																{
-																	SmartEntity smartEntity = cookie as SmartEntity;
-																	if (smartEntity.TroopComp == null || smartEntity.TroopComp.TroopType.Type == TroopType.Vehicle || LangUtils.ShouldPlayVOClips())
-																	{
-																		this.PlayBattleSound(smartEntity, AudioCollectionType.Death);
-																	}
-																	return EatResponse.NotEaten;
-																}
-																}
-																goto IL_39D;
-															case EventId.InventoryCrateAnimationStateChange:
-															{
-																InventoryCrateAnimationState animState = (InventoryCrateAnimationState)((int)cookie);
-																this.PlayInventoryCrateAnimSFXBasedOnState(animState);
+																goto IL_2CC;
+															case EventId.BuildingSelectedSound:
+																this.audioManager.PlayAudio("sfx_button_selectbuilding");
 																return EatResponse.NotEaten;
+															case EventId.StoreCategorySelected:
+																goto IL_847;
 															}
-															case EventId.InventoryCrateAnimVFXTriggered:
-															{
-																string sfxName = Convert.ToString(cookie);
-																this.PlayInventoryCrateAnimVfxSfx(sfxName);
-																return EatResponse.NotEaten;
-															}
-															}
-															goto IL_387;
+															goto IL_2B0;
+															IL_847:
+															this.audioManager.PlayAudio("sfx_button_store_selectcategory");
+															return EatResponse.NotEaten;
 														}
-														break;
-													case EventId.ScreenLoaded:
-														this.PlayScreenLoadedSound(cookie as ScreenBase);
+														IL_467:
+														this.audioManager.PlayAudio("sfx_ui_hq_celebration");
+														return EatResponse.NotEaten;
+													case EventId.TrapDestroyed:
+														this.PlayTrapDestroySound((TrapComponent)cookie);
+														return EatResponse.NotEaten;
+													case EventId.PlanetConfirmRelocate:
+														this.audioManager.Stop(AudioCategory.Ambience, AudioCategory.Music);
+														this.audioManager.PlayAudio("sfx_trans_planet_to_hyperspace");
+														return EatResponse.NotEaten;
+													case EventId.PlanetRelocateStarted:
+														this.audioManager.PlayAudio("sfx_trans_hyperspace");
 														return EatResponse.NotEaten;
 													}
-													goto IL_34D;
-												case EventId.EquipmentDataFragmentEarned:
-													goto IL_9F4;
-												case EventId.SupplyCrateProgressBar:
-													this.audioManager.PlayAudio("sfx_button_editmode");
-													return EatResponse.NotEaten;
+													goto IL_273;
 												}
-												goto IL_330;
-												IL_4C4:
-												this.audioManager.PlayAudio("sfx_ui_hq_celebration");
-												return EatResponse.NotEaten;
-											case EventId.ChampionShieldDeactivated:
-												this.audioManager.PlayAudio("sfx_champion_shield_deactivate");
-												return EatResponse.NotEaten;
-											case EventId.ChampionShieldActivated:
-												this.audioManager.PlayAudio("sfx_champion_shield_activate");
-												return EatResponse.NotEaten;
-											case EventId.ChampionShieldDestroyed:
-												this.audioManager.PlayAudio("sfx_champion_shield_destroyed");
+												IL_66B:
+												this.PlayStateMusicOrEffect();
 												return EatResponse.NotEaten;
 											}
-											goto IL_30F;
-										case EventId.EquipmentUpgraded:
-											goto IL_A0A;
-										case EventId.EquipmentActivated:
-											this.audioManager.PlayAudio("sfx_button_trainunit");
+											break;
+										case EventId.DroidPurchaseCancelled:
+											this.audioManager.PlayAudio("sfx_ui_droid_purchase_cancel");
+											return EatResponse.NotEaten;
+										case EventId.DeviceMusicPlayerStateChanged:
+											this.HandleDeviceMusicPlayerStateChanged((bool)cookie);
+											return EatResponse.NotEaten;
+										case EventId.CurrencyCollected:
+											this.PlayCurrencyCollectionEffect(((CurrencyCollectionTag)cookie).Type);
+											return EatResponse.NotEaten;
+										case EventId.AudibleCurrencySpent:
+										{
+											CurrencyType currencyType = (CurrencyType)cookie;
+											if (currencyType != CurrencyType.Credits)
+											{
+												if (currencyType != CurrencyType.Materials)
+												{
+													if (currencyType == CurrencyType.Contraband)
+													{
+														this.audioManager.PlayAudio("sfx_button_usematerials");
+													}
+												}
+												else
+												{
+													this.audioManager.PlayAudio("sfx_button_usematerials");
+												}
+											}
+											else
+											{
+												this.audioManager.PlayAudio("sfx_button_usecredits");
+											}
 											return EatResponse.NotEaten;
 										}
-										goto IL_2E6;
-									case EventId.StoryNextButtonClicked:
-									case EventId.StoryAttackButtonClicked:
-									case EventId.StorySkipButtonClicked:
-										goto IL_942;
-									case EventId.TextCrawlStarted:
-										goto IL_915;
-									case EventId.TextCrawlComplete:
-										this.PlayStateMusicOrEffect();
+										}
+										goto IL_217;
+									case EventId.ChampionShieldDeactivated:
+										this.audioManager.PlayAudio("sfx_champion_shield_deactivate");
 										return EatResponse.NotEaten;
-									case EventId.TroopAbilityActivate:
-									{
-										SmartEntity smartEntity2 = (SmartEntity)cookie;
-										TroopAbilityVO abilityVO2 = smartEntity2.TroopComp.AbilityVO;
-										this.audioManager.PlayAudio(this.audioManager.GetRandomClip(abilityVO2.AudioAbilityActivate));
-										new AudioEffectLoop(abilityVO2.Duration * 0.001f, abilityVO2.AudioAbilityLoop);
+									case EventId.ChampionShieldActivated:
+										this.audioManager.PlayAudio("sfx_champion_shield_activate");
+										return EatResponse.NotEaten;
+									case EventId.ChampionShieldDestroyed:
+										this.audioManager.PlayAudio("sfx_champion_shield_destroyed");
 										return EatResponse.NotEaten;
 									}
-									}
-									goto IL_2A5;
-								case EventId.TrapTriggered:
-									this.PlayTrapSound((TrapComponent)cookie);
-									return EatResponse.NotEaten;
-								case EventId.TrapDestroyed:
-									this.PlayTrapDestroySound((TrapComponent)cookie);
-									return EatResponse.NotEaten;
-								case EventId.PlanetConfirmRelocate:
-									this.audioManager.Stop(AudioCategory.Ambience, AudioCategory.Music);
-									this.audioManager.PlayAudio("sfx_trans_planet_to_hyperspace");
-									return EatResponse.NotEaten;
-								case EventId.PlanetRelocateStarted:
-									this.audioManager.PlayAudio("sfx_trans_hyperspace");
+									goto IL_1F2;
+								case EventId.EquipmentUpgraded:
+									goto IL_9B0;
+								case EventId.EquipmentActivated:
+									this.audioManager.PlayAudio("sfx_button_trainunit");
 									return EatResponse.NotEaten;
 								}
-								goto IL_264;
-							case EventId.ShooterWarmingUp:
-								this.PlayBattleSound((SmartEntity)cookie, AudioCollectionType.Charge);
+								goto IL_1CA;
+								IL_831:
+								this.audioManager.PlayAudio("sfx_button_store_selectbuilding");
 								return EatResponse.NotEaten;
-							case EventId.ButtonClicked:
-								this.PlayButtonEffect(cookie.ToString());
+							case EventId.GalaxyGoToPlanetView:
+								this.audioManager.Stop(AudioCategory.Ambience, AudioCategory.Music);
+								this.audioManager.PlayAudio("sfx_trans_base_to_playscreen");
+								this.audioManager.PlayAudio("music_galaxy_map_01");
 								return EatResponse.NotEaten;
-							case EventId.ContextButtonClicked:
-							{
-								string a = (string)cookie;
-								string id2 = (!(a == "Move")) ? "sfx_button_context" : "sfx_button_editmode";
-								this.audioManager.PlayAudio(id2);
+							case EventId.GalaxyGoToGalaxyView:
+								this.audioManager.Stop(AudioCategory.Ambience, AudioCategory.Music);
+								this.audioManager.PlayAudio("sfx_trans_base_to_galaxy");
+								this.audioManager.PlayAudio("music_galaxy_map_01");
 								return EatResponse.NotEaten;
-							}
-							case EventId.InfoButtonClicked:
-								this.audioManager.PlayAudio("sfx_button_more_info");
+							case EventId.GalaxyTransitionToNextPlanet:
+								this.audioManager.PlayAudio("sfx_swipe_planet");
 								return EatResponse.NotEaten;
-							case EventId.UserLiftedBuildingAudio:
-								this.audioManager.PlayAudio("sfx_ui_placement_start");
+							case EventId.GalaxyTransitionToPreviousPlanet:
+								this.audioManager.PlayAudio("sfx_swipe_planet");
 								return EatResponse.NotEaten;
-							case EventId.UserGridMovedBuildingAudio:
-								this.audioManager.PlayAudio("sfx_ui_placement_move");
+							case EventId.GalaxyNotEnoughRelocateStarsClose:
+								this.audioManager.PlayAudio("sfx_button_no_relocate");
 								return EatResponse.NotEaten;
-							case EventId.UserLoweredBuildingAudio:
-								this.audioManager.PlayAudio("sfx_ui_placement_drop");
-								return EatResponse.NotEaten;
-							case EventId.LongPressStarted:
-								this.audioManager.PlayAudio("sfx_button_editfill");
-								return EatResponse.NotEaten;
-							case EventId.ContractAdded:
-							{
-								ContractEventData contractEventData = (ContractEventData)cookie;
-								this.PlayContractSound(contractEventData.Contract);
+							case EventId.GalaxyUIPlanetFocus:
+								if (Time.time - this.galaxyUIPlanetFocusThrottle > GameConstants.GALAXY_UI_PLANET_FOCUS_THROTTLE)
+								{
+									this.galaxyUIPlanetFocusThrottle = Time.time;
+									this.audioManager.PlayAudio("sfx_ui_planet_focus");
+								}
 								return EatResponse.NotEaten;
 							}
-							}
-							goto IL_217;
-							IL_6C8:
+							goto IL_18A;
+						case EventId.StoryNextButtonClicked:
+						case EventId.StoryAttackButtonClicked:
+						case EventId.StorySkipButtonClicked:
+							goto IL_8E5;
+						case EventId.TextCrawlStarted:
+							goto IL_8B8;
+						case EventId.TextCrawlComplete:
 							this.PlayStateMusicOrEffect();
 							return EatResponse.NotEaten;
-						case EventId.BuildingSelectedFromStore:
-							goto IL_88E;
-						case EventId.BuildingSelectedSound:
-							this.audioManager.PlayAudio("sfx_button_selectbuilding");
-							return EatResponse.NotEaten;
-						case EventId.StoreCategorySelected:
-							goto IL_8A4;
-						case EventId.BackButtonClicked:
-							this.audioManager.PlayAudio("sfx_button_back");
-							return EatResponse.NotEaten;
-						case EventId.DroidPurchaseCancelled:
-							this.audioManager.PlayAudio("sfx_ui_droid_purchase_cancel");
-							return EatResponse.NotEaten;
-						case EventId.DeviceMusicPlayerStateChanged:
-							this.HandleDeviceMusicPlayerStateChanged((bool)cookie);
-							return EatResponse.NotEaten;
-						case EventId.CurrencyCollected:
-							this.PlayCurrencyCollectionEffect(((CurrencyCollectionTag)cookie).Type);
-							return EatResponse.NotEaten;
-						case EventId.AudibleCurrencySpent:
-							switch ((int)cookie)
-							{
-							case 1:
-								this.audioManager.PlayAudio("sfx_button_usecredits");
-								break;
-							case 2:
-								this.audioManager.PlayAudio("sfx_button_usematerials");
-								break;
-							case 3:
-								this.audioManager.PlayAudio("sfx_button_usematerials");
-								break;
-							}
-							return EatResponse.NotEaten;
-						}
-						goto IL_1BA;
-						IL_88E:
-						this.audioManager.PlayAudio("sfx_button_store_selectbuilding");
-						return EatResponse.NotEaten;
-						IL_8A4:
-						this.audioManager.PlayAudio("sfx_button_store_selectcategory");
-						return EatResponse.NotEaten;
-					case EventId.GalaxyGoToPlanetView:
-						this.audioManager.Stop(AudioCategory.Ambience, AudioCategory.Music);
-						this.audioManager.PlayAudio("sfx_trans_base_to_playscreen");
-						this.audioManager.PlayAudio("music_galaxy_map_01");
-						return EatResponse.NotEaten;
-					case EventId.GalaxyGoToGalaxyView:
-						this.audioManager.Stop(AudioCategory.Ambience, AudioCategory.Music);
-						this.audioManager.PlayAudio("sfx_trans_base_to_galaxy");
-						this.audioManager.PlayAudio("music_galaxy_map_01");
-						return EatResponse.NotEaten;
-					case EventId.GalaxyTransitionToNextPlanet:
-						this.audioManager.PlayAudio("sfx_swipe_planet");
-						return EatResponse.NotEaten;
-					case EventId.GalaxyTransitionToPreviousPlanet:
-						this.audioManager.PlayAudio("sfx_swipe_planet");
-						return EatResponse.NotEaten;
-					case EventId.GalaxyNotEnoughRelocateStarsClose:
-						this.audioManager.PlayAudio("sfx_button_no_relocate");
-						return EatResponse.NotEaten;
-					case EventId.GalaxyUIPlanetFocus:
-						if (Time.time - this.galaxyUIPlanetFocusThrottle > GameConstants.GALAXY_UI_PLANET_FOCUS_THROTTLE)
+						case EventId.TroopAbilityActivate:
 						{
-							this.galaxyUIPlanetFocusThrottle = Time.time;
-							this.audioManager.PlayAudio("sfx_ui_planet_focus");
+							SmartEntity smartEntity2 = (SmartEntity)cookie;
+							TroopAbilityVO abilityVO2 = smartEntity2.TroopComp.AbilityVO;
+							this.audioManager.PlayAudio(this.audioManager.GetRandomClip(abilityVO2.AudioAbilityActivate));
+							new AudioEffectLoop(abilityVO2.Duration * 0.001f, abilityVO2.AudioAbilityLoop);
+							return EatResponse.NotEaten;
 						}
+						}
+						goto IL_15E;
+					case EventId.UserLiftedBuildingAudio:
+						this.audioManager.PlayAudio("sfx_ui_placement_start");
 						return EatResponse.NotEaten;
-					case EventId.BattleLogScreenTabSelected:
-						this.audioManager.PlayAudio("sfx_button_squad_select");
+					case EventId.UserGridMovedBuildingAudio:
+						this.audioManager.PlayAudio("sfx_ui_placement_move");
 						return EatResponse.NotEaten;
-					case EventId.BattleLogScreenShareButtonClicked:
-						this.audioManager.PlayAudio("sfx_button_more_info");
+					case EventId.UserLoweredBuildingAudio:
+						this.audioManager.PlayAudio("sfx_ui_placement_drop");
 						return EatResponse.NotEaten;
-					case EventId.BattleLogScreenRevengeButtonClicked:
-					case EventId.BattleLogScreenReplayButtonClicked:
-						this.audioManager.PlayAudio("sfx_button_startbattle");
+					case EventId.LongPressStarted:
+						this.audioManager.PlayAudio("sfx_button_editfill");
+						return EatResponse.NotEaten;
+					case EventId.ContractAdded:
+					{
+						ContractEventData contractEventData = (ContractEventData)cookie;
+						this.PlayContractSound(contractEventData.Contract);
 						return EatResponse.NotEaten;
 					}
-					goto IL_160;
+					}
+					goto IL_11E;
 				case EventId.TroopLevelUpgraded:
 				case EventId.StarshipLevelUpgraded:
-					goto IL_A0A;
+					goto IL_9B0;
 				case EventId.BuildingLevelUpgraded:
 					this.PlayBuildingUpgradedSound(cookie as ContractEventData);
 					return EatResponse.NotEaten;
@@ -731,22 +740,19 @@ namespace StaRTS.Audio
 					this.PlayBattleSound((IAudioVO)cookie, AudioCollectionType.Attack);
 					return EatResponse.NotEaten;
 				case EventId.IntroStarted:
-					goto IL_915;
+					goto IL_8B8;
 				case EventId.WorldInTransitionComplete:
 					this.PlayStateMusicOrEffect();
 					return EatResponse.NotEaten;
 				}
-				goto IL_FB;
-				IL_915:
+				goto IL_DE;
+				IL_8B8:
 				this.audioManager.Stop(AudioCategory.Ambience);
 				this.audioManager.PlayAudio("music_intro");
 				return EatResponse.NotEaten;
-				IL_A0A:
+				IL_9B0:
 				this.audioManager.PlayAudio("sfx_button_readystarship");
 				return EatResponse.NotEaten;
-			case EventId.HolonetChangeTabs:
-			case EventId.HolonetNextPrevTransmision:
-				goto IL_942;
 			case EventId.TransportArrived:
 				this.audioManager.PlayAudio("sfx_ui_vehiclepickup");
 				return EatResponse.NotEaten;
@@ -806,7 +812,7 @@ namespace StaRTS.Audio
 			case EventId.HeroMobilized:
 			case EventId.StarshipMobilizedFromPrize:
 			case EventId.HeroMobilizedFromPrize:
-				goto IL_9F4;
+				goto IL_99A;
 			case EventId.TroopNotPlacedInvalidArea:
 			case EventId.TroopNotPlacedInvalidTroop:
 			case EventId.TroopPlacedInsideShieldError:
@@ -818,12 +824,12 @@ namespace StaRTS.Audio
 				this.audioManager.PlayAudio("sfx_stinger_perk_donation_rep_reward");
 				return EatResponse.NotEaten;
 			}
-			goto IL_85;
-			IL_942:
+			goto IL_69;
+			IL_8E5:
 			this.audioManager.Stop(AudioCategory.Dialogue);
 			this.audioManager.PlayAudio("sfx_button_next");
 			return EatResponse.NotEaten;
-			IL_9F4:
+			IL_99A:
 			this.audioManager.PlayAudio("sfx_button_readyhero");
 			return EatResponse.NotEaten;
 		}
@@ -873,17 +879,23 @@ namespace StaRTS.Audio
 			{
 				return;
 			}
-			switch (starCount)
+			if (starCount != 1)
 			{
-			case 1:
+				if (starCount != 2)
+				{
+					if (starCount == 3)
+					{
+						this.audioManager.PlayAudio("sfx_stinger_victory_threestar");
+					}
+				}
+				else
+				{
+					this.audioManager.PlayAudio("sfx_stinger_victory_twostar");
+				}
+			}
+			else
+			{
 				this.audioManager.PlayAudio("sfx_stinger_victory_onestar");
-				break;
-			case 2:
-				this.audioManager.PlayAudio("sfx_stinger_victory_twostar");
-				break;
-			case 3:
-				this.audioManager.PlayAudio("sfx_stinger_victory_threestar");
-				break;
 			}
 		}
 
@@ -936,10 +948,9 @@ namespace StaRTS.Audio
 			string text;
 			if (contractData.BuildingVO.Type == BuildingType.HQ)
 			{
-				FactionType factionType = faction;
-				if (factionType != FactionType.Empire)
+				if (faction != FactionType.Empire)
 				{
-					if (factionType != FactionType.Rebel)
+					if (faction != FactionType.Rebel)
 					{
 						text = "sfx_stinger_upgradehq";
 					}
@@ -953,24 +964,20 @@ namespace StaRTS.Audio
 					text = "sfx_stinger_empire_upgradehq";
 				}
 			}
-			else
+			else if (faction != FactionType.Empire)
 			{
-				FactionType factionType = faction;
-				if (factionType != FactionType.Empire)
+				if (faction != FactionType.Rebel)
 				{
-					if (factionType != FactionType.Rebel)
-					{
-						text = "sfx_stinger_upgradebuilding";
-					}
-					else
-					{
-						text = "sfx_stinger_rebel_upgradebuilding";
-					}
+					text = "sfx_stinger_upgradebuilding";
 				}
 				else
 				{
-					text = "sfx_stinger_empire_upgradebuilding";
+					text = "sfx_stinger_rebel_upgradebuilding";
 				}
+			}
+			else
+			{
+				text = "sfx_stinger_empire_upgradebuilding";
 			}
 			if (text != null)
 			{
@@ -1107,10 +1114,9 @@ namespace StaRTS.Audio
 					return;
 				}
 				string text2 = null;
-				FactionType factionType = faction;
-				if (factionType != FactionType.Empire)
+				if (faction != FactionType.Empire)
 				{
-					if (factionType == FactionType.Rebel)
+					if (faction == FactionType.Rebel)
 					{
 						text2 = "sfx_stinger_rebel_battle";
 					}
@@ -1170,8 +1176,7 @@ namespace StaRTS.Audio
 					battleEntry = Service.BattleController.GetCurrentBattle();
 				}
 				bool won = battleEntry.Won;
-				FactionType factionType = faction;
-				if (factionType != FactionType.Empire)
+				if (faction != FactionType.Empire)
 				{
 					id = ((!won) ? "sfx_stinger_rebel_defeat" : "sfx_stinger_rebel_victory");
 				}
@@ -1203,17 +1208,23 @@ namespace StaRTS.Audio
 			{
 				this.audioManager.Stop(AudioCategory.Ambience);
 			}
-			switch (faction)
+			if (faction != FactionType.Empire)
 			{
-			case FactionType.Empire:
+				if (faction != FactionType.Rebel)
+				{
+					if (faction == FactionType.Smuggler)
+					{
+						id = "music_rebel_base_1";
+					}
+				}
+				else
+				{
+					id = planet.RebelMusic;
+				}
+			}
+			else
+			{
 				id = planet.EmpireMusic;
-				break;
-			case FactionType.Rebel:
-				id = planet.RebelMusic;
-				break;
-			case FactionType.Smuggler:
-				id = "music_rebel_base_1";
-				break;
 			}
 			if (!this.audioManager.IsPlaying(AudioCategory.Music, id))
 			{
@@ -1262,19 +1273,19 @@ namespace StaRTS.Audio
 			{
 			case CurrencyType.Credits:
 				id = "sfx_ui_collectcredits_1";
-				goto IL_56;
+				goto IL_54;
 			case CurrencyType.Materials:
 				id = "sfx_ui_collectmaterials_1";
-				goto IL_56;
+				goto IL_54;
 			case CurrencyType.Contraband:
 				id = "sfx_ui_collectmaterials_1";
-				goto IL_56;
+				goto IL_54;
 			case CurrencyType.Crystals:
 				id = "sfx_ui_collecthardcurrency_1";
-				goto IL_56;
+				goto IL_54;
 			}
 			return;
-			IL_56:
+			IL_54:
 			this.audioManager.PlayAudio(id);
 		}
 
@@ -1285,15 +1296,15 @@ namespace StaRTS.Audio
 			{
 			case "ButtonNextBattle":
 				id = "sfx_button_startbattle";
-				goto IL_310;
+				goto IL_312;
 			case "ButtonBattle":
 			case "ButtonWar":
 				id = "sfx_button_mission";
-				goto IL_310;
+				goto IL_312;
 			case "BtnMusic":
 			case "BtnSoundEffects":
 				id = "sfx_button_next";
-				goto IL_310;
+				goto IL_312;
 			case "BtnAbout":
 			case "BtnLanguage":
 			case "BtnHelp":
@@ -1301,53 +1312,53 @@ namespace StaRTS.Audio
 			case "BtnTOS":
 			case "BtnFacebook":
 				id = "sfx_button_facebook";
-				goto IL_310;
+				goto IL_312;
 			case "ButtonEndBattle":
 				id = "sfx_button_endbattle";
-				goto IL_310;
+				goto IL_312;
 			case "ButtonHome":
 			case "ButtonExitEdit":
 				id = "sfx_button_home";
-				goto IL_310;
+				goto IL_312;
 			case "Crystals":
 			case "Shield":
 			case "ButtonStore":
 				id = "sfx_button_store";
-				goto IL_310;
+				goto IL_312;
 			case "ButtonSettings":
 			case "Medals":
 			case "BaseRating":
 			case "ButtonLog":
 				id = "sfx_button_more_info";
-				goto IL_310;
+				goto IL_312;
 			case "BtnSwap":
 				id = "sfx_button_more_info";
-				goto IL_310;
+				goto IL_312;
 			case "BtnCancel":
 				id = "sfx_button_back";
-				goto IL_310;
+				goto IL_312;
 			case "ButtonClans":
 				id = "sfx_button_squad";
-				goto IL_310;
+				goto IL_312;
 			case "ButtonLeaderboard":
 				id = "sfx_button_squad";
-				goto IL_310;
+				goto IL_312;
 			case "ButtonPrimaryAction":
 				id = "sfx_button_restartbattle";
-				goto IL_310;
+				goto IL_312;
 			case "Newspaper":
 				id = "sfx_button_more_info";
-				goto IL_310;
+				goto IL_312;
 			case "BtnOption1Top":
 			case "BtnOption2Top":
 			case "BtnOption1Bottom":
 			case "BtnOption2Bottom":
 				id = "sfx_button_next";
-				goto IL_310;
+				goto IL_312;
 			case "TabActivatePerks":
 			case "TabUpgradePerks":
 				id = "sfx_button_squad_select";
-				goto IL_310;
+				goto IL_312;
 			}
 			if (elementName.StartsWith("CheckboxTroop"))
 			{
@@ -1357,7 +1368,7 @@ namespace StaRTS.Audio
 			{
 				id = "sfx_button_campaign";
 			}
-			IL_310:
+			IL_312:
 			this.audioManager.PlayAudio(id);
 		}
 	}

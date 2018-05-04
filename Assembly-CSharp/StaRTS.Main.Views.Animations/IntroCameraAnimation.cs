@@ -14,7 +14,7 @@ using UnityEngine;
 
 namespace StaRTS.Main.Views.Animations
 {
-	public class IntroCameraAnimation : UXFactory, IUserInputObserver, IViewFrameTimeObserver
+	public class IntroCameraAnimation : UXFactory, IViewFrameTimeObserver, IUserInputObserver
 	{
 		private const string SKIP_BUTTON_CONTAINER = "ContainerBtnSkipIntro";
 

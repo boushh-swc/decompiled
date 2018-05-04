@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Splash : MonoBehaviour
 {
@@ -14,6 +15,8 @@ public class Splash : MonoBehaviour
 	private const string UX_CAMERA_NAME = "UX Camera";
 
 	private const float FADE_DURATION = 0.4f;
+
+	private const float SPLASH_DELAY = 0f;
 
 	private float[] durations;
 
@@ -82,12 +85,14 @@ public class Splash : MonoBehaviour
 	private void Start()
 	{
 		this.SetOrientation();
+		this.startTime = Time.time;
 		float num = Splash.CalculateScale();
 		this.uxCamera = GameObject.Find("UX Camera").GetComponent<Camera>();
 		this.uxCamera.transform.localScale = Vector3.one * num;
 		NGUIText.fontResolutionMultiplier = num;
 		this.uxRoot = GameObject.Find("UX Root");
 		this.uxRoot.GetComponent<UIPanel>().alpha = 0f;
+		this.startTime = this.startTime;
 		this.durations = new float[]
 		{
 			0f,
@@ -145,17 +150,17 @@ public class Splash : MonoBehaviour
 
 	private void FadeIn()
 	{
-		TweenAlpha.Begin(this.uxRoot, this.durations[this.state], 1f);
+		TweenAlpha.Begin(this.uxRoot, this.durations[this.state], 1f, 0f);
 		this.source.Play();
 	}
 
 	private void FadeOut()
 	{
-		TweenAlpha.Begin(this.uxRoot, this.durations[this.state], 0f);
+		TweenAlpha.Begin(this.uxRoot, this.durations[this.state], 0f, 0f);
 	}
 
 	private void Finish()
 	{
-		Application.LoadLevel("MainScene");
+		SceneManager.LoadScene("MainScene");
 	}
 }

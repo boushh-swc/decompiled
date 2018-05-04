@@ -19,12 +19,12 @@ namespace NGUIExtensions
 		{
 			float duration = this.transitionTime * 0.5f;
 			TweenScale.Begin(base.gameObject, duration, this.downScale);
-			TweenAlpha tweenAlpha = TweenAlpha.Begin(base.gameObject, duration, this.downAlpha);
+			TweenAlpha tweenAlpha = TweenAlpha.Begin(base.gameObject, duration, this.downAlpha, 0f);
 			tweenAlpha.from = this.defaultAlpha;
 			if (!isDown)
 			{
 				TweenScale.Begin(base.gameObject, duration, this.defaultScale);
-				TweenAlpha.Begin(base.gameObject, duration, this.defaultAlpha);
+				TweenAlpha.Begin(base.gameObject, duration, this.defaultAlpha, 0f);
 				tweenAlpha.from = this.downAlpha;
 			}
 		}

@@ -3,18 +3,19 @@ using StaRTS.Utils.Scheduling;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Profiling;
 
 namespace StaRTS.Main.Controllers.Performance
 {
 	public class PerformanceMonitor : IViewFrameTimeObserver
 	{
+		private AndroidJavaObject pluginActivity;
+
 		private const float SECONDS_PER_SAMPLE = 1f;
 
 		private const float SECONDS_PER_PEAK = 5f;
 
 		private const int NUM_AVERAGED_SAMPLES = 1;
-
-		private AndroidJavaObject pluginActivity;
 
 		private FrameSample[] samples;
 
@@ -229,14 +230,14 @@ namespace StaRTS.Main.Controllers.Performance
 
 		public uint GetTotalMemoryUsed()
 		{
-			uint monoHeapSize = Profiler.GetMonoHeapSize();
-			uint monoUsedSize = Profiler.GetMonoUsedSize();
+			uint num = (uint)Profiler.GetMonoHeapSizeLong();
+			uint num2 = (uint)Profiler.GetMonoUsedSizeLong();
 			uint runtimeMemorySize = this.GetRuntimeMemorySize<Texture>();
 			uint runtimeMemorySize2 = this.GetRuntimeMemorySize<Mesh>();
 			uint runtimeMemorySize3 = this.GetRuntimeMemorySize<AudioClip>();
 			uint runtimeMemorySize4 = this.GetRuntimeMemorySize<AnimationClip>();
 			uint runtimeMemorySize5 = this.GetRuntimeMemorySize<Material>();
-			return monoHeapSize + monoUsedSize + runtimeMemorySize + runtimeMemorySize3 + runtimeMemorySize2 + runtimeMemorySize4 + runtimeMemorySize5;
+			return num + num2 + runtimeMemorySize + runtimeMemorySize3 + runtimeMemorySize2 + runtimeMemorySize4 + runtimeMemorySize5;
 		}
 
 		private uint GetRuntimeMemorySize<T>()
@@ -247,7 +248,7 @@ namespace StaRTS.Main.Controllers.Performance
 			for (int i = 0; i < array2.Length; i++)
 			{
 				UnityEngine.Object o = array2[i];
-				num += (uint)Profiler.GetRuntimeMemorySize(o);
+				num += (uint)Profiler.GetRuntimeMemorySizeLong(o);
 			}
 			return num;
 		}
@@ -258,8 +259,8 @@ namespace StaRTS.Main.Controllers.Performance
 			{
 				return;
 			}
-			uint monoHeapSize = Profiler.GetMonoHeapSize();
-			uint monoUsedSize = Profiler.GetMonoUsedSize();
+			uint memRsvd = (uint)Profiler.GetMonoHeapSizeLong();
+			uint memUsed = (uint)Profiler.GetMonoUsedSizeLong();
 			uint runtimeMemorySize = this.GetRuntimeMemorySize<Texture>();
 			uint runtimeMemorySize2 = this.GetRuntimeMemorySize<Mesh>();
 			uint runtimeMemorySize3 = this.GetRuntimeMemorySize<AudioClip>();
@@ -270,8 +271,8 @@ namespace StaRTS.Main.Controllers.Performance
 			while (this.miterMem.Active())
 			{
 				IPerformanceObserver performanceObserver = this.memObservers[this.miterMem.Index];
-				performanceObserver.OnPerformanceMemRsvd(monoHeapSize);
-				performanceObserver.OnPerformanceMemUsed(monoUsedSize);
+				performanceObserver.OnPerformanceMemRsvd(memRsvd);
+				performanceObserver.OnPerformanceMemUsed(memUsed);
 				performanceObserver.OnPerformanceMemTexture(runtimeMemorySize);
 				performanceObserver.OnPerformanceMemMesh(runtimeMemorySize2);
 				performanceObserver.OnPerformanceMemAudio(runtimeMemorySize3);

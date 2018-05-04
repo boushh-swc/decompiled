@@ -11,6 +11,8 @@ namespace StaRTS.Main.Views.UX.Screens
 {
 	public class SquadWarPlayerDetailsScreen : ClosableScreen
 	{
+		private SquadWarParticipantState participantState;
+
 		private const string BUTTON_PLAYER_NEXT = "BtnPlayerNext";
 
 		private const string BUTTON_PLAYER_PREV = "BtnPlayerPrev";
@@ -56,8 +58,6 @@ namespace StaRTS.Main.Views.UX.Screens
 		private const string WAR_PLAYER_DETAILS_REQ_COMPLETE = "WAR_PLAYER_DETAILS_REQ_COMPLETE";
 
 		private const string SCOUT = "SCOUT";
-
-		private SquadWarParticipantState participantState;
 
 		private UXButton playerNextButton;
 

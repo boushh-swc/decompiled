@@ -29,39 +29,39 @@ namespace StaRTS.Main.Views.World.Targeting
 		{
 			switch (id)
 			{
-			case EventId.HeroDeployed:
-			case EventId.AddDecalToTroop:
-				this.OnHeroDeployed(cookie as Entity);
+			case EventId.HeroKilled:
+			case EventId.ChampionKilled:
+				this.OnHeroOrChampionKilled(cookie as Entity);
 				return EatResponse.NotEaten;
-			case EventId.TroopAbilityActivate:
-			case EventId.TroopAbilityDeactivate:
-			case EventId.TroopAbilityCoolDownComplete:
 			case EventId.ChampionDeployed:
-			{
-				IL_2E:
+				IL_1C:
 				if (id == EventId.TroopViewReady)
 				{
 					EntityViewParams entityViewParams = cookie as EntityViewParams;
 					this.OnHeroOrChampionViewReady(entityViewParams.Entity);
 					return EatResponse.NotEaten;
 				}
-				if (id != EventId.GameStateChanged)
+				if (id == EventId.GameStateChanged)
+				{
+					Type type = (Type)cookie;
+					if (type == typeof(BattleEndState) || type == typeof(BattleEndPlaybackState))
+					{
+						this.CleanupAllDecals();
+					}
+					return EatResponse.NotEaten;
+				}
+				if (id != EventId.HeroDeployed)
 				{
 					return EatResponse.NotEaten;
 				}
-				Type type = (Type)cookie;
-				if (type == typeof(BattleEndState) || type == typeof(BattleEndPlaybackState))
-				{
-					this.CleanupAllDecals();
-				}
-				return EatResponse.NotEaten;
+				goto IL_3F;
+			case EventId.AddDecalToTroop:
+				goto IL_3F;
 			}
-			case EventId.HeroKilled:
-			case EventId.ChampionKilled:
-				this.OnHeroOrChampionKilled(cookie as Entity);
-				return EatResponse.NotEaten;
-			}
-			goto IL_2E;
+			goto IL_1C;
+			IL_3F:
+			this.OnHeroDeployed(cookie as Entity);
+			return EatResponse.NotEaten;
 		}
 
 		private HeroDecal FindDecal(Entity entity)

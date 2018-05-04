@@ -7,8 +7,6 @@ namespace ExitGames.Client.Photon.Chat
 	{
 		private const int FriendRequestListMax = 1024;
 
-		private const string ChatAppName = "chat";
-
 		private string chatRegion = "EU";
 
 		public int MessageLimit;
@@ -28,6 +26,8 @@ namespace ExitGames.Client.Photon.Chat
 		private int msDeltaForServiceCalls = 50;
 
 		private int msTimestampOfLastServiceCall;
+
+		private const string ChatAppName = "chat";
 
 		public string NameServerAddress
 		{
@@ -135,124 +135,6 @@ namespace ExitGames.Client.Photon.Chat
 			this.PublicChannels = new Dictionary<string, ChatChannel>();
 			this.PrivateChannels = new Dictionary<string, ChatChannel>();
 			this.PublicChannelsUnsubscribing = new HashSet<string>();
-		}
-
-		void IPhotonPeerListener.DebugReturn(DebugLevel level, string message)
-		{
-			this.listener.DebugReturn(level, message);
-		}
-
-		void IPhotonPeerListener.OnEvent(EventData eventData)
-		{
-			switch (eventData.Code)
-			{
-			case 0:
-				this.HandleChatMessagesEvent(eventData);
-				break;
-			case 2:
-				this.HandlePrivateMessageEvent(eventData);
-				break;
-			case 4:
-				this.HandleStatusUpdate(eventData);
-				break;
-			case 5:
-				this.HandleSubscribeEvent(eventData);
-				break;
-			case 6:
-				this.HandleUnsubscribeEvent(eventData);
-				break;
-			}
-		}
-
-		void IPhotonPeerListener.OnOperationResponse(OperationResponse operationResponse)
-		{
-			byte operationCode = operationResponse.OperationCode;
-			switch (operationCode)
-			{
-			case 0:
-			case 1:
-			case 2:
-			case 3:
-				break;
-			default:
-				if (operationCode == 230)
-				{
-					this.HandleAuthResponse(operationResponse);
-					return;
-				}
-				break;
-			}
-			if (operationResponse.ReturnCode != 0 && this.DebugOut >= DebugLevel.ERROR)
-			{
-				if (operationResponse.ReturnCode == -2)
-				{
-					this.listener.DebugReturn(DebugLevel.ERROR, string.Format("Chat Operation {0} unknown on server. Check your AppId and make sure it's for a Chat application.", operationResponse.OperationCode));
-				}
-				else
-				{
-					this.listener.DebugReturn(DebugLevel.ERROR, string.Format("Chat Operation {0} failed (Code: {1}). Debug Message: {2}", operationResponse.OperationCode, operationResponse.ReturnCode, operationResponse.DebugMessage));
-				}
-			}
-		}
-
-		void IPhotonPeerListener.OnStatusChanged(StatusCode statusCode)
-		{
-			if (statusCode != StatusCode.Connect)
-			{
-				if (statusCode != StatusCode.Disconnect)
-				{
-					if (statusCode != StatusCode.EncryptionEstablished)
-					{
-						if (statusCode == StatusCode.EncryptionFailedToEstablish)
-						{
-							this.State = ChatState.Disconnecting;
-							this.chatPeer.Disconnect();
-						}
-					}
-					else if (!this.didAuthenticate)
-					{
-						this.didAuthenticate = this.chatPeer.AuthenticateOnNameServer(this.AppId, this.AppVersion, this.chatRegion, this.AuthValues);
-						if (!this.didAuthenticate && this.DebugOut >= DebugLevel.ERROR)
-						{
-							((IPhotonPeerListener)this).DebugReturn(DebugLevel.ERROR, "Error calling OpAuthenticate! Did not work. Check log output, AuthValues and if you're connected. State: " + this.State);
-						}
-					}
-				}
-				else if (this.State == ChatState.Authenticated)
-				{
-					this.ConnectToFrontEnd();
-				}
-				else
-				{
-					this.State = ChatState.Disconnected;
-					this.listener.OnChatStateChange(ChatState.Disconnected);
-					this.listener.OnDisconnected();
-				}
-			}
-			else
-			{
-				if (!this.chatPeer.IsProtocolSecure)
-				{
-					this.chatPeer.EstablishEncryption();
-				}
-				else if (!this.didAuthenticate)
-				{
-					this.didAuthenticate = this.chatPeer.AuthenticateOnNameServer(this.AppId, this.AppVersion, this.chatRegion, this.AuthValues);
-					if (!this.didAuthenticate && this.DebugOut >= DebugLevel.ERROR)
-					{
-						((IPhotonPeerListener)this).DebugReturn(DebugLevel.ERROR, "Error calling OpAuthenticate! Did not work. Check log output, AuthValues and if you're connected. State: " + this.State);
-					}
-				}
-				if (this.State == ChatState.ConnectingToNameServer)
-				{
-					this.State = ChatState.ConnectedToNameServer;
-					this.listener.OnChatStateChange(this.State);
-				}
-				else if (this.State == ChatState.ConnectingToFrontEnd)
-				{
-					this.AuthenticateOnFrontEnd();
-				}
-			}
 		}
 
 		public bool CanChatInChannel(string channelName)
@@ -612,6 +494,124 @@ namespace ExitGames.Client.Photon.Chat
 			if (this.chatPeer != null)
 			{
 				this.chatPeer.SendAcksOnly();
+			}
+		}
+
+		void IPhotonPeerListener.DebugReturn(DebugLevel level, string message)
+		{
+			this.listener.DebugReturn(level, message);
+		}
+
+		void IPhotonPeerListener.OnEvent(EventData eventData)
+		{
+			switch (eventData.Code)
+			{
+			case 0:
+				this.HandleChatMessagesEvent(eventData);
+				break;
+			case 2:
+				this.HandlePrivateMessageEvent(eventData);
+				break;
+			case 4:
+				this.HandleStatusUpdate(eventData);
+				break;
+			case 5:
+				this.HandleSubscribeEvent(eventData);
+				break;
+			case 6:
+				this.HandleUnsubscribeEvent(eventData);
+				break;
+			}
+		}
+
+		void IPhotonPeerListener.OnOperationResponse(OperationResponse operationResponse)
+		{
+			byte operationCode = operationResponse.OperationCode;
+			switch (operationCode)
+			{
+			case 0:
+			case 1:
+			case 2:
+			case 3:
+				break;
+			default:
+				if (operationCode == 230)
+				{
+					this.HandleAuthResponse(operationResponse);
+					return;
+				}
+				break;
+			}
+			if (operationResponse.ReturnCode != 0 && this.DebugOut >= DebugLevel.ERROR)
+			{
+				if (operationResponse.ReturnCode == -2)
+				{
+					this.listener.DebugReturn(DebugLevel.ERROR, string.Format("Chat Operation {0} unknown on server. Check your AppId and make sure it's for a Chat application.", operationResponse.OperationCode));
+				}
+				else
+				{
+					this.listener.DebugReturn(DebugLevel.ERROR, string.Format("Chat Operation {0} failed (Code: {1}). Debug Message: {2}", operationResponse.OperationCode, operationResponse.ReturnCode, operationResponse.DebugMessage));
+				}
+			}
+		}
+
+		void IPhotonPeerListener.OnStatusChanged(StatusCode statusCode)
+		{
+			if (statusCode != StatusCode.Connect)
+			{
+				if (statusCode != StatusCode.Disconnect)
+				{
+					if (statusCode != StatusCode.EncryptionEstablished)
+					{
+						if (statusCode == StatusCode.EncryptionFailedToEstablish)
+						{
+							this.State = ChatState.Disconnecting;
+							this.chatPeer.Disconnect();
+						}
+					}
+					else if (!this.didAuthenticate)
+					{
+						this.didAuthenticate = this.chatPeer.AuthenticateOnNameServer(this.AppId, this.AppVersion, this.chatRegion, this.AuthValues);
+						if (!this.didAuthenticate && this.DebugOut >= DebugLevel.ERROR)
+						{
+							((IPhotonPeerListener)this).DebugReturn(DebugLevel.ERROR, "Error calling OpAuthenticate! Did not work. Check log output, AuthValues and if you're connected. State: " + this.State);
+						}
+					}
+				}
+				else if (this.State == ChatState.Authenticated)
+				{
+					this.ConnectToFrontEnd();
+				}
+				else
+				{
+					this.State = ChatState.Disconnected;
+					this.listener.OnChatStateChange(ChatState.Disconnected);
+					this.listener.OnDisconnected();
+				}
+			}
+			else
+			{
+				if (!this.chatPeer.IsProtocolSecure)
+				{
+					this.chatPeer.EstablishEncryption();
+				}
+				else if (!this.didAuthenticate)
+				{
+					this.didAuthenticate = this.chatPeer.AuthenticateOnNameServer(this.AppId, this.AppVersion, this.chatRegion, this.AuthValues);
+					if (!this.didAuthenticate && this.DebugOut >= DebugLevel.ERROR)
+					{
+						((IPhotonPeerListener)this).DebugReturn(DebugLevel.ERROR, "Error calling OpAuthenticate! Did not work. Check log output, AuthValues and if you're connected. State: " + this.State);
+					}
+				}
+				if (this.State == ChatState.ConnectingToNameServer)
+				{
+					this.State = ChatState.ConnectedToNameServer;
+					this.listener.OnChatStateChange(this.State);
+				}
+				else if (this.State == ChatState.ConnectingToFrontEnd)
+				{
+					this.AuthenticateOnFrontEnd();
+				}
 			}
 		}
 

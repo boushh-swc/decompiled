@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace StaRTS.Main.Models.ValueObjects
 {
-	public class BuildingTypeVO : IAssetVO, IAudioVO, IGeometryVO, IHealthVO, IUnlockableVO, IUpgradeableVO, IValueObject
+	public class BuildingTypeVO : IHealthVO, IAudioVO, IUpgradeableVO, IValueObject, IAssetVO, IGeometryVO, IUnlockableVO
 	{
 		public ArmorType ArmorType;
 

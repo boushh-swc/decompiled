@@ -23,6 +23,10 @@ namespace StaRTS.Main.Controllers.Planets
 
 		private const string PLANETARY_LIGHTING_DIRECTION = "_LightDir";
 
+		private static readonly Vector3 Global_LightDir = new Vector3(-119f, 57.4f, -144.3f);
+
+		private static readonly Vector3 PLANET_GLOW_OFFSET = new Vector3(0f, 0f, -9f);
+
 		private const float PLANET_GLOW_SCALE = 1.15f;
 
 		private const string DEFAULT_PLANETID_IF_NO_LOGIN = "";
@@ -44,10 +48,6 @@ namespace StaRTS.Main.Controllers.Planets
 		private const string EXPLOSION_PARTICLE_NAME = "planetExplosions";
 
 		public const string PLANET_GLOW_NAME = "fx_planetGlow";
-
-		private static readonly Vector3 Global_LightDir = new Vector3(-119f, 57.4f, -144.3f);
-
-		private static readonly Vector3 PLANET_GLOW_OFFSET = new Vector3(0f, 0f, -9f);
 
 		private List<Planet> planetsWithActiveEvents;
 
@@ -446,10 +446,9 @@ namespace StaRTS.Main.Controllers.Planets
 			{
 				AssetHandle particleFXHandle = AssetHandle.Invalid;
 				TimedEventState tournamentState = planet.TournamentState;
-				TimedEventState timedEventState = tournamentState;
-				if (timedEventState != TimedEventState.Upcoming)
+				if (tournamentState != TimedEventState.Live)
 				{
-					if (timedEventState != TimedEventState.Live)
+					if (tournamentState != TimedEventState.Upcoming)
 					{
 						if (this.planetsWithEvent.Contains(planet))
 						{
@@ -466,11 +465,7 @@ namespace StaRTS.Main.Controllers.Planets
 						{
 							this.planetsWithEvent.Add(planet);
 						}
-						if (!this.planetsWithActiveEvents.Contains(planet))
-						{
-							this.planetsWithActiveEvents.Add(planet);
-						}
-						assetManager.Load(ref particleFXHandle, "fx_planet_Conflict", new AssetSuccessDelegate(this.OnEventParticleFXLoaded), null, planet);
+						assetManager.Load(ref particleFXHandle, "fx_planet_Imminent", new AssetSuccessDelegate(this.OnEventParticleFXLoaded), null, planet);
 					}
 				}
 				else
@@ -479,7 +474,11 @@ namespace StaRTS.Main.Controllers.Planets
 					{
 						this.planetsWithEvent.Add(planet);
 					}
-					assetManager.Load(ref particleFXHandle, "fx_planet_Imminent", new AssetSuccessDelegate(this.OnEventParticleFXLoaded), null, planet);
+					if (!this.planetsWithActiveEvents.Contains(planet))
+					{
+						this.planetsWithActiveEvents.Add(planet);
+					}
+					assetManager.Load(ref particleFXHandle, "fx_planet_Conflict", new AssetSuccessDelegate(this.OnEventParticleFXLoaded), null, planet);
 				}
 				planet.ParticleFXHandle = particleFXHandle;
 				miscElementsManager.DestroyPlanetBackgroundUI(planet);
@@ -732,14 +731,14 @@ namespace StaRTS.Main.Controllers.Planets
 			gameObject.SetActive(false);
 			planet.ParticleFX = gameObject;
 			Transform transform = gameObject.transform;
-			Transform transform2 = transform.FindChild("Rings");
-			Transform transform3 = transform.FindChild("planetExplosions");
+			Transform transform2 = transform.Find("Rings");
+			Transform transform3 = transform.Find("planetExplosions");
 			if (transform3 != null)
 			{
 				planet.PlanetExplosions = transform3.gameObject;
 			}
 			planet.ParticleRings = transform2.GetComponent<ParticleSystem>();
-			planet.OriginalRingSize = planet.ParticleRings.startSize;
+			planet.OriginalRingSize = planet.ParticleRings.main.startSize.constant;
 			gameObject.transform.LookAt(mainCamera.Camera.transform.position);
 			this.planetParticleCount++;
 			this.CheckForEffectAndFXDoneLoading();
@@ -831,17 +830,16 @@ namespace StaRTS.Main.Controllers.Planets
 			if (this.DoesPlanetHaveEvent(planet))
 			{
 				TimedEventState tournamentState = planet.TournamentState;
-				TimedEventState timedEventState = tournamentState;
-				if (timedEventState != TimedEventState.Upcoming)
+				if (tournamentState != TimedEventState.Live)
 				{
-					if (timedEventState == TimedEventState.Live)
+					if (tournamentState == TimedEventState.Upcoming)
 					{
-						assetManager.Load(ref particleFXHandle, "fx_planet_Conflict", new AssetSuccessDelegate(this.OnEventParticleFXLoaded), new AssetFailureDelegate(this.OnParticleFXLoadFailed), planet);
+						assetManager.Load(ref particleFXHandle, "fx_planet_Imminent", new AssetSuccessDelegate(this.OnEventParticleFXLoaded), new AssetFailureDelegate(this.OnParticleFXLoadFailed), planet);
 					}
 				}
 				else
 				{
-					assetManager.Load(ref particleFXHandle, "fx_planet_Imminent", new AssetSuccessDelegate(this.OnEventParticleFXLoaded), new AssetFailureDelegate(this.OnParticleFXLoadFailed), planet);
+					assetManager.Load(ref particleFXHandle, "fx_planet_Conflict", new AssetSuccessDelegate(this.OnEventParticleFXLoaded), new AssetFailureDelegate(this.OnParticleFXLoadFailed), planet);
 				}
 			}
 			planet.EventEffectsHandle = eventEffectsHandle;

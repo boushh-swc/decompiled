@@ -30,9 +30,9 @@ namespace StaRTS.Main.Controllers
 
 		private const string REPAIR_PURCHASE_CONTEXT_NAME = "repair";
 
-		private const float CHAMPION_INITIAL_ROTATION = 180f;
-
 		private TroopTypeVO repairChampionType;
+
+		private const float CHAMPION_INITIAL_ROTATION = 180f;
 
 		public ChampionController()
 		{
@@ -313,13 +313,13 @@ namespace StaRTS.Main.Controllers
 			case EventId.TroopLevelUpgraded:
 			case EventId.StarshipLevelUpgraded:
 			case EventId.BuildingSwapped:
-				IL_4F:
+				IL_4B:
 				if (id != EventId.ExitEditMode && id != EventId.ExitBaseLayoutToolMode)
 				{
 					if (id == EventId.BuildingCancelled)
 					{
 						ContractEventData contractEventData = (ContractEventData)cookie;
-						this.AddChampionToInventoryIfAlive((SmartEntity)contractEventData.Entity, false);
+						this.AddChampionToInventoryIfAlive(contractEventData.Entity, false);
 						return EatResponse.NotEaten;
 					}
 					if (id == EventId.BuildingStartedUpgrading)
@@ -332,12 +332,12 @@ namespace StaRTS.Main.Controllers
 						if (flag && cookie != null)
 						{
 							ContractEventData contractEventData2 = cookie as ContractEventData;
-							SmartEntity smartEntity = contractEventData2.Entity as SmartEntity;
-							TroopTypeVO troopTypeVO = this.FindChampionTypeIfPlatform(smartEntity.BuildingComp.BuildingType);
+							SmartEntity entity2 = contractEventData2.Entity;
+							TroopTypeVO troopTypeVO = this.FindChampionTypeIfPlatform(entity2.BuildingComp.BuildingType);
 							if (troopTypeVO != null)
 							{
-								SmartEntity entity2 = this.FindChampionEntity(troopTypeVO);
-								Service.EntityRenderController.UpdateChampionAnimationStateInHomeOrWarBoardMode(entity2, false);
+								SmartEntity entity3 = this.FindChampionEntity(troopTypeVO);
+								Service.EntityRenderController.UpdateChampionAnimationStateInHomeOrWarBoardMode(entity3, false);
 							}
 						}
 						return EatResponse.NotEaten;
@@ -359,21 +359,21 @@ namespace StaRTS.Main.Controllers
 			case EventId.BuildingLevelUpgraded:
 			{
 				ContractEventData contractEventData = (ContractEventData)cookie;
-				this.UpgradeChampionToMatchPlatform((SmartEntity)contractEventData.Entity);
+				this.UpgradeChampionToMatchPlatform(contractEventData.Entity);
 				return EatResponse.NotEaten;
 			}
 			case EventId.BuildingConstructed:
 			{
 				ContractEventData contractEventData = (ContractEventData)cookie;
-				this.AddChampionToInventoryIfAlive((SmartEntity)contractEventData.Entity, flag);
+				this.AddChampionToInventoryIfAlive(contractEventData.Entity, flag);
 				if (flag)
 				{
-					Service.BuildingTooltipController.EnsureBuildingTooltip((SmartEntity)contractEventData.Entity);
+					Service.BuildingTooltipController.EnsureBuildingTooltip(contractEventData.Entity);
 				}
 				return EatResponse.NotEaten;
 			}
 			}
-			goto IL_4F;
+			goto IL_4B;
 		}
 
 		private bool IsChampionBroken(ChampionComponent championComp)

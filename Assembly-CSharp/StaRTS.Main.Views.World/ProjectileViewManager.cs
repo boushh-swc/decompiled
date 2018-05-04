@@ -12,24 +12,17 @@ using StaRTS.Utils;
 using StaRTS.Utils.Core;
 using StaRTS.Utils.Scheduling;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace StaRTS.Main.Views.World
 {
-	public class ProjectileViewManager : IEventObserver, IViewFrameTimeObserver
+	public class ProjectileViewManager : IViewFrameTimeObserver, IEventObserver
 	{
 		private const float DEFLECT_VARIANCE = 6f;
 
 		private const float DEFLECT_TROOP_SIZE_ADJUST = 1.33f;
-
-		public const float BULLET_HEIGHT = 2f;
-
-		public const int INITIAL_POOL_SIZE = 50;
-
-		public const int INITIAL_FINISHED_POOL_SIZE = 10;
-
-		private const float HIT_FX_POSITION_FUDGE = 0.2f;
 
 		private Stack<ProjectileView> projectilePool;
 
@@ -50,6 +43,14 @@ namespace StaRTS.Main.Views.World
 		private MutableIterator miter;
 
 		private float speed;
+
+		public const float BULLET_HEIGHT = 2f;
+
+		public const int INITIAL_POOL_SIZE = 50;
+
+		public const int INITIAL_FINISHED_POOL_SIZE = 10;
+
+		private const float HIT_FX_POSITION_FUDGE = 0.2f;
 
 		public ProjectileViewManager()
 		{
@@ -90,17 +91,30 @@ namespace StaRTS.Main.Views.World
 			ParticleSystem particleSystem = gameObject.GetComponent<ParticleSystem>();
 			if (gameObject2 == null && particleSystem == null)
 			{
-				foreach (Transform transform in gameObject.transform)
+				IEnumerator enumerator = gameObject.transform.GetEnumerator();
+				try
 				{
-					GameObject gameObject3 = transform.gameObject;
-					ParticleSystem component2 = gameObject3.GetComponent<ParticleSystem>();
-					if (component2 != null)
+					while (enumerator.MoveNext())
 					{
-						particleSystem = component2;
+						Transform transform = (Transform)enumerator.Current;
+						GameObject gameObject3 = transform.gameObject;
+						ParticleSystem component2 = gameObject3.GetComponent<ParticleSystem>();
+						if (component2 != null)
+						{
+							particleSystem = component2;
+						}
+						if (gameObject3.GetComponent<MeshRenderer>())
+						{
+							gameObject2 = gameObject3;
+						}
 					}
-					if (gameObject3.GetComponent<MeshRenderer>())
+				}
+				finally
+				{
+					IDisposable disposable;
+					if ((disposable = (enumerator as IDisposable)) != null)
 					{
-						gameObject2 = gameObject3;
+						disposable.Dispose();
 					}
 				}
 			}
@@ -508,9 +522,9 @@ namespace StaRTS.Main.Views.World
 							ParticleSystem particleSystem = array[i];
 							if (particleSystem != null)
 							{
-								if (particleSystem.duration > num)
+								if (particleSystem.main.duration > num)
 								{
-									num = particleSystem.duration;
+									num = particleSystem.main.duration;
 								}
 								this.PlayParticle(particleSystem);
 							}
@@ -525,7 +539,7 @@ namespace StaRTS.Main.Views.World
 					if (emitter2 != null)
 					{
 						this.PlayParticleAt(emitter2, startLocation);
-						singleEmitterPool.StopEmissionAndReturnToPool(emitter2, emitter2.startLifetime, fadeTime);
+						singleEmitterPool.StopEmissionAndReturnToPool(emitter2, emitter2.main.startLifetime.constant, fadeTime);
 					}
 				}
 			}
@@ -668,9 +682,9 @@ namespace StaRTS.Main.Views.World
 					for (int i = 0; i < array.Length; i++)
 					{
 						ParticleSystem particleSystem = array[i];
-						if (particleSystem.duration > num)
+						if (particleSystem.main.duration > num)
 						{
-							num = particleSystem.duration;
+							num = particleSystem.main.duration;
 						}
 						this.PlayParticle(particleSystem);
 					}
@@ -699,7 +713,7 @@ namespace StaRTS.Main.Views.World
 					{
 						this.PlayParticleAt(emitter2, vector);
 					}
-					singleEmitterPool.StopEmissionAndReturnToPool(emitter2, emitter2.startLifetime, 0f);
+					singleEmitterPool.StopEmissionAndReturnToPool(emitter2, emitter2.main.startLifetime.constant, 0f);
 				}
 			}
 		}
@@ -837,10 +851,10 @@ namespace StaRTS.Main.Views.World
 				return EatResponse.NotEaten;
 			case EventId.ShooterClipUsed:
 			{
-				IL_1A:
+				IL_18:
 				if (id == EventId.EntityKilled)
 				{
-					goto IL_5E;
+					goto IL_5C;
 				}
 				if (id != EventId.EntityHitByBeam)
 				{
@@ -851,10 +865,10 @@ namespace StaRTS.Main.Views.World
 				return EatResponse.NotEaten;
 			}
 			case EventId.ShooterStoppedAttacking:
-				goto IL_5E;
+				goto IL_5C;
 			}
-			goto IL_1A;
-			IL_5E:
+			goto IL_18;
+			IL_5C:
 			this.RemoveEmittersForEntity((SmartEntity)cookie);
 			return EatResponse.NotEaten;
 		}

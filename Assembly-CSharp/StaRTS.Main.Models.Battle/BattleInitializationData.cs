@@ -303,12 +303,9 @@ namespace StaRTS.Main.Models.Battle
 				{
 					if (battleDeploymentData.TroopData.ContainsKey(current2.TroopUid))
 					{
-						Dictionary<string, int> troopData;
-						Dictionary<string, int> expr_F9 = troopData = battleDeploymentData.TroopData;
-						string key;
-						string expr_103 = key = current2.TroopUid;
-						int num = troopData[key];
-						expr_F9[expr_103] = num + current2.Quantity;
+						Dictionary<string, int> dictionary;
+						string troopUid;
+						(dictionary = battleDeploymentData.TroopData)[troopUid = current2.TroopUid] = dictionary[troopUid] + current2.Quantity;
 					}
 					else
 					{
@@ -364,20 +361,17 @@ namespace StaRTS.Main.Models.Battle
 				List<SquadDonatedTroop> troops = Service.SquadController.StateManager.Troops;
 				for (int j = 0; j < troops.Count; j++)
 				{
-					string troopUid = troops[j].TroopUid;
+					string troopUid2 = troops[j].TroopUid;
 					int totalAmount = troops[j].GetTotalAmount();
-					if (battleInitializationData.DefenderGuildTroopsAvailable.ContainsKey(troopUid))
+					if (battleInitializationData.DefenderGuildTroopsAvailable.ContainsKey(troopUid2))
 					{
-						Dictionary<string, int> defenderGuildTroopsAvailable;
-						Dictionary<string, int> expr_3A0 = defenderGuildTroopsAvailable = battleInitializationData.DefenderGuildTroopsAvailable;
+						Dictionary<string, int> dictionary;
 						string key;
-						string expr_3A5 = key = troopUid;
-						int num = defenderGuildTroopsAvailable[key];
-						expr_3A0[expr_3A5] = num + totalAmount;
+						(dictionary = battleInitializationData.DefenderGuildTroopsAvailable)[key = troopUid2] = dictionary[key] + totalAmount;
 					}
 					else
 					{
-						battleInitializationData.DefenderGuildTroopsAvailable.Add(troopUid, totalAmount);
+						battleInitializationData.DefenderGuildTroopsAvailable.Add(troopUid2, totalAmount);
 					}
 				}
 			}
@@ -515,11 +509,8 @@ namespace StaRTS.Main.Models.Battle
 					if (dictionary.ContainsKey(troopUid))
 					{
 						Dictionary<string, int> dictionary2;
-						Dictionary<string, int> expr_4B = dictionary2 = dictionary;
 						string key;
-						string expr_4F = key = troopUid;
-						int num = dictionary2[key];
-						expr_4B[expr_4F] = num + totalAmount;
+						(dictionary2 = dictionary)[key = troopUid] = dictionary2[key] + totalAmount;
 					}
 					else
 					{

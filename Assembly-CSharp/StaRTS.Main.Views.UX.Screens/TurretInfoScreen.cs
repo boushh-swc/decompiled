@@ -1,5 +1,5 @@
-using Net.RichardLord.Ash.Core;
 using StaRTS.Main.Controllers;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.Static;
 using StaRTS.Main.Models.ValueObjects;
 using StaRTS.Main.Views.UX.Elements;
@@ -36,12 +36,12 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		private TurretTypeVO turretInfo;
 
-		public TurretInfoScreen(Entity turretBuilding) : base(turretBuilding)
+		public TurretInfoScreen(SmartEntity turretBuilding) : base(turretBuilding)
 		{
 			this.useTurretGroup = true;
 		}
 
-		protected override void SetSelectedBuilding(Entity newSelectedBuilding)
+		protected override void SetSelectedBuilding(SmartEntity newSelectedBuilding)
 		{
 			base.SetSelectedBuilding(newSelectedBuilding);
 			this.turretInfo = Service.StaticDataController.Get<TurretTypeVO>(this.buildingInfo.TurretUid);

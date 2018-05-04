@@ -2,7 +2,7 @@ using System;
 
 namespace StaRTS.Main.Models.ValueObjects
 {
-	public interface IUpgradeableVO : IAssetVO, IGeometryVO, IUnlockableVO, IValueObject
+	public interface IUpgradeableVO : IValueObject, IAssetVO, IGeometryVO, IUnlockableVO
 	{
 		string UpgradeGroup
 		{

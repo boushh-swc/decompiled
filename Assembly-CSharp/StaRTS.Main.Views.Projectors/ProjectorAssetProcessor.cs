@@ -8,12 +8,6 @@ namespace StaRTS.Main.Views.Projectors
 {
 	public class ProjectorAssetProcessor
 	{
-		private const string OUTLINE_OUTER_PARAM = "_Outline";
-
-		private const string OUTLINE_INNER_PARAM = "_OutlineInnerWidth";
-
-		private const float NO_OUTLINE = 0f;
-
 		private GeometryProjector parent;
 
 		private Action<GeometryProjector> onLoadedCompleteCallback;
@@ -24,13 +18,22 @@ namespace StaRTS.Main.Views.Projectors
 
 		private List<GameObject> orphans;
 
+		private List<GameObject> loadedAssets;
+
 		private int outstandingAssets;
+
+		private const string OUTLINE_OUTER_PARAM = "_Outline";
+
+		private const string OUTLINE_INNER_PARAM = "_OutlineInnerWidth";
+
+		private const float NO_OUTLINE = 0f;
 
 		public ProjectorAssetProcessor(GeometryProjector parent)
 		{
 			this.parent = parent;
 			this.handles = new List<AssetHandle>();
 			this.orphans = new List<GameObject>();
+			this.loadedAssets = new List<GameObject>();
 		}
 
 		public void LoadAllAssets(Action<GeometryProjector> successCallback, Action<GeometryProjector> failureCallback)
@@ -107,23 +110,36 @@ namespace StaRTS.Main.Views.Projectors
 			{
 				gameObject.transform.parent = this.parent.Config.MainAsset.transform;
 			}
+			if (gameObject.activeSelf)
+			{
+				gameObject.SetActive(false);
+				this.loadedAssets.Add(gameObject);
+			}
 			this.outstandingAssets--;
 			if (this.outstandingAssets > 0)
 			{
 				return;
 			}
-			Renderer[] componentsInChildren = gameObject.GetComponentsInChildren<Renderer>(true);
 			int j = 0;
-			int num = componentsInChildren.Length;
-			while (j < num)
+			int count2 = this.loadedAssets.Count;
+			while (j < count2)
 			{
-				Renderer renderer = componentsInChildren[j];
+				this.loadedAssets[j].SetActive(true);
+				j++;
+			}
+			this.loadedAssets.Clear();
+			Renderer[] componentsInChildren = gameObject.GetComponentsInChildren<Renderer>(true);
+			int k = 0;
+			int num = componentsInChildren.Length;
+			while (k < num)
+			{
+				Renderer renderer = componentsInChildren[k];
 				if (renderer.sharedMaterial != null && renderer.sharedMaterial.HasProperty("_OutlineInnerWidth") && renderer.sharedMaterial.HasProperty("_Outline"))
 				{
 					renderer.sharedMaterial.SetFloat("_Outline", 0f);
 					renderer.sharedMaterial.SetFloat("_OutlineInnerWidth", 0f);
 				}
-				j++;
+				k++;
 			}
 			this.parent.Config.AssetReady = true;
 			this.ExecuteCallback(0u, this.onLoadedCompleteCallback);

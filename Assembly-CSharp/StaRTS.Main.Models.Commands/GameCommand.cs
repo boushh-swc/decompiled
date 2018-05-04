@@ -27,21 +27,21 @@ namespace StaRTS.Main.Models.Commands
 			string text = null;
 			if (status != 917u)
 			{
-				if (status != 1900u)
+				if (status != 1999u)
 				{
-					if (status == 1999u)
+					if (status == 1900u)
 					{
-						string playerId = Service.CurrentPlayer.PlayerId;
-						text = Service.Lang.Get("DESYNC_BANNED", new object[]
-						{
-							playerId
-						});
+						Service.PlayerIdentityController.HandleInactiveIdentityError(data as string);
+						flag = false;
 					}
 				}
 				else
 				{
-					Service.PlayerIdentityController.HandleInactiveIdentityError(data as string);
-					flag = false;
+					string playerId = Service.CurrentPlayer.PlayerId;
+					text = Service.Lang.Get("DESYNC_BANNED", new object[]
+					{
+						playerId
+					});
 				}
 			}
 			else

@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace StaRTS.Main.Models.ValueObjects
 {
-	public class CrateTierVO : IGeometryVO, IValueObject
+	public class CrateTierVO : IValueObject, IGeometryVO
 	{
 		private List<string[]> allHq;
 

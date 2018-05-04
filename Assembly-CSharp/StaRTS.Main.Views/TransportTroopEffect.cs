@@ -1,6 +1,7 @@
 using Net.RichardLord.Ash.Core;
 using StaRTS.Assets;
 using StaRTS.Main.Models;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.Entities.Components;
 using StaRTS.Main.Models.ValueObjects;
 using StaRTS.Main.Utils;
@@ -40,7 +41,7 @@ namespace StaRTS.Main.Views
 
 		private Entity troopEntity;
 
-		private Entity starportEntity;
+		private SmartEntity starportEntity;
 
 		private ViewFader entityFader;
 
@@ -72,7 +73,7 @@ namespace StaRTS.Main.Views
 
 		private uint timerId;
 
-		public TransportTroopEffect(Entity troopEntity, TroopTypeVO troopVO, Entity starportEntity, ViewFader entityFader, TransportTroopEffect.OnEffectFinished onFinished, bool showFullEffect)
+		public TransportTroopEffect(Entity troopEntity, TroopTypeVO troopVO, SmartEntity starportEntity, ViewFader entityFader, TransportTroopEffect.OnEffectFinished onFinished, bool showFullEffect)
 		{
 			this.troopVO = troopVO;
 			this.troopEntity = troopEntity;
@@ -131,8 +132,8 @@ namespace StaRTS.Main.Views
 		private void OnEffectLoaded(object asset, object cookie)
 		{
 			this.effectObj = UnityEngine.Object.Instantiate<GameObject>(asset as GameObject);
-			this.troopCardPS = this.effectObj.transform.FindChild("CardFX").GetComponent<ParticleSystem>();
-			this.shuttleGlowPS = this.effectObj.transform.FindChild("UnderGlow").GetComponent<ParticleSystem>();
+			this.troopCardPS = this.effectObj.transform.Find("CardFX").GetComponent<ParticleSystem>();
+			this.shuttleGlowPS = this.effectObj.transform.Find("UnderGlow").GetComponent<ParticleSystem>();
 			this.effectObj.SetActive(false);
 			if (this.troopCardPS == null || !UnityUtils.HasRendererMaterial(this.troopCardPS.GetComponent<Renderer>()))
 			{
@@ -333,13 +334,13 @@ namespace StaRTS.Main.Views
 					}
 					else
 					{
-						Entity entity = (Entity)cookie;
-						if (this.starportEntity.Get<StarportComponent>() == null)
+						SmartEntity smartEntity = (SmartEntity)cookie;
+						if (this.starportEntity.StarportComp == null)
 						{
-							StarportComponent starportComponent = entity.Get<StarportComponent>();
-							if (starportComponent != null)
+							StarportComponent starportComp = smartEntity.StarportComp;
+							if (starportComp != null)
 							{
-								this.starportEntity = entity;
+								this.starportEntity = smartEntity;
 								this.shuttle = Service.ShuttleController.GetShuttleForStarport(this.starportEntity);
 							}
 						}

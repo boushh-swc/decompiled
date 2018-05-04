@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 [AddComponentMenu("NGUI/UI/NGUI Sprite"), ExecuteInEditMode]
@@ -19,11 +20,33 @@ public class UISprite : UIBasicSprite
 	[NonSerialized]
 	private bool mSpriteSet;
 
+	public override Texture mainTexture
+	{
+		get
+		{
+			Material material = (!(this.mAtlas != null)) ? null : this.mAtlas.spriteMaterial;
+			return (!(material != null)) ? null : material.mainTexture;
+		}
+		set
+		{
+			base.mainTexture = value;
+		}
+	}
+
 	public override Material material
 	{
 		get
 		{
+			Material material = base.material;
+			if (material != null)
+			{
+				return material;
+			}
 			return (!(this.mAtlas != null)) ? null : this.mAtlas.spriteMaterial;
+		}
+		set
+		{
+			base.material = value;
 		}
 	}
 
@@ -107,6 +130,60 @@ public class UISprite : UIBasicSprite
 			{
 				this.centerType = ((!value) ? UIBasicSprite.AdvancedType.Invisible : UIBasicSprite.AdvancedType.Sliced);
 				this.MarkAsChanged();
+			}
+		}
+	}
+
+	public bool applyGradient
+	{
+		get
+		{
+			return this.mApplyGradient;
+		}
+		set
+		{
+			if (this.mApplyGradient != value)
+			{
+				this.mApplyGradient = value;
+				this.MarkAsChanged();
+			}
+		}
+	}
+
+	public Color gradientTop
+	{
+		get
+		{
+			return this.mGradientTop;
+		}
+		set
+		{
+			if (this.mGradientTop != value)
+			{
+				this.mGradientTop = value;
+				if (this.mApplyGradient)
+				{
+					this.MarkAsChanged();
+				}
+			}
+		}
+	}
+
+	public Color gradientBottom
+	{
+		get
+		{
+			return this.mGradientBottom;
+		}
+		set
+		{
+			if (this.mGradientBottom != value)
+			{
+				this.mGradientBottom = value;
+				if (this.mApplyGradient)
+				{
+					this.MarkAsChanged();
+				}
 			}
 		}
 	}
@@ -366,7 +443,7 @@ public class UISprite : UIBasicSprite
 		}
 	}
 
-	public override void OnFill(BetterList<Vector3> verts, BetterList<Vector2> uvs, BetterList<Color32> cols)
+	public override void OnFill(List<Vector3> verts, List<Vector2> uvs, List<Color> cols)
 	{
 		Texture mainTexture = this.mainTexture;
 		if (mainTexture == null)
@@ -385,11 +462,11 @@ public class UISprite : UIBasicSprite
 		Rect rect2 = new Rect((float)(this.mSprite.x + this.mSprite.borderLeft), (float)(this.mSprite.y + this.mSprite.borderTop), (float)(this.mSprite.width - this.mSprite.borderLeft - this.mSprite.borderRight), (float)(this.mSprite.height - this.mSprite.borderBottom - this.mSprite.borderTop));
 		rect = NGUIMath.ConvertToTexCoords(rect, mainTexture.width, mainTexture.height);
 		rect2 = NGUIMath.ConvertToTexCoords(rect2, mainTexture.width, mainTexture.height);
-		int size = verts.size;
+		int count = verts.Count;
 		base.Fill(verts, uvs, cols, rect, rect2);
 		if (this.onPostFill != null)
 		{
-			this.onPostFill(this, size, verts, uvs, cols);
+			this.onPostFill(this, count, verts, uvs, cols);
 		}
 	}
 }

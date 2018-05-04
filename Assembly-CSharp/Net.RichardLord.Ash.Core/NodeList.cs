@@ -1,13 +1,62 @@
 using Net.RichardLord.Ash.Internal;
 using System;
+using System.Threading;
 
 namespace Net.RichardLord.Ash.Core
 {
 	public class NodeList<TNode> : INodeList where TNode : Node<TNode>, new()
 	{
-		public event Action<TNode> NodeAdded;
+		public event Action<TNode> NodeAdded
+		{
+			add
+			{
+				Action<TNode> action = this.NodeAdded;
+				Action<TNode> action2;
+				do
+				{
+					action2 = action;
+					action = Interlocked.CompareExchange<Action<TNode>>(ref this.NodeAdded, (Action<TNode>)Delegate.Combine(action2, value), action);
+				}
+				while (action != action2);
+			}
+			remove
+			{
+				Action<TNode> action = this.NodeAdded;
+				Action<TNode> action2;
+				do
+				{
+					action2 = action;
+					action = Interlocked.CompareExchange<Action<TNode>>(ref this.NodeAdded, (Action<TNode>)Delegate.Remove(action2, value), action);
+				}
+				while (action != action2);
+			}
+		}
 
-		public event Action<TNode> NodeRemoved;
+		public event Action<TNode> NodeRemoved
+		{
+			add
+			{
+				Action<TNode> action = this.NodeRemoved;
+				Action<TNode> action2;
+				do
+				{
+					action2 = action;
+					action = Interlocked.CompareExchange<Action<TNode>>(ref this.NodeRemoved, (Action<TNode>)Delegate.Combine(action2, value), action);
+				}
+				while (action != action2);
+			}
+			remove
+			{
+				Action<TNode> action = this.NodeRemoved;
+				Action<TNode> action2;
+				do
+				{
+					action2 = action;
+					action = Interlocked.CompareExchange<Action<TNode>>(ref this.NodeRemoved, (Action<TNode>)Delegate.Remove(action2, value), action);
+				}
+				while (action != action2);
+			}
+		}
 
 		public TNode Head
 		{

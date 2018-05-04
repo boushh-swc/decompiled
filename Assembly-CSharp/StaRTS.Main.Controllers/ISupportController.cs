@@ -1,5 +1,5 @@
-using Net.RichardLord.Ash.Core;
 using StaRTS.Main.Models;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.Player.World;
 using StaRTS.Main.Models.ValueObjects;
 using StaRTS.Main.Utils.Events;
@@ -19,7 +19,7 @@ namespace StaRTS.Main.Controllers
 
 		void ReleaseContractEventsThatHappnedOffline();
 
-		void DisableBuilding(Entity building);
+		void DisableBuilding(SmartEntity building);
 
 		int SortContractTOByEndTime(ContractTO a, ContractTO b);
 
@@ -43,47 +43,47 @@ namespace StaRTS.Main.Controllers
 
 		bool IsContractValidForStorage(Contract contract);
 
-		Contract StartHeroMobilization(TroopTypeVO hero, Entity building);
+		Contract StartHeroMobilization(TroopTypeVO hero, SmartEntity building);
 
-		Contract StartChampionRepair(TroopTypeVO champion, Entity building);
+		Contract StartChampionRepair(TroopTypeVO champion, SmartEntity building);
 
-		Contract StartStarshipMobilization(SpecialAttackTypeVO starship, Entity building);
+		Contract StartStarshipMobilization(SpecialAttackTypeVO starship, SmartEntity building);
 
-		void StartClearingBuilding(Entity building);
+		void StartClearingBuilding(SmartEntity building);
 
-		void StartTurretCrossgrade(BuildingTypeVO swapBuildingInfo, Entity turret);
+		void StartTurretCrossgrade(BuildingTypeVO swapBuildingInfo, SmartEntity turret);
 
-		void InstantBuildingConstruct(BuildingTypeVO buildingType, Entity selectedBuilding, int x, int z, string tag);
+		void InstantBuildingConstruct(BuildingTypeVO buildingType, SmartEntity selectedBuilding, int x, int z, string tag);
 
-		void StartBuildingConstruct(BuildingTypeVO buildingType, Entity selectedBuilding, int x, int z, string tag);
+		void StartBuildingConstruct(BuildingTypeVO buildingType, SmartEntity selectedBuilding, int x, int z, string tag);
 
-		void StartBuildingUpgrade(BuildingTypeVO nextUpgradeType, Entity selectedBuilding, bool isInstant);
+		void StartBuildingUpgrade(BuildingTypeVO nextUpgradeType, SmartEntity selectedBuilding, bool isInstant);
 
-		void StartBuildingUpgrade(BuildingTypeVO nextUpgradeType, Entity selectedBuilding, bool isInstant, string tag);
+		void StartBuildingUpgrade(BuildingTypeVO nextUpgradeType, SmartEntity selectedBuilding, bool isInstant, string tag);
 
-		void StartAllWallPartBuildingUpgrade(BuildingTypeVO nextUpgradeType, Entity selectedBuilding, bool sendBackendCommand, bool sendBILog);
+		void StartAllWallPartBuildingUpgrade(BuildingTypeVO nextUpgradeType, SmartEntity selectedBuilding, bool sendBackendCommand, bool sendBILog);
 
-		bool StartTroopUpgrade(TroopTypeVO troop, Entity building);
+		bool StartTroopUpgrade(TroopTypeVO troop, SmartEntity building);
 
-		bool StartStarshipUpgrade(SpecialAttackTypeVO starship, Entity building);
+		bool StartStarshipUpgrade(SpecialAttackTypeVO starship, SmartEntity building);
 
-		bool StartEquipmentUpgrade(EquipmentVO equipment, Entity building);
+		bool StartEquipmentUpgrade(EquipmentVO equipment, SmartEntity building);
 
-		Contract StartTroopTrainContract(TroopTypeVO troop, Entity building);
+		Contract StartTroopTrainContract(TroopTypeVO troop, SmartEntity building);
 
-		void CancelTroopTrainContract(string productUid, Entity building);
+		void CancelTroopTrainContract(string productUid, SmartEntity building);
 
-		void BuyoutAllTroopTrainContracts(Entity entity);
+		void BuyoutAllTroopTrainContracts(SmartEntity entity);
 
-		void BuyoutAllTroopTrainContracts(Entity entity, bool alreadySpentCrystals);
+		void BuyoutAllTroopTrainContracts(SmartEntity entity, bool alreadySpentCrystals);
 
-		void CancelCurrentBuildingContract(Contract contract, Entity building);
+		void CancelCurrentBuildingContract(Contract contract, SmartEntity building);
 
-		bool FinishCurrentContract(Entity entity, bool silent);
+		bool FinishCurrentContract(SmartEntity entity, bool silent);
 
-		bool FinishCurrentContract(Entity entity, bool silent, bool sendBILog);
+		bool FinishCurrentContract(SmartEntity entity, bool silent, bool sendBILog);
 
-		void BuyOutCurrentBuildingContract(Entity entity, bool sendBackendCommand);
+		void BuyOutCurrentBuildingContract(SmartEntity entity, bool sendBackendCommand);
 
 		EatResponse OnEvent(EventId id, object cookie);
 

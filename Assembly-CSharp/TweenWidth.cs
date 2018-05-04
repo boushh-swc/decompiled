@@ -71,7 +71,7 @@ public class TweenWidth : UITweener
 
 	public static TweenWidth Begin(UIWidget widget, float duration, int width)
 	{
-		TweenWidth tweenWidth = UITweener.Begin<TweenWidth>(widget.gameObject, duration);
+		TweenWidth tweenWidth = UITweener.Begin<TweenWidth>(widget.gameObject, duration, 0f);
 		tweenWidth.from = widget.width;
 		tweenWidth.to = width;
 		if (duration <= 0f)

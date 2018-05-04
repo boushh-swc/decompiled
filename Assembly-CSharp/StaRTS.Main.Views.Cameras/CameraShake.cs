@@ -8,18 +8,6 @@ namespace StaRTS.Main.Views.Cameras
 {
 	public class CameraShake : IViewPhysicsTimeObserver
 	{
-		public const float MAGNITUDE_SMALL = 0.2f;
-
-		public const float MAGNITUDE_MEDIUM = 0.25f;
-
-		public const float MAGNITUDE_LARGE = 0.75f;
-
-		public const float DURATION_SMALL = 0.5f;
-
-		public const float DURATION_MEDIUM = 0.5f;
-
-		public const float DURATION_LARGE = 1f;
-
 		private GameObject harness;
 
 		private Vector3 originalPosition;
@@ -31,6 +19,18 @@ namespace StaRTS.Main.Views.Cameras
 		private float duration;
 
 		private OnCameraShake onCameraShake;
+
+		public const float MAGNITUDE_SMALL = 0.2f;
+
+		public const float MAGNITUDE_MEDIUM = 0.25f;
+
+		public const float MAGNITUDE_LARGE = 0.75f;
+
+		public const float DURATION_SMALL = 0.5f;
+
+		public const float DURATION_MEDIUM = 0.5f;
+
+		public const float DURATION_LARGE = 1f;
 
 		public CameraShake(OnCameraShake onCameraShake)
 		{

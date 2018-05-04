@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class UI2DSpriteAnimation : MonoBehaviour
 {
+	public int frameIndex;
+
 	[SerializeField]
 	protected int framerate = 20;
 
@@ -15,8 +17,6 @@ public class UI2DSpriteAnimation : MonoBehaviour
 	private SpriteRenderer mUnitySprite;
 
 	private UI2DSprite mNguiSprite;
-
-	private int mIndex;
 
 	private float mUpdate;
 
@@ -46,10 +46,10 @@ public class UI2DSpriteAnimation : MonoBehaviour
 		{
 			if (!base.enabled && !this.loop)
 			{
-				int num = (this.framerate <= 0) ? (this.mIndex - 1) : (this.mIndex + 1);
+				int num = (this.framerate <= 0) ? (this.frameIndex - 1) : (this.frameIndex + 1);
 				if (num < 0 || num >= this.frames.Length)
 				{
-					this.mIndex = ((this.framerate >= 0) ? 0 : (this.frames.Length - 1));
+					this.frameIndex = ((this.framerate >= 0) ? 0 : (this.frames.Length - 1));
 				}
 			}
 			base.enabled = true;
@@ -64,7 +64,7 @@ public class UI2DSpriteAnimation : MonoBehaviour
 
 	public void ResetToBeginning()
 	{
-		this.mIndex = ((this.framerate >= 0) ? 0 : (this.frames.Length - 1));
+		this.frameIndex = ((this.framerate >= 0) ? 0 : (this.frames.Length - 1));
 		this.UpdateSprite();
 	}
 
@@ -85,13 +85,13 @@ public class UI2DSpriteAnimation : MonoBehaviour
 			if (this.mUpdate < num)
 			{
 				this.mUpdate = num;
-				int num2 = (this.framerate <= 0) ? (this.mIndex - 1) : (this.mIndex + 1);
+				int num2 = (this.framerate <= 0) ? (this.frameIndex - 1) : (this.frameIndex + 1);
 				if (!this.loop && (num2 < 0 || num2 >= this.frames.Length))
 				{
 					base.enabled = false;
 					return;
 				}
-				this.mIndex = NGUIMath.RepeatIndex(num2, this.frames.Length);
+				this.frameIndex = NGUIMath.RepeatIndex(num2, this.frames.Length);
 				this.UpdateSprite();
 			}
 		}
@@ -116,11 +116,11 @@ public class UI2DSpriteAnimation : MonoBehaviour
 		}
 		if (this.mUnitySprite != null)
 		{
-			this.mUnitySprite.sprite = this.frames[this.mIndex];
+			this.mUnitySprite.sprite = this.frames[this.frameIndex];
 		}
 		else if (this.mNguiSprite != null)
 		{
-			this.mNguiSprite.nextSprite = this.frames[this.mIndex];
+			this.mNguiSprite.nextSprite = this.frames[this.frameIndex];
 		}
 	}
 }

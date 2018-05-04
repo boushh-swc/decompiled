@@ -8,11 +8,14 @@ using StaRTS.Utils;
 using StaRTS.Utils.Core;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace StaRTS.Main.Views.UX.Screens.ScreenHelpers
 {
 	public class PlanetSelectionDropDown
 	{
+		public UXFactory uxFactory;
+
 		private const int NAVIGATION_RIGHT_BG_SMALL = 120;
 
 		private const int NAVIGATION_RIGHT_BG_LARGE = 242;
@@ -47,8 +50,6 @@ namespace StaRTS.Main.Views.UX.Screens.ScreenHelpers
 
 		private const string ALL_PLANET_BUTTON = "BtnAll";
 
-		public UXFactory uxFactory;
-
 		private PlanetVO selectedPlanet;
 
 		private UXButton currentPlanetBtn;
@@ -67,7 +68,31 @@ namespace StaRTS.Main.Views.UX.Screens.ScreenHelpers
 
 		private Lang lang;
 
-		public event Action<PlanetVO> PlanetSelectCallBack;
+		public event Action<PlanetVO> PlanetSelectCallBack
+		{
+			add
+			{
+				Action<PlanetVO> action = this.PlanetSelectCallBack;
+				Action<PlanetVO> action2;
+				do
+				{
+					action2 = action;
+					action = Interlocked.CompareExchange<Action<PlanetVO>>(ref this.PlanetSelectCallBack, (Action<PlanetVO>)Delegate.Combine(action2, value), action);
+				}
+				while (action != action2);
+			}
+			remove
+			{
+				Action<PlanetVO> action = this.PlanetSelectCallBack;
+				Action<PlanetVO> action2;
+				do
+				{
+					action2 = action;
+					action = Interlocked.CompareExchange<Action<PlanetVO>>(ref this.PlanetSelectCallBack, (Action<PlanetVO>)Delegate.Remove(action2, value), action);
+				}
+				while (action != action2);
+			}
+		}
 
 		public PlanetSelectionDropDown(UXFactory uxFactory)
 		{
@@ -151,21 +176,21 @@ namespace StaRTS.Main.Views.UX.Screens.ScreenHelpers
 			{
 			case SocialTabs.Friends:
 				this.DisablePlanetSelection();
-				goto IL_6A;
+				goto IL_68;
 			case SocialTabs.Squads:
 				this.DisablePlanetSelection();
-				goto IL_6A;
+				goto IL_68;
 			case SocialTabs.Leaders:
 				this.InitPlanetOptionPlayerTab();
 				this.ActivatePlanetSelection();
-				goto IL_6A;
+				goto IL_68;
 			case SocialTabs.Tournament:
 				this.InitPlanetOptionTournamentTab();
 				this.ActivatePlanetSelection();
-				goto IL_6A;
+				goto IL_68;
 			}
 			this.DisablePlanetSelection();
-			IL_6A:
+			IL_68:
 			this.UpdateCurrentPlanetButton();
 		}
 

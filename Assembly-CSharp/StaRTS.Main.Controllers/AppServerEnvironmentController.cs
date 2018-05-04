@@ -110,7 +110,7 @@ namespace StaRTS.Main.Controllers
 
 		private static AppServerEnvironmentOverride GetAppServerEnvironmentOverrideFromString(string environmentOverrideString)
 		{
-			return (AppServerEnvironmentOverride)((int)Enum.Parse(typeof(AppServerEnvironmentOverride), environmentOverrideString.ToUpper()));
+			return (AppServerEnvironmentOverride)Enum.Parse(typeof(AppServerEnvironmentOverride), environmentOverrideString.ToUpper());
 		}
 
 		public bool IsValidEnvironmentOverride(string environment)

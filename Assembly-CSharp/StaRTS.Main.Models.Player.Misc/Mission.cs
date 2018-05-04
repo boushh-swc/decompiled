@@ -117,9 +117,7 @@ namespace StaRTS.Main.Models.Player.Misc
 			if (this.Counters.ContainsKey(counterKey))
 			{
 				Dictionary<string, int> counters;
-				Dictionary<string, int> expr_1D = counters = this.Counters;
-				int num = counters[counterKey];
-				expr_1D[counterKey] = num + delta;
+				(counters = this.Counters)[counterKey] = counters[counterKey] + delta;
 			}
 			else
 			{

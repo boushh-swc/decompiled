@@ -117,7 +117,8 @@ public class TypewriterEffect : MonoBehaviour
 		{
 			return;
 		}
-		while (this.mCurrentOffset < this.mFullText.Length && this.mNextChar <= RealTime.time)
+		int length = this.mFullText.Length;
+		while (this.mCurrentOffset < length && this.mNextChar <= RealTime.time)
 		{
 			int num = this.mCurrentOffset;
 			this.charsPerSecond = Mathf.Max(1, this.charsPerSecond);
@@ -128,21 +129,21 @@ public class TypewriterEffect : MonoBehaviour
 				}
 			}
 			this.mCurrentOffset++;
-			if (this.mCurrentOffset > this.mFullText.Length)
+			if (this.mCurrentOffset > length)
 			{
 				break;
 			}
 			float num2 = 1f / (float)this.charsPerSecond;
-			char c = (num >= this.mFullText.Length) ? '\n' : this.mFullText[num];
+			char c = (num >= length) ? '\n' : this.mFullText[num];
 			if (c == '\n')
 			{
 				num2 += this.delayOnNewLine;
 			}
-			else if (num + 1 == this.mFullText.Length || this.mFullText[num + 1] <= ' ')
+			else if (num + 1 == length || this.mFullText[num + 1] <= ' ')
 			{
 				if (c == '.')
 				{
-					if (num + 2 < this.mFullText.Length && this.mFullText[num + 1] == '.' && this.mFullText[num + 2] == '.')
+					if (num + 2 < length && this.mFullText[num + 1] == '.' && this.mFullText[num + 2] == '.')
 					{
 						num2 += this.delayOnPeriod * 3f;
 						num += 2;
@@ -182,7 +183,7 @@ public class TypewriterEffect : MonoBehaviour
 				}
 			}
 		}
-		if (this.mCurrentOffset >= this.mFullText.Length)
+		if (this.mCurrentOffset >= length && this.mFade.size == 0)
 		{
 			this.mLabel.text = this.mFullText;
 			TypewriterEffect.current = this;

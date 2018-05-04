@@ -1,6 +1,7 @@
 using Net.RichardLord.Ash.Core;
 using StaRTS.Main.Controllers;
 using StaRTS.Main.Models;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.Entities.Components;
 using StaRTS.Main.Models.Entities.Nodes;
 using StaRTS.Main.Models.Player;
@@ -20,6 +21,7 @@ using StaRTS.Utils.Scheduling;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 using UnityEngine;
 
@@ -295,7 +297,7 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		private string regularInstructions;
 
-		private List<Entity> availableTrainerBuildings;
+		private List<SmartEntity> availableTrainerBuildings;
 
 		private List<QueuedUnitTrainingTag> queuedUnits;
 
@@ -306,6 +308,9 @@ namespace StaRTS.Main.Views.UX.Screens
 		private List<IDeployableVO> eligibleDeployables;
 
 		private HashSet<TroopRole> eligibleTroopRoles;
+
+		[CompilerGenerated]
+		private static Comparison<UXElement> <>f__mg$cache0;
 
 		public override bool ShowCurrencyTray
 		{
@@ -323,11 +328,11 @@ namespace StaRTS.Main.Views.UX.Screens
 			}
 		}
 
-		public TroopTrainingScreen(Entity selectedBuilding) : base("gui_troop_training", selectedBuilding)
+		public TroopTrainingScreen(SmartEntity selectedBuilding) : base("gui_troop_training", selectedBuilding)
 		{
 			this.buttonDelayTimer = 0u;
 			this.buttonRepeatTimer = 0u;
-			this.availableTrainerBuildings = new List<Entity>();
+			this.availableTrainerBuildings = new List<SmartEntity>();
 			BuildingLookupController buildingLookupController = Service.BuildingLookupController;
 			NodeList<BarracksNode> barracksNodeList = buildingLookupController.BarracksNodeList;
 			NodeList<FactoryNode> factoryNodeList = buildingLookupController.FactoryNodeList;
@@ -336,23 +341,23 @@ namespace StaRTS.Main.Views.UX.Screens
 			NodeList<TacticalCommandNode> tacticalCommandNodeList = buildingLookupController.TacticalCommandNodeList;
 			for (BarracksNode barracksNode = barracksNodeList.Head; barracksNode != null; barracksNode = barracksNode.Next)
 			{
-				this.TryAddTrainerBuilding(barracksNode.Entity);
+				this.TryAddTrainerBuilding((SmartEntity)barracksNode.Entity);
 			}
 			for (FactoryNode factoryNode = factoryNodeList.Head; factoryNode != null; factoryNode = factoryNode.Next)
 			{
-				this.TryAddTrainerBuilding(factoryNode.Entity);
+				this.TryAddTrainerBuilding((SmartEntity)factoryNode.Entity);
 			}
 			for (CantinaNode cantinaNode = cantinaNodeList.Head; cantinaNode != null; cantinaNode = cantinaNode.Next)
 			{
-				this.TryAddTrainerBuilding(cantinaNode.Entity);
+				this.TryAddTrainerBuilding((SmartEntity)cantinaNode.Entity);
 			}
 			for (FleetCommandNode fleetCommandNode = fleetCommandNodeList.Head; fleetCommandNode != null; fleetCommandNode = fleetCommandNode.Next)
 			{
-				this.TryAddTrainerBuilding(fleetCommandNode.Entity);
+				this.TryAddTrainerBuilding((SmartEntity)fleetCommandNode.Entity);
 			}
 			for (TacticalCommandNode tacticalCommandNode = tacticalCommandNodeList.Head; tacticalCommandNode != null; tacticalCommandNode = tacticalCommandNode.Next)
 			{
-				this.TryAddTrainerBuilding(tacticalCommandNode.Entity);
+				this.TryAddTrainerBuilding((SmartEntity)tacticalCommandNode.Entity);
 			}
 			this.timersRunning = false;
 			this.supportController = Service.ISupportController;
@@ -364,7 +369,7 @@ namespace StaRTS.Main.Views.UX.Screens
 			this.eligibleTroopRoles = new HashSet<TroopRole>();
 		}
 
-		private void TryAddTrainerBuilding(Entity entity)
+		private void TryAddTrainerBuilding(SmartEntity entity)
 		{
 			if (!ContractUtils.IsBuildingConstructing(entity) && !ContractUtils.IsBuildingUpgrading(entity))
 			{
@@ -698,7 +703,7 @@ namespace StaRTS.Main.Views.UX.Screens
 			{
 				while (enumerator.MoveNext())
 				{
-					TroopRole troopRole = (TroopRole)((int)enumerator.Current);
+					TroopRole troopRole = (TroopRole)enumerator.Current;
 					if (this.eligibleTroopRoles.Contains(troopRole))
 					{
 						TroopTab key = this.tabHelper.ConvertTroopRoleToTab(troopRole);
@@ -708,8 +713,8 @@ namespace StaRTS.Main.Views.UX.Screens
 			}
 			finally
 			{
-				IDisposable disposable = enumerator as IDisposable;
-				if (disposable != null)
+				IDisposable disposable;
+				if ((disposable = (enumerator as IDisposable)) != null)
 				{
 					disposable.Dispose();
 				}
@@ -870,7 +875,12 @@ namespace StaRTS.Main.Views.UX.Screens
 				list.Add(uXElement);
 				goto IL_561;
 			}
-			list.Sort(new Comparison<UXElement>(TroopTrainingScreen.CompareTroopItem));
+			List<UXElement> arg_58F_0 = list;
+			if (TroopTrainingScreen.<>f__mg$cache0 == null)
+			{
+				TroopTrainingScreen.<>f__mg$cache0 = new Comparison<UXElement>(TroopTrainingScreen.CompareTroopItem);
+			}
+			arg_58F_0.Sort(TroopTrainingScreen.<>f__mg$cache0);
 			if (this.buildingInfo.Type != BuildingType.HeroMobilizer)
 			{
 				UXUtils.SortListForTwoRowGrids(list, this.troopItemGrid);
@@ -1483,48 +1493,48 @@ namespace StaRTS.Main.Views.UX.Screens
 			case BuildingType.FleetCommand:
 				this.housingSpace = currentPlayer.Inventory.SpecialAttack.GetTotalStorageAmount();
 				this.housingSpaceTotal = currentPlayer.Inventory.SpecialAttack.GetTotalStorageCapacity();
-				goto IL_B2;
+				goto IL_AF;
 			case BuildingType.HeroMobilizer:
 				this.housingSpace = currentPlayer.Inventory.Hero.GetTotalStorageAmount();
 				this.housingSpaceTotal = currentPlayer.Inventory.Hero.GetTotalStorageCapacity();
-				goto IL_B2;
+				goto IL_AF;
 			default:
 				if (type != BuildingType.Cantina)
 				{
-					goto IL_B2;
+					goto IL_AF;
 				}
 				break;
 			}
 			GameUtils.GetStarportTroopCounts(out this.housingSpace, out this.housingSpaceTotal);
-			IL_B2:
+			IL_AF:
 			bool enabled = this.housingSpace + ContractUtils.CalculateSpaceOccupiedByQueuedTroops(this.selectedBuilding) <= this.housingSpaceTotal;
 			int i = 0;
 			int count = this.availableTrainerBuildings.Count;
 			while (i < count)
 			{
-				Entity entity = this.availableTrainerBuildings[i];
-				BuildingComponent buildingComponent = entity.Get<BuildingComponent>();
+				SmartEntity smartEntity = this.availableTrainerBuildings[i];
+				BuildingComponent buildingComp = smartEntity.BuildingComp;
 				bool flag = false;
 				if (this.buildingInfo.Type == BuildingType.Factory || this.buildingInfo.Type == BuildingType.Barracks || this.buildingInfo.Type == BuildingType.Cantina)
 				{
-					if (buildingComponent.BuildingType.Type == BuildingType.Factory || buildingComponent.BuildingType.Type == BuildingType.Barracks || buildingComponent.BuildingType.Type == BuildingType.Cantina)
+					if (buildingComp.BuildingType.Type == BuildingType.Factory || buildingComp.BuildingType.Type == BuildingType.Barracks || buildingComp.BuildingType.Type == BuildingType.Cantina)
 					{
 						flag = true;
 					}
 				}
-				else if (buildingComponent.BuildingType.Type == this.buildingInfo.Type)
+				else if (buildingComp.BuildingType.Type == this.buildingInfo.Type)
 				{
 					flag = true;
 				}
 				if (flag)
 				{
-					this.housingSpace += ContractUtils.CalculateSpaceOccupiedByQueuedTroops(entity);
+					this.housingSpace += ContractUtils.CalculateSpaceOccupiedByQueuedTroops(smartEntity);
 				}
 				i++;
 			}
 			string text = string.Empty;
-			type = this.buildingInfo.Type;
-			switch (type)
+			BuildingType type2 = this.buildingInfo.Type;
+			switch (type2)
 			{
 			case BuildingType.Barracks:
 				text = this.lang.Get("HOUSING_CAPACITY", new object[]
@@ -1555,7 +1565,7 @@ namespace StaRTS.Main.Views.UX.Screens
 				});
 				break;
 			default:
-				if (type == BuildingType.Cantina)
+				if (type2 == BuildingType.Cantina)
 				{
 					text = this.lang.Get("MERCENARY_CAPACITY", new object[]
 					{
@@ -1867,10 +1877,10 @@ namespace StaRTS.Main.Views.UX.Screens
 			int count = this.availableTrainerBuildings.Count;
 			while (i < count)
 			{
-				Entity entity = this.availableTrainerBuildings[i];
-				if (entity == this.selectedBuilding)
+				SmartEntity smartEntity = this.availableTrainerBuildings[i];
+				if (smartEntity == this.selectedBuilding)
 				{
-					Entity selectedBuilding = this.availableTrainerBuildings[(i + num + count) % count];
+					SmartEntity selectedBuilding = this.availableTrainerBuildings[(i + num + count) % count];
 					this.ResetScreen();
 					Service.Engine.ForceGarbageCollection(null);
 					this.SetSelectedBuilding(selectedBuilding);
@@ -1887,7 +1897,7 @@ namespace StaRTS.Main.Views.UX.Screens
 			UXElement uXElement = button.Tag as UXElement;
 			TroopUpgradeTag troopUpgradeTag = uXElement.Tag as TroopUpgradeTag;
 			bool showUpgradeControls = !string.IsNullOrEmpty(troopUpgradeTag.Troop.UpgradeShardUid);
-			Entity availableTroopResearchLab = Service.BuildingLookupController.GetAvailableTroopResearchLab();
+			SmartEntity availableTroopResearchLab = Service.BuildingLookupController.GetAvailableTroopResearchLab();
 			List<TroopUpgradeTag> list = new List<TroopUpgradeTag>();
 			for (int i = 0; i < this.troopItemGrid.Count; i++)
 			{
@@ -2116,16 +2126,16 @@ namespace StaRTS.Main.Views.UX.Screens
 				{
 					this.CheckTroopContract(true);
 				}
-				goto IL_AF;
+				goto IL_AD;
 			case EventId.TroopLoadingIntoStarport:
-				IL_1B:
+				IL_19:
 				switch (id)
 				{
 				case EventId.InventoryTroopUpdated:
 				case EventId.InventorySpecialAttackUpdated:
 				case EventId.InventoryHeroUpdated:
 					this.UpdateHousingSpace();
-					goto IL_AF;
+					goto IL_AD;
 				default:
 					if (id == EventId.ContractInvalidForStorage)
 					{
@@ -2134,19 +2144,19 @@ namespace StaRTS.Main.Views.UX.Screens
 							this.blockedContract = true;
 							this.CheckTroopContract(false);
 						}
-						goto IL_AF;
+						goto IL_AD;
 					}
 					if (id != EventId.DenyUserInput)
 					{
-						goto IL_AF;
+						goto IL_AD;
 					}
 					this.KillButtonTimers();
-					goto IL_AF;
+					goto IL_AD;
 				}
 				break;
 			}
-			goto IL_1B;
-			IL_AF:
+			goto IL_19;
+			IL_AD:
 			return base.OnEvent(id, cookie);
 		}
 	}

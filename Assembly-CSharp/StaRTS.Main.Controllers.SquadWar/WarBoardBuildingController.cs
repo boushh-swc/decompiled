@@ -19,26 +19,6 @@ namespace StaRTS.Main.Controllers.SquadWar
 {
 	public class WarBoardBuildingController : IUserInputObserver, IViewFrameTimeObserver
 	{
-		private const string HOLO_DISTANCE = "_Distance";
-
-		private const string HOLO_OPACITY = "_Opacity";
-
-		private const float HOLO_DISTANCE_VALUE = 139.5f;
-
-		private const float HOLO_OPACITY_DIM_VALUE = 0.3f;
-
-		private const float MIN_SELECTION_X_ROTATION = -7.7f;
-
-		private const float MAX_SELECTION_X_ROTATION = 1.9f;
-
-		private const float FACTORY_OUTPOST_ROTATION_SPEED = 0.5f;
-
-		private const string GAMEOBJECT_PARENT_PREFIX = "WarBoardBuilding_";
-
-		private const int FINGER_ID = 0;
-
-		private const float TIME_TO_SELECT = 1f;
-
 		private Dictionary<SquadWarBoardBuilding, SquadWarParticipantState> participantBuildingsPlayer;
 
 		private Dictionary<SquadWarBoardBuilding, SquadWarParticipantState> participantBuildingsOpponent;
@@ -64,6 +44,26 @@ namespace StaRTS.Main.Controllers.SquadWar
 		private OutlinedAsset outline;
 
 		private bool dragged;
+
+		private const string HOLO_DISTANCE = "_Distance";
+
+		private const string HOLO_OPACITY = "_Opacity";
+
+		private const float HOLO_DISTANCE_VALUE = 139.5f;
+
+		private const float HOLO_OPACITY_DIM_VALUE = 0.3f;
+
+		private const float MIN_SELECTION_X_ROTATION = -7.7f;
+
+		private const float MAX_SELECTION_X_ROTATION = 1.9f;
+
+		private const float FACTORY_OUTPOST_ROTATION_SPEED = 0.5f;
+
+		private const string GAMEOBJECT_PARENT_PREFIX = "WarBoardBuilding_";
+
+		private const int FINGER_ID = 0;
+
+		private const float TIME_TO_SELECT = 1f;
 
 		public FactionType currentFaction
 		{

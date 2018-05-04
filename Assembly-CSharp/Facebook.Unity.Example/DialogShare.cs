@@ -37,8 +37,7 @@ namespace Facebook.Unity.Example
 			bool enabled = GUI.enabled;
 			if (base.Button("Share - Link"))
 			{
-				FacebookDelegate<IShareResult> callback = new FacebookDelegate<IShareResult>(base.HandleResult);
-				FB.ShareLink(new Uri("https://developers.facebook.com/"), string.Empty, string.Empty, null, callback);
+				FB.ShareLink(new Uri("https://developers.facebook.com/"), string.Empty, string.Empty, null, new FacebookDelegate<IShareResult>(base.HandleResult));
 			}
 			if (base.Button("Share - Link Photo"))
 			{

@@ -13,14 +13,14 @@ namespace StaRTS.FX
 {
 	public class StarportDecalManager : IEventObserver
 	{
-		public const string FX_STARPORT_DECAL_MESH_NAME = "numberMesh";
-
 		public static readonly float[] FX_STARPORT_DECAL_OFFSET = new float[]
 		{
 			0f,
 			0.666f,
 			0.333f
 		};
+
+		public const string FX_STARPORT_DECAL_MESH_NAME = "numberMesh";
 
 		private List<Material> decalMaterials = new List<Material>();
 

@@ -95,7 +95,7 @@ namespace StaRTS.Main.Controllers
 			this.UpdateShuttle(starport, 0.5f, 2);
 		}
 
-		private void UpdateShuttle(Entity starport, float percent, int shuttleType)
+		private void UpdateShuttle(SmartEntity starport, float percent, int shuttleType)
 		{
 			if (percent <= 0f && shuttleType != 1)
 			{
@@ -118,8 +118,8 @@ namespace StaRTS.Main.Controllers
 			}
 			else
 			{
-				BuildingComponent buildingComponent = starport.Get<BuildingComponent>();
-				BuildingTypeVO buildingType = buildingComponent.BuildingType;
+				BuildingComponent buildingComp = starport.BuildingComp;
+				BuildingTypeVO buildingType = buildingComp.BuildingType;
 				string text = null;
 				if (shuttleType == 1)
 				{
@@ -132,27 +132,27 @@ namespace StaRTS.Main.Controllers
 				else
 				{
 					FactionType faction = buildingType.Faction;
-					if (faction != FactionType.Empire)
+					if (faction != FactionType.Rebel)
 					{
-						if (faction == FactionType.Rebel)
+						if (faction == FactionType.Empire)
 						{
-							if (this.rebelShuttles.ContainsKey(buildingType.Lvl))
+							if (this.empireShuttles.ContainsKey(buildingType.Lvl))
 							{
-								text = this.rebelShuttles[buildingType.Lvl];
+								text = this.empireShuttles[buildingType.Lvl];
 							}
 							else
 							{
-								text = "e9explor_rbl-mod";
+								text = "lamdaclassshuttle_emp-mod";
 							}
 						}
 					}
-					else if (this.empireShuttles.ContainsKey(buildingType.Lvl))
+					else if (this.rebelShuttles.ContainsKey(buildingType.Lvl))
 					{
-						text = this.empireShuttles[buildingType.Lvl];
+						text = this.rebelShuttles[buildingType.Lvl];
 					}
 					else
 					{
-						text = "lamdaclassshuttle_emp-mod";
+						text = "e9explor_rbl-mod";
 					}
 				}
 				if (text != null)
@@ -193,23 +193,23 @@ namespace StaRTS.Main.Controllers
 			GameObject gameObject = (GameObject)asset;
 			ShuttleAnim shuttleAnim = (ShuttleAnim)cookie;
 			shuttleAnim.GameObj = gameObject;
-			SmartEntity smartEntity = (SmartEntity)shuttleAnim.Starport;
-			if (this.shuttles.ContainsKey(smartEntity))
+			SmartEntity starport = shuttleAnim.Starport;
+			if (this.shuttles.ContainsKey(starport))
 			{
 				shuttleAnim.Anim = gameObject.GetComponent<Animation>();
-				GameObjectViewComponent gameObjectViewComponent = smartEntity.Get<GameObjectViewComponent>();
+				GameObjectViewComponent gameObjectViewComponent = starport.Get<GameObjectViewComponent>();
 				Transform transform = gameObject.transform;
 				AssetMeshDataMonoBehaviour component;
 				if (shuttleAnim.IsContrabandShuttle)
 				{
 					bool flag = shuttleAnim.Percentage < 1f || shuttleAnim.State == ShuttleState.Landing || shuttleAnim.State == ShuttleState.Idle;
-					if (smartEntity.GameObjectViewComp == null || smartEntity.GameObjectViewComp.MainGameObject == null)
+					if (starport.GameObjectViewComp == null || starport.GameObjectViewComp.MainGameObject == null)
 					{
 						this.UnloadShuttle(shuttleAnim);
 						StorageSpreadUtils.UpdateAllStarportFullnessMeters();
 						return;
 					}
-					component = smartEntity.GameObjectViewComp.MainGameObject.GetComponent<AssetMeshDataMonoBehaviour>();
+					component = starport.GameObjectViewComp.MainGameObject.GetComponent<AssetMeshDataMonoBehaviour>();
 					for (int i = 0; i < component.OtherGameObjects.Count; i++)
 					{
 						if (component.OtherGameObjects[i].name.Contains("locator_vehicle"))
@@ -225,7 +225,7 @@ namespace StaRTS.Main.Controllers
 				}
 				else if (shuttleAnim.IsArmoryShuttle)
 				{
-					if (smartEntity.GameObjectViewComp == null || smartEntity.GameObjectViewComp.MainGameObject == null)
+					if (starport.GameObjectViewComp == null || starport.GameObjectViewComp.MainGameObject == null)
 					{
 						this.UnloadShuttle(shuttleAnim);
 						return;
@@ -287,8 +287,8 @@ namespace StaRTS.Main.Controllers
 			}
 			else
 			{
-				ShuttleState state = anim.State;
-				if (state != ShuttleState.Landing && state != ShuttleState.Idle)
+				ShuttleState state2 = anim.State;
+				if (state2 != ShuttleState.Landing && state2 != ShuttleState.Idle)
 				{
 					this.RemoveStarportShuttle(anim.Starport);
 				}
@@ -299,7 +299,7 @@ namespace StaRTS.Main.Controllers
 			}
 		}
 
-		public void DestroyArmoryShuttle(Entity entity)
+		public void DestroyArmoryShuttle(SmartEntity entity)
 		{
 			if (!this.shuttles.ContainsKey(entity))
 			{
@@ -335,12 +335,14 @@ namespace StaRTS.Main.Controllers
 			}
 			if (percent < 1f)
 			{
-				switch (anim.State)
+				ShuttleState state = anim.State;
+				if (state != ShuttleState.Landing && state != ShuttleState.Idle)
 				{
-				case ShuttleState.None:
-					anim.EnqueueState(ShuttleState.Landing);
-					anim.EnqueueState(ShuttleState.Idle);
-					break;
+					if (state == ShuttleState.None)
+					{
+						anim.EnqueueState(ShuttleState.Landing);
+						anim.EnqueueState(ShuttleState.Idle);
+					}
 				}
 			}
 			else
@@ -361,7 +363,7 @@ namespace StaRTS.Main.Controllers
 			}
 		}
 
-		public ShuttleAnim GetShuttleForStarport(Entity starport)
+		public ShuttleAnim GetShuttleForStarport(SmartEntity starport)
 		{
 			ShuttleAnim result = null;
 			if (this.shuttles.ContainsKey(starport))
@@ -371,7 +373,7 @@ namespace StaRTS.Main.Controllers
 			return result;
 		}
 
-		public void RemoveStarportShuttle(Entity starport)
+		public void RemoveStarportShuttle(SmartEntity starport)
 		{
 			if (this.shuttles.ContainsKey(starport))
 			{
@@ -440,37 +442,37 @@ namespace StaRTS.Main.Controllers
 										NodeList<ArmoryNode> armoryNodeList = Service.BuildingLookupController.ArmoryNodeList;
 										for (ArmoryNode armoryNode = armoryNodeList.Head; armoryNode != null; armoryNode = armoryNode.Next)
 										{
-											this.DestroyArmoryShuttle(armoryNode.Entity);
+											this.DestroyArmoryShuttle((SmartEntity)armoryNode.Entity);
 										}
 									}
 								}
 								else
 								{
-									Entity entity = (Entity)cookie;
-									BuildingTypeVO buildingType = entity.Get<BuildingComponent>().BuildingType;
+									SmartEntity smartEntity = (SmartEntity)cookie;
+									BuildingTypeVO buildingType = smartEntity.BuildingComp.BuildingType;
 									if (buildingType.Type == BuildingType.Starport || (buildingType.Type == BuildingType.Resource && buildingType.Currency == CurrencyType.Contraband) || buildingType.Type == BuildingType.Armory)
 									{
-										this.RemoveStarportShuttle(entity);
+										this.RemoveStarportShuttle(smartEntity);
 									}
 								}
 							}
 							else
 							{
-								Entity entity2 = (Entity)cookie;
-								BuildingTypeVO buildingType2 = entity2.Get<BuildingComponent>().BuildingType;
+								SmartEntity smartEntity2 = (SmartEntity)cookie;
+								BuildingTypeVO buildingType2 = smartEntity2.BuildingComp.BuildingType;
 								if (buildingType2.Type == BuildingType.Starport || (buildingType2.Type == BuildingType.Resource && buildingType2.Currency == CurrencyType.Contraband))
 								{
 									if (buildingType2.Currency == CurrencyType.Contraband)
 									{
-										this.UpdateShuttle(entity2, 0.5f, 1);
+										this.UpdateShuttle(smartEntity2, 0.5f, 1);
 									}
 									else if (buildingType2.Type == BuildingType.Armory)
 									{
-										this.UpdateShuttle(entity2, 0.5f, 2);
+										this.UpdateShuttle(smartEntity2, 0.5f, 2);
 									}
 									else
 									{
-										this.UpdateShuttle(entity2, 0.5f, 0);
+										this.UpdateShuttle(smartEntity2, 0.5f, 0);
 									}
 								}
 							}
@@ -478,7 +480,7 @@ namespace StaRTS.Main.Controllers
 						else
 						{
 							MeterShaderComponent meterShaderComponent = (MeterShaderComponent)cookie;
-							this.UpdateShuttle(meterShaderComponent.Entity, meterShaderComponent.Percentage, 0);
+							this.UpdateShuttle((SmartEntity)meterShaderComponent.Entity, meterShaderComponent.Percentage, 0);
 						}
 					}
 					else
@@ -488,7 +490,7 @@ namespace StaRTS.Main.Controllers
 						{
 							if (current.ID == num)
 							{
-								this.RemoveStarportShuttle(current);
+								this.RemoveStarportShuttle((SmartEntity)current);
 								break;
 							}
 						}
@@ -506,10 +508,10 @@ namespace StaRTS.Main.Controllers
 			else
 			{
 				EntityViewParams entityViewParams = (EntityViewParams)cookie;
-				SmartEntity entity3 = entityViewParams.Entity;
-				if (!this.shuttles.ContainsKey(entity3) && Service.GameStateMachine.CurrentState is HomeState && entity3.BuildingComp.BuildingType.Type == BuildingType.Resource && entity3.BuildingComp.BuildingType.Currency == CurrencyType.Contraband)
+				SmartEntity entity = entityViewParams.Entity;
+				if (!this.shuttles.ContainsKey(entity) && Service.GameStateMachine.CurrentState is HomeState && entity.BuildingComp.BuildingType.Type == BuildingType.Resource && entity.BuildingComp.BuildingType.Currency == CurrencyType.Contraband)
 				{
-					this.UpdateContrabandShuttle(entity3);
+					this.UpdateContrabandShuttle(entity);
 				}
 			}
 			return EatResponse.NotEaten;

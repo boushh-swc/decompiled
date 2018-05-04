@@ -148,16 +148,16 @@ namespace StaRTS.Main.Controllers
 			{
 				return EatResponse.NotEaten;
 			}
-			if (id != EventId.RemovingBuff)
+			if (id != EventId.ProcBuff)
 			{
-				if (id == EventId.ProcBuff)
+				if (id == EventId.RemovingBuff)
 				{
-					this.ApplyAggroBuff(buffEventData);
+					this.RemoveAggroBuff(buffEventData);
 				}
 			}
 			else
 			{
-				this.RemoveAggroBuff(buffEventData);
+				this.ApplyAggroBuff(buffEventData);
 			}
 			return EatResponse.NotEaten;
 		}

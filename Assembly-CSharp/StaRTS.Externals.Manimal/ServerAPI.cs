@@ -19,12 +19,6 @@ namespace StaRTS.Externals.Manimal
 
 		private const float QUEUE_DISPATCH_DELAY = 3f;
 
-		private const string DESYNC_COMMAND_MAX_RETRY = "DESYNC_COMMAND_MAX_RETRY";
-
-		private const string DESYNC_CRITICAL_COMMAND_FAIL = "DESYNC_CRITICAL_COMMAND_FAIL";
-
-		private const string DESYNC_RECEIPT_FAILED = "DESYNC_RECEIPT_FAILED";
-
 		private ServerAPI.DesynHandler desyncHandler;
 
 		private ServerAPI.MessageHandler messageHandler;
@@ -50,6 +44,12 @@ namespace StaRTS.Externals.Manimal
 		private ICommand keepAliveCommand;
 
 		private float keepAliveWaitTime;
+
+		private const string DESYNC_COMMAND_MAX_RETRY = "DESYNC_COMMAND_MAX_RETRY";
+
+		private const string DESYNC_CRITICAL_COMMAND_FAIL = "DESYNC_CRITICAL_COMMAND_FAIL";
+
+		private const string DESYNC_RECEIPT_FAILED = "DESYNC_RECEIPT_FAILED";
 
 		public bool Enabled
 		{

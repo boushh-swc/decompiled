@@ -10,6 +10,7 @@ using StaRTS.Utils.Core;
 using StaRTS.Utils.Scheduling;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 using UnityEngine;
 
@@ -17,6 +18,8 @@ namespace StaRTS.Main.Views.UX.Screens.ScreenHelpers.Planets
 {
 	public class PlanetDetailsMissionViewModule : AbstractPlanetDetailsViewModule, IEventObserver, IViewFrameTimeObserver
 	{
+		private static readonly Color COMPLETION_COLOR = new Color(255f, 222f, 0f);
+
 		private const string ATTACKS_LEFT_STRING = "ATTACKS_LEFT";
 
 		private const string ELITE_OPS_REWARD_ITEM_PREFIX = "RewardItem";
@@ -175,8 +178,6 @@ namespace StaRTS.Main.Views.UX.Screens.ScreenHelpers.Planets
 
 		private const string BTN_CLOSE_CAMPAIGN_DETAILS = "BtnCloseCampaignDetails";
 
-		private static readonly Color COMPLETION_COLOR = new Color(255f, 222f, 0f);
-
 		private UXElement campaignDescriptionGroup;
 
 		private UXElement campaignDetailsGroup;
@@ -215,20 +216,25 @@ namespace StaRTS.Main.Views.UX.Screens.ScreenHelpers.Planets
 
 		private int missionSelectIndexOnFrameDelay = -1;
 
+		[CompilerGenerated]
+		private static Comparison<CampaignMissionVO> <>f__mg$cache0;
+
 		public PlanetDetailsMissionViewModule(PlanetDetailsScreen screen) : base(screen)
 		{
 		}
 
 		public EatResponse OnEvent(EventId id, object cookie)
 		{
-			switch (id)
+			if (id != EventId.MissionCollected)
 			{
-			case EventId.MissionCompleted:
-				this.OnMissionCompleted(cookie as CampaignMissionVO);
-				break;
-			case EventId.MissionCollected:
+				if (id == EventId.MissionCompleted)
+				{
+					this.OnMissionCompleted(cookie as CampaignMissionVO);
+				}
+			}
+			else
+			{
 				this.OnRewardCollected(cookie as CampaignMissionVO);
-				break;
 			}
 			return EatResponse.NotEaten;
 		}
@@ -346,7 +352,12 @@ namespace StaRTS.Main.Views.UX.Screens.ScreenHelpers.Planets
 					list.Add(current);
 				}
 			}
-			list.Sort(new Comparison<CampaignMissionVO>(PlanetDetailsMissionViewModule.CompareMissions));
+			List<CampaignMissionVO> arg_85_0 = list;
+			if (PlanetDetailsMissionViewModule.<>f__mg$cache0 == null)
+			{
+				PlanetDetailsMissionViewModule.<>f__mg$cache0 = new Comparison<CampaignMissionVO>(PlanetDetailsMissionViewModule.CompareMissions);
+			}
+			arg_85_0.Sort(PlanetDetailsMissionViewModule.<>f__mg$cache0);
 			if (this.selectedCampaign.IsMiniCampaign())
 			{
 				this.missionGrid = this.screen.GetElement<UXGrid>("ObjectiveGridDifficulty");

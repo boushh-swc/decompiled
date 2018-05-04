@@ -310,7 +310,6 @@ public class PropertyReference
 		{
 			return false;
 		}
-		float num2;
 		if (to == typeof(int))
 		{
 			if (from == typeof(string))
@@ -322,16 +321,58 @@ public class PropertyReference
 					return true;
 				}
 			}
-			else if (from == typeof(float))
+			else
 			{
-				value = Mathf.RoundToInt((float)value);
-				return true;
+				if (from == typeof(float))
+				{
+					value = Mathf.RoundToInt((float)value);
+					return true;
+				}
+				if (from == typeof(double))
+				{
+					value = (int)Math.Round((double)value);
+				}
 			}
 		}
-		else if (to == typeof(float) && from == typeof(string) && float.TryParse((string)value, out num2))
+		else if (to == typeof(float))
 		{
-			value = num2;
-			return true;
+			if (from == typeof(string))
+			{
+				float num2;
+				if (float.TryParse((string)value, out num2))
+				{
+					value = num2;
+					return true;
+				}
+			}
+			else if (from == typeof(double))
+			{
+				value = (float)((double)value);
+			}
+			else if (from == typeof(int))
+			{
+				value = (float)((int)value);
+			}
+		}
+		else if (to == typeof(double))
+		{
+			if (from == typeof(string))
+			{
+				double num3;
+				if (double.TryParse((string)value, out num3))
+				{
+					value = num3;
+					return true;
+				}
+			}
+			else if (from == typeof(float))
+			{
+				value = (double)((float)value);
+			}
+			else if (from == typeof(int))
+			{
+				value = (double)((int)value);
+			}
 		}
 		return false;
 	}

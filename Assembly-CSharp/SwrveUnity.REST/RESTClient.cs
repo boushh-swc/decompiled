@@ -18,28 +18,22 @@ namespace SwrveUnity.REST
 		[DebuggerHidden]
 		public virtual IEnumerator Get(string url, Action<RESTResponse> listener)
 		{
-			RESTClient.<Get>c__Iterator17 <Get>c__Iterator = new RESTClient.<Get>c__Iterator17();
+			RESTClient.<Get>c__Iterator0 <Get>c__Iterator = new RESTClient.<Get>c__Iterator0();
 			<Get>c__Iterator.url = url;
 			<Get>c__Iterator.listener = listener;
-			<Get>c__Iterator.<$>url = url;
-			<Get>c__Iterator.<$>listener = listener;
-			<Get>c__Iterator.<>f__this = this;
+			<Get>c__Iterator.$this = this;
 			return <Get>c__Iterator;
 		}
 
 		[DebuggerHidden]
 		public virtual IEnumerator Post(string url, byte[] encodedData, Dictionary<string, string> headers, Action<RESTResponse> listener)
 		{
-			RESTClient.<Post>c__Iterator18 <Post>c__Iterator = new RESTClient.<Post>c__Iterator18();
+			RESTClient.<Post>c__Iterator1 <Post>c__Iterator = new RESTClient.<Post>c__Iterator1();
 			<Post>c__Iterator.headers = headers;
 			<Post>c__Iterator.url = url;
 			<Post>c__Iterator.encodedData = encodedData;
 			<Post>c__Iterator.listener = listener;
-			<Post>c__Iterator.<$>headers = headers;
-			<Post>c__Iterator.<$>url = url;
-			<Post>c__Iterator.<$>encodedData = encodedData;
-			<Post>c__Iterator.<$>listener = listener;
-			<Post>c__Iterator.<>f__this = this;
+			<Post>c__Iterator.$this = this;
 			return <Post>c__Iterator;
 		}
 

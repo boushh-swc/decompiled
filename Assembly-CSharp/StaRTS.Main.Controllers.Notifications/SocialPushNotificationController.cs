@@ -56,7 +56,7 @@ namespace StaRTS.Main.Controllers.Notifications
 				return EatResponse.NotEaten;
 			case EventId.SquadJoinApplicationAcceptedByCurrentPlayer:
 			case EventId.SquadWarTroopsRequestStartedByCurrentPlayer:
-				IL_5B:
+				IL_57:
 				if (id != EventId.RaidNotifyRequest)
 				{
 					return EatResponse.NotEaten;
@@ -85,7 +85,7 @@ namespace StaRTS.Main.Controllers.Notifications
 				}
 				return EatResponse.NotEaten;
 			}
-			goto IL_5B;
+			goto IL_57;
 		}
 
 		private bool HasEnoughTimeElapsed(uint nowSeconds, ServerPref pref, float cooldown)

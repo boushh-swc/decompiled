@@ -32,17 +32,23 @@ namespace StaRTS.Main.Models.Commands.Player.Store
 		public static BuyResourceRequest MakeBuyResourceRequest(CurrencyType resourceToBuy, int amount)
 		{
 			string text = null;
-			switch (resourceToBuy)
+			if (resourceToBuy != CurrencyType.Credits)
 			{
-			case CurrencyType.Credits:
+				if (resourceToBuy != CurrencyType.Materials)
+				{
+					if (resourceToBuy == CurrencyType.Contraband)
+					{
+						text = "contraband";
+					}
+				}
+				else
+				{
+					text = "materials";
+				}
+			}
+			else
+			{
 				text = "credits";
-				break;
-			case CurrencyType.Materials:
-				text = "materials";
-				break;
-			case CurrencyType.Contraband:
-				text = "contraband";
-				break;
 			}
 			return new BuyResourceRequest(text, amount);
 		}

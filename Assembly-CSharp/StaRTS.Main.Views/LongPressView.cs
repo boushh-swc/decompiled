@@ -14,10 +14,6 @@ namespace StaRTS.Main.Views
 {
 	public class LongPressView : IViewFrameTimeObserver
 	{
-		private const string LONG_PRESS_BKG = "SpriteLongPressBkg";
-
-		private const string LONG_PRESS_FILL = "SpriteLongPressFill";
-
 		private float preFadeDuration;
 
 		private float fadeDuration;
@@ -39,6 +35,10 @@ namespace StaRTS.Main.Views
 		private ViewTimeEngine time;
 
 		private bool registered;
+
+		private const string LONG_PRESS_BKG = "SpriteLongPressBkg";
+
+		private const string LONG_PRESS_FILL = "SpriteLongPressFill";
 
 		public LongPressView()
 		{

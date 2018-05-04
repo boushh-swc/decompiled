@@ -69,9 +69,13 @@ namespace StaRTS.FX
 
 		private const string TOP_ATTACH = "top";
 
+		private Dictionary<Entity, uint> delayTimers;
+
 		private const float INITIAL_DELAY = 0.5f;
 
 		private const float DELAY_INTERVAL = 0.65f;
+
+		private Dictionary<FactionType, List<GameObject>> impactPool;
 
 		private const string IMPACT_EMPIRE_POOL_NAME = "ImpactEmpirePool";
 
@@ -81,13 +85,9 @@ namespace StaRTS.FX
 
 		private const string IMPACT_REBEL_GO = "shield_sparkle";
 
-		private const float IMPACT_CLEANUP_DELAY = 1.2f;
-
-		private Dictionary<Entity, uint> delayTimers;
-
-		private Dictionary<FactionType, List<GameObject>> impactPool;
-
 		private Dictionary<Entity, ShieldBuildingInfo> buildings;
+
+		private const float IMPACT_CLEANUP_DELAY = 1.2f;
 
 		public ShieldEffects()
 		{
@@ -371,7 +371,7 @@ namespace StaRTS.FX
 				Vector3 position2 = position;
 				position2.y = 0f;
 				gameObject2.transform.position = position2;
-				gameObject = gameObject2.transform.FindChild("shieldGroundMesh").gameObject;
+				gameObject = gameObject2.transform.Find("shieldGroundMesh").gameObject;
 			}
 			if (gameObject3 != null)
 			{
@@ -517,7 +517,7 @@ namespace StaRTS.FX
 			NodeList<ShieldGeneratorNode> shieldGeneratorNodeList = Service.BuildingLookupController.ShieldGeneratorNodeList;
 			for (ShieldGeneratorNode shieldGeneratorNode = shieldGeneratorNodeList.Head; shieldGeneratorNode != null; shieldGeneratorNode = shieldGeneratorNode.Next)
 			{
-				if (!Service.BaseLayoutToolController.IsBuildingStashed(shieldGeneratorNode.Entity))
+				if (!Service.BaseLayoutToolController.IsBuildingStashed((SmartEntity)shieldGeneratorNode.Entity))
 				{
 					float delay = num + (float)num3 * num2;
 					this.PlayEffect(shieldGeneratorNode.Entity, idle, delay);

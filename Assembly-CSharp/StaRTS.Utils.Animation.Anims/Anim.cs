@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 
 namespace StaRTS.Utils.Animation.Anims
 {
@@ -7,6 +8,9 @@ namespace StaRTS.Utils.Animation.Anims
 		private Action<float> optimizedUpdate;
 
 		private Action<Anim, float> onUpdateCallback;
+
+		[CompilerGenerated]
+		private static Easing.EasingDelegate <>f__mg$cache0;
 
 		public float Age
 		{
@@ -84,7 +88,11 @@ namespace StaRTS.Utils.Animation.Anims
 
 		public Anim()
 		{
-			this.EaseFunction = new Easing.EasingDelegate(Easing.Linear);
+			if (Anim.<>f__mg$cache0 == null)
+			{
+				Anim.<>f__mg$cache0 = new Easing.EasingDelegate(Easing.Linear);
+			}
+			this.EaseFunction = Anim.<>f__mg$cache0;
 			this.optimizedUpdate = new Action<float>(this.UpdateWithoutCallback);
 		}
 

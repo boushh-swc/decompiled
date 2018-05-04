@@ -77,13 +77,21 @@ namespace StaRTS.Main.Controllers.Planets
 			this.hothPlanetData = staticDataController.Get<PlanetVO>(GameConstants.HOTH_PLANET_UID);
 			this.erkitPlanetData = staticDataController.Get<PlanetVO>(GameConstants.ERKIT_PLANET_UID);
 			this.yavinPlanetData = staticDataController.Get<PlanetVO>(GameConstants.YAVIN_PLANET_UID);
+			this.UpdateGalaxyValues();
+			this.UpdatePlanetValues();
 		}
 
-		private void Update()
+		private void UpdatePlanetValues()
 		{
-			this.PlanetPositionX = "= Rotation Pos About Galaxy";
-			this.PlanetPositionY = "= Distance from Center";
-			this.PlanetPositionZ = "= Height Above Plane";
+			this.TatooinePlanetPos = this.tatooinePlanetData.GetGalaxyPositionAsVec3();
+			this.DandoranPlanetPos = this.dandoranPlanetData.GetGalaxyPositionAsVec3();
+			this.HothPlanetPos = this.hothPlanetData.GetGalaxyPositionAsVec3();
+			this.ErkitPlanetPos = this.erkitPlanetData.GetGalaxyPositionAsVec3();
+			this.YavinPlanetPos = this.yavinPlanetData.GetGalaxyPositionAsVec3();
+		}
+
+		private void UpdateGalaxyValues()
+		{
 			this.GalaxyAutoRotateSpeed = GameConstants.GALAXY_AUTO_ROTATE_SPEED;
 			this.GalaxyForegroundAngle = GameConstants.GALAXY_PLANET_FOREGROUND_THRESHOLD;
 			this.GalaxyForegroundPlateauAngle = GameConstants.GALAXY_PLANET_FOREGROUND_PLATEAU_THRESHOLD;
@@ -99,11 +107,15 @@ namespace StaRTS.Main.Controllers.Planets
 			this.GalaxyPlanetSwipeMinMove = GameConstants.GALAXY_PLANET_SWIPE_MIN_MOVE;
 			this.GalaxyPlanetSwipeMaxTime = GameConstants.GALAXY_PLANET_SWIPE_MAX_TIME;
 			this.GalaxyPlanetSwipeTime = GameConstants.GALAXY_PLANET_SWIPE_TIME;
-			this.TatooinePlanetPos = this.tatooinePlanetData.GetGalaxyPositionAsVec3();
-			this.DandoranPlanetPos = this.dandoranPlanetData.GetGalaxyPositionAsVec3();
-			this.HothPlanetPos = this.hothPlanetData.GetGalaxyPositionAsVec3();
-			this.ErkitPlanetPos = this.erkitPlanetData.GetGalaxyPositionAsVec3();
-			this.YavinPlanetPos = this.yavinPlanetData.GetGalaxyPositionAsVec3();
+		}
+
+		private void Update()
+		{
+			this.PlanetPositionX = "= Rotation Pos About Galaxy";
+			this.PlanetPositionY = "= Distance from Center";
+			this.PlanetPositionZ = "= Height Above Plane";
+			this.UpdateGalaxyValues();
+			this.UpdatePlanetValues();
 		}
 
 		private void OnValidate()

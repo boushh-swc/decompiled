@@ -91,10 +91,9 @@ namespace StaRTS.Main.Controllers
 		{
 			Dictionary<string, string>.KeyCollection keyCollection = null;
 			FactionType faction = Service.CurrentPlayer.Faction;
-			FactionType factionType = faction;
-			if (factionType != FactionType.Empire)
+			if (faction != FactionType.Empire)
 			{
-				if (factionType == FactionType.Rebel)
+				if (faction == FactionType.Rebel)
 				{
 					keyCollection = this.rebelBuildingLevelAchievements.Keys;
 				}
@@ -142,10 +141,9 @@ namespace StaRTS.Main.Controllers
 			if (achievementType == AchievementType.BuildingLevel)
 			{
 				FactionType faction = Service.CurrentPlayer.Faction;
-				FactionType factionType = faction;
-				if (factionType != FactionType.Empire)
+				if (faction != FactionType.Empire)
 				{
-					if (factionType == FactionType.Rebel)
+					if (faction == FactionType.Rebel)
 					{
 						result = this.rebelBuildingLevelAchievements;
 					}

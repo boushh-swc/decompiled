@@ -18,7 +18,7 @@ using UnityEngine;
 
 namespace StaRTS.Main.Views.UX.Screens
 {
-	public class ShardShopViewModule : IEventObserver, IViewFrameTimeObserver
+	public class ShardShopViewModule : IViewFrameTimeObserver, IEventObserver
 	{
 		private const float POST_BLOCK_ANIM_DELAY = 0.4f;
 
@@ -281,15 +281,17 @@ namespace StaRTS.Main.Views.UX.Screens
 				this.iconBaseShardProgressBar.Value = this.previousProgressBarValue;
 				Service.ViewTimeEngine.RegisterFrameTimeObserver(this);
 			}
-			switch (vto.SupplyVO.Type)
+			SupplyType type = vto.SupplyVO.Type;
+			if (type != SupplyType.Shard)
 			{
-			case SupplyType.Shard:
+				if (type == SupplyType.ShardTroop || type == SupplyType.ShardSpecialAttack)
+				{
+					this.titleText.Text = this.lang.Get("shard_shop_buy_unit_shards", new object[0]);
+				}
+			}
+			else
+			{
 				this.titleText.Text = this.lang.Get("shard_shop_buy_equipment_shards", new object[0]);
-				break;
-			case SupplyType.ShardTroop:
-			case SupplyType.ShardSpecialAttack:
-				this.titleText.Text = this.lang.Get("shard_shop_buy_unit_shards", new object[0]);
-				break;
 			}
 			if (vto.RemainingShardsForSale > 0)
 			{
@@ -404,11 +406,7 @@ namespace StaRTS.Main.Views.UX.Screens
 			if (this.predictedData.Purchases[this.vto.SlotIndex].ContainsKey("Temp"))
 			{
 				Dictionary<string, int> dictionary;
-				Dictionary<string, int> expr_4B = dictionary = this.predictedData.Purchases[this.vto.SlotIndex];
-				string key;
-				string expr_52 = key = "Temp";
-				int num = dictionary[key];
-				expr_4B[expr_52] = num + quantityToPurchase;
+				(dictionary = this.predictedData.Purchases[this.vto.SlotIndex])["Temp"] = dictionary["Temp"] + quantityToPurchase;
 			}
 			else
 			{
@@ -502,22 +500,13 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		public EatResponse OnEvent(EventId id, object cookie)
 		{
-			if (id != EventId.ScreenClosing)
+			if (id != EventId.ShardUnitUpgraded)
 			{
 				if (id != EventId.EquipmentUnlocked)
 				{
-					if (id == EventId.ShardUnitUpgraded)
+					if (id == EventId.ScreenClosing)
 					{
-						IDeployableVO deployableVO = (IDeployableVO)cookie;
-						if (deployableVO == null)
-						{
-							return EatResponse.NotEaten;
-						}
-						if (deployableVO.Lvl > 1)
-						{
-							return EatResponse.NotEaten;
-						}
-						Service.EventManager.RegisterObserver(this, EventId.ScreenClosing);
+						this.Render(this.vto, false);
 					}
 				}
 				else
@@ -527,7 +516,16 @@ namespace StaRTS.Main.Views.UX.Screens
 			}
 			else
 			{
-				this.Render(this.vto, false);
+				IDeployableVO deployableVO = (IDeployableVO)cookie;
+				if (deployableVO == null)
+				{
+					return EatResponse.NotEaten;
+				}
+				if (deployableVO.Lvl > 1)
+				{
+					return EatResponse.NotEaten;
+				}
+				Service.EventManager.RegisterObserver(this, EventId.ScreenClosing);
 			}
 			return EatResponse.NotEaten;
 		}

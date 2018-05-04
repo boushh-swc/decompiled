@@ -8,12 +8,19 @@ using StaRTS.Main.Views.UX.Controls;
 using StaRTS.Main.Views.UX.Elements;
 using StaRTS.Utils.Core;
 using System;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace StaRTS.Main.Views.Projectors
 {
 	public class ProjectorUtils
 	{
+		[CompilerGenerated]
+		private static Action<GeometryProjector> <>f__mg$cache0;
+
+		[CompilerGenerated]
+		private static Action<GeometryProjector> <>f__mg$cache1;
+
 		public static GeometryProjector GenerateProjector(ProjectorConfig config)
 		{
 			GeometryProjector geometryProjector = new GeometryProjector(config);
@@ -49,7 +56,17 @@ namespace StaRTS.Main.Views.Projectors
 			{
 				geometryProjector.Renderer = new ProjectorRotationDecorator(geometryProjector.Renderer);
 			}
-			geometryProjector.AssetProcessor.LoadAllAssets(new Action<GeometryProjector>(ProjectorUtils.OnDefaultAssetSuccess), new Action<GeometryProjector>(ProjectorUtils.OnDefaultAssetFailure));
+			ProjectorAssetProcessor arg_16C_0 = geometryProjector.AssetProcessor;
+			if (ProjectorUtils.<>f__mg$cache0 == null)
+			{
+				ProjectorUtils.<>f__mg$cache0 = new Action<GeometryProjector>(ProjectorUtils.OnDefaultAssetSuccess);
+			}
+			Action<GeometryProjector> arg_16C_1 = ProjectorUtils.<>f__mg$cache0;
+			if (ProjectorUtils.<>f__mg$cache1 == null)
+			{
+				ProjectorUtils.<>f__mg$cache1 = new Action<GeometryProjector>(ProjectorUtils.OnDefaultAssetFailure);
+			}
+			arg_16C_0.LoadAllAssets(arg_16C_1, ProjectorUtils.<>f__mg$cache1);
 			return geometryProjector;
 		}
 
@@ -96,8 +113,8 @@ namespace StaRTS.Main.Views.Projectors
 			{
 				projectorConfig.AnimationName = "IdleClosed";
 			}
-			type = vo.Type;
-			switch (type)
+			BuildingType type2 = vo.Type;
+			switch (type2)
 			{
 			case BuildingType.ChampionPlatform:
 				projectorConfig.AttachmentAssets = new string[]
@@ -108,7 +125,7 @@ namespace StaRTS.Main.Views.Projectors
 			case BuildingType.Housing:
 			case BuildingType.Squad:
 				IL_8F:
-				if (type == BuildingType.Turret)
+				if (type2 == BuildingType.Turret)
 				{
 					if (!string.IsNullOrEmpty(vo.TurretUid))
 					{
@@ -117,7 +134,7 @@ namespace StaRTS.Main.Views.Projectors
 					}
 					return projectorConfig;
 				}
-				if (type != BuildingType.Trap)
+				if (type2 != BuildingType.Trap)
 				{
 					return projectorConfig;
 				}

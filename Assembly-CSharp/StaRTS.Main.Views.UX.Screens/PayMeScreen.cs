@@ -68,17 +68,23 @@ namespace StaRTS.Main.Views.UX.Screens
 			CurrentPlayer currentPlayer = Service.CurrentPlayer;
 			CurrencyType currencyType = GameUtils.GetCurrencyType(credits, materials, contraband);
 			int num = 0;
-			switch (currencyType)
+			if (currencyType != CurrencyType.Credits)
 			{
-			case CurrencyType.Credits:
+				if (currencyType != CurrencyType.Materials)
+				{
+					if (currencyType == CurrencyType.Contraband)
+					{
+						num = contraband - currentPlayer.CurrentContrabandAmount;
+					}
+				}
+				else
+				{
+					num = materials - currentPlayer.CurrentMaterialsAmount;
+				}
+			}
+			else
+			{
 				num = credits - currentPlayer.CurrentCreditsAmount;
-				break;
-			case CurrencyType.Materials:
-				num = materials - currentPlayer.CurrentMaterialsAmount;
-				break;
-			case CurrencyType.Contraband:
-				num = contraband - currentPlayer.CurrentContrabandAmount;
-				break;
 			}
 			if (num > 0)
 			{
@@ -97,17 +103,23 @@ namespace StaRTS.Main.Views.UX.Screens
 						text
 					});
 					int num2 = 0;
-					switch (currencyType)
+					if (currencyType != CurrencyType.Credits)
 					{
-					case CurrencyType.Credits:
+						if (currencyType != CurrencyType.Materials)
+						{
+							if (currencyType == CurrencyType.Contraband)
+							{
+								num2 = GameUtils.ContrabandCrystalCost(num);
+							}
+						}
+						else
+						{
+							num2 = GameUtils.MaterialsCrystalCost(num);
+						}
+					}
+					else
+					{
 						num2 = GameUtils.CreditsCrystalCost(num);
-						break;
-					case CurrencyType.Materials:
-						num2 = GameUtils.MaterialsCrystalCost(num);
-						break;
-					case CurrencyType.Contraband:
-						num2 = GameUtils.ContrabandCrystalCost(num);
-						break;
 					}
 					string currencyItemAssetName = UXUtils.GetCurrencyItemAssetName(currencyType.ToString());
 					CurrencyTag modalResultCookie = new CurrencyTag(currencyType, num, num2, purchaseContext, purchaseCookie);
@@ -124,18 +136,13 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		public override EatResponse OnEvent(EventId id, object cookie)
 		{
-			switch (id)
-			{
-			case EventId.ContractCompleted:
-			case EventId.ContractCanceled:
+			if (id == EventId.ContractCompleted || id == EventId.ContractCanceled)
 			{
 				ContractEventData contractEventData = cookie as ContractEventData;
 				if (ContractUtils.ContractTypeConsumesDroid(contractEventData.Contract.ContractTO.ContractType) && !this.closing)
 				{
 					this.Close(null);
 				}
-				break;
-			}
 			}
 			return base.OnEvent(id, cookie);
 		}

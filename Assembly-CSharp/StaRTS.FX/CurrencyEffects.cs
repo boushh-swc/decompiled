@@ -90,7 +90,7 @@ namespace StaRTS.FX
 
 		private void OnEffectLoaded(object asset, object cookie)
 		{
-			this.loadedAssets[(int)cookie] = (asset as GameObject);
+			this.loadedAssets[(int)((CurrencyType)cookie)] = (asset as GameObject);
 		}
 
 		private void OnAllEffectsLoaded(object cookie)
@@ -158,7 +158,7 @@ namespace StaRTS.FX
 				ParticleSystem component = gameObject.transform.GetChild(i).GetComponent<ParticleSystem>();
 				if (component.name == "icon")
 				{
-					component.maxParticles = 10;
+					component.main.maxParticles = 10;
 				}
 				this.effects[building].Add(currencyType, component);
 			}
@@ -167,17 +167,23 @@ namespace StaRTS.FX
 		public void PlayEffect(Entity building, CurrencyType currency, int amountGained)
 		{
 			CurrentPlayer currentPlayer = Service.CurrentPlayer;
-			switch (currency)
+			if (currency != CurrencyType.Credits)
 			{
-			case CurrencyType.Credits:
+				if (currency != CurrencyType.Materials)
+				{
+					if (currency == CurrencyType.Contraband)
+					{
+						amountGained = currentPlayer.MaxContrabandAmount - currentPlayer.CurrentContrabandAmount - amountGained;
+					}
+				}
+				else
+				{
+					amountGained = currentPlayer.MaxMaterialsAmount - currentPlayer.CurrentMaterialsAmount - amountGained;
+				}
+			}
+			else
+			{
 				amountGained = currentPlayer.MaxCreditsAmount - currentPlayer.CurrentCreditsAmount - amountGained;
-				break;
-			case CurrencyType.Materials:
-				amountGained = currentPlayer.MaxMaterialsAmount - currentPlayer.CurrentMaterialsAmount - amountGained;
-				break;
-			case CurrencyType.Contraband:
-				amountGained = currentPlayer.MaxContrabandAmount - currentPlayer.CurrentContrabandAmount - amountGained;
-				break;
 			}
 			if (amountGained <= 0)
 			{

@@ -2,6 +2,7 @@ using StaRTS.Utils;
 using StaRTS.Utils.Core;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace StaRTS.Main.Controllers.Performance
@@ -9,6 +10,9 @@ namespace StaRTS.Main.Controllers.Performance
 	public class PerformanceSampler
 	{
 		private Dictionary<string, NamedSample> sampleMap;
+
+		[CompilerGenerated]
+		private static Comparison<NamedSample> <>f__mg$cache0;
 
 		public PerformanceSampler()
 		{
@@ -66,7 +70,12 @@ namespace StaRTS.Main.Controllers.Performance
 					current.average = ((current.count != 0) ? (1000f * current.totalTime / (float)current.count) : 0f);
 					list.Add(current);
 				}
-				list.Sort(new Comparison<NamedSample>(PerformanceSampler.CompareSampleAverage));
+				List<NamedSample> arg_B4_0 = list;
+				if (PerformanceSampler.<>f__mg$cache0 == null)
+				{
+					PerformanceSampler.<>f__mg$cache0 = new Comparison<NamedSample>(PerformanceSampler.CompareSampleAverage);
+				}
+				arg_B4_0.Sort(PerformanceSampler.<>f__mg$cache0);
 				int i = 0;
 				int count = list.Count;
 				while (i < count)

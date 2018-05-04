@@ -11,10 +11,6 @@ namespace StaRTS.Main.Models.Entities.Components
 	{
 		private const int NUM_OF_QUADRANTS = 4;
 
-		private const int SMALL_BUILDING_AREA = 9;
-
-		private const int NEIGHBORS_TO_EVALUATE_FOR_MELEES_VS_SMALL_BUILDINGS = 1;
-
 		private static readonly int[,] rotation = new int[,]
 		{
 			{
@@ -39,6 +35,10 @@ namespace StaRTS.Main.Models.Entities.Components
 
 		private static readonly int[] neighborsToEvaluateEachSide;
 
+		private const int SMALL_BUILDING_AREA = 9;
+
+		private const int NEIGHBORS_TO_EVALUATE_FOR_MELEES_VS_SMALL_BUILDINGS = 1;
+
 		private bool isSmallBuilding;
 
 		private int[][][] attackPositions;
@@ -58,257 +58,6 @@ namespace StaRTS.Main.Models.Entities.Components
 			this.transform = transform;
 			this.isSmallBuilding = (transform.BoardDepth * transform.BoardWidth < 9);
 			this.board = Service.BoardController;
-		}
-
-		static DamageableComponent()
-		{
-			// Note: this type is marked as 'beforefieldinit'.
-			int[][,] expr_1E = new int[13][,];
-			expr_1E[0] = new int[1, 2];
-			int arg_3A_1 = 1;
-			int[,] expr_31 = new int[1, 2];
-			expr_31[0, 0] = 1;
-			expr_1E[arg_3A_1] = expr_31;
-			int arg_5F_1 = 2;
-			int[,] expr_44 = new int[2, 2];
-			expr_44[0, 0] = 2;
-			expr_44[1, 0] = 1;
-			expr_44[1, 1] = 1;
-			expr_1E[arg_5F_1] = expr_44;
-			int arg_84_1 = 3;
-			int[,] expr_69 = new int[2, 2];
-			expr_69[0, 0] = 3;
-			expr_69[1, 0] = 2;
-			expr_69[1, 1] = 2;
-			expr_1E[arg_84_1] = expr_69;
-			expr_1E[4] = new int[,]
-			{
-				{
-					4,
-					0
-				},
-				{
-					3,
-					2
-				},
-				{
-					2,
-					3
-				}
-			};
-			expr_1E[5] = new int[,]
-			{
-				{
-					5,
-					0
-				},
-				{
-					4,
-					2
-				},
-				{
-					3,
-					3
-				},
-				{
-					2,
-					4
-				}
-			};
-			expr_1E[6] = new int[,]
-			{
-				{
-					6,
-					0
-				},
-				{
-					5,
-					3
-				},
-				{
-					4,
-					4
-				},
-				{
-					3,
-					5
-				}
-			};
-			expr_1E[7] = new int[,]
-			{
-				{
-					7,
-					0
-				},
-				{
-					6,
-					2
-				},
-				{
-					5,
-					4
-				},
-				{
-					4,
-					5
-				},
-				{
-					2,
-					6
-				}
-			};
-			expr_1E[8] = new int[,]
-			{
-				{
-					8,
-					0
-				},
-				{
-					7,
-					3
-				},
-				{
-					6,
-					5
-				},
-				{
-					5,
-					6
-				},
-				{
-					3,
-					7
-				}
-			};
-			expr_1E[9] = new int[,]
-			{
-				{
-					9,
-					0
-				},
-				{
-					9,
-					1
-				},
-				{
-					8,
-					4
-				},
-				{
-					6,
-					6
-				},
-				{
-					4,
-					8
-				},
-				{
-					1,
-					9
-				}
-			};
-			expr_1E[10] = new int[,]
-			{
-				{
-					10,
-					0
-				},
-				{
-					10,
-					2
-				},
-				{
-					9,
-					5
-				},
-				{
-					7,
-					7
-				},
-				{
-					5,
-					9
-				},
-				{
-					2,
-					10
-				}
-			};
-			expr_1E[11] = new int[,]
-			{
-				{
-					11,
-					0
-				},
-				{
-					11,
-					3
-				},
-				{
-					10,
-					6
-				},
-				{
-					8,
-					8
-				},
-				{
-					6,
-					10
-				},
-				{
-					3,
-					11
-				}
-			};
-			expr_1E[12] = new int[,]
-			{
-				{
-					12,
-					0
-				},
-				{
-					12,
-					3
-				},
-				{
-					11,
-					6
-				},
-				{
-					10,
-					8
-				},
-				{
-					8,
-					10
-				},
-				{
-					6,
-					11
-				},
-				{
-					3,
-					12
-				}
-			};
-			DamageableComponent.attackOffsets = expr_1E;
-			DamageableComponent.neighborsToEvaluateEachSide = new int[]
-			{
-				1,
-				1,
-				2,
-				2,
-				2,
-				3,
-				3,
-				2,
-				2,
-				3,
-				3,
-				3,
-				4
-			};
 		}
 
 		public BoardCell FindAttackCell(uint maxRange, int troopWidth, int startX, int startZ)
@@ -676,6 +425,267 @@ namespace StaRTS.Main.Models.Entities.Components
 			{
 				lastIndex
 			});
+		}
+
+		static DamageableComponent()
+		{
+			// Note: this type is marked as 'beforefieldinit'.
+			int[][,] expr_1E = new int[13][,];
+			expr_1E[0] = new int[1, 2];
+			int arg_3A_1 = 1;
+			int[,] expr_31 = new int[1, 2];
+			expr_31[0, 0] = 1;
+			expr_1E[arg_3A_1] = expr_31;
+			expr_1E[2] = new int[,]
+			{
+				{
+					2,
+					0
+				},
+				{
+					1,
+					1
+				}
+			};
+			expr_1E[3] = new int[,]
+			{
+				{
+					3,
+					0
+				},
+				{
+					2,
+					2
+				}
+			};
+			expr_1E[4] = new int[,]
+			{
+				{
+					4,
+					0
+				},
+				{
+					3,
+					2
+				},
+				{
+					2,
+					3
+				}
+			};
+			expr_1E[5] = new int[,]
+			{
+				{
+					5,
+					0
+				},
+				{
+					4,
+					2
+				},
+				{
+					3,
+					3
+				},
+				{
+					2,
+					4
+				}
+			};
+			expr_1E[6] = new int[,]
+			{
+				{
+					6,
+					0
+				},
+				{
+					5,
+					3
+				},
+				{
+					4,
+					4
+				},
+				{
+					3,
+					5
+				}
+			};
+			expr_1E[7] = new int[,]
+			{
+				{
+					7,
+					0
+				},
+				{
+					6,
+					2
+				},
+				{
+					5,
+					4
+				},
+				{
+					4,
+					5
+				},
+				{
+					2,
+					6
+				}
+			};
+			expr_1E[8] = new int[,]
+			{
+				{
+					8,
+					0
+				},
+				{
+					7,
+					3
+				},
+				{
+					6,
+					5
+				},
+				{
+					5,
+					6
+				},
+				{
+					3,
+					7
+				}
+			};
+			expr_1E[9] = new int[,]
+			{
+				{
+					9,
+					0
+				},
+				{
+					9,
+					1
+				},
+				{
+					8,
+					4
+				},
+				{
+					6,
+					6
+				},
+				{
+					4,
+					8
+				},
+				{
+					1,
+					9
+				}
+			};
+			expr_1E[10] = new int[,]
+			{
+				{
+					10,
+					0
+				},
+				{
+					10,
+					2
+				},
+				{
+					9,
+					5
+				},
+				{
+					7,
+					7
+				},
+				{
+					5,
+					9
+				},
+				{
+					2,
+					10
+				}
+			};
+			expr_1E[11] = new int[,]
+			{
+				{
+					11,
+					0
+				},
+				{
+					11,
+					3
+				},
+				{
+					10,
+					6
+				},
+				{
+					8,
+					8
+				},
+				{
+					6,
+					10
+				},
+				{
+					3,
+					11
+				}
+			};
+			expr_1E[12] = new int[,]
+			{
+				{
+					12,
+					0
+				},
+				{
+					12,
+					3
+				},
+				{
+					11,
+					6
+				},
+				{
+					10,
+					8
+				},
+				{
+					8,
+					10
+				},
+				{
+					6,
+					11
+				},
+				{
+					3,
+					12
+				}
+			};
+			DamageableComponent.attackOffsets = expr_1E;
+			DamageableComponent.neighborsToEvaluateEachSide = new int[]
+			{
+				1,
+				1,
+				2,
+				2,
+				2,
+				3,
+				3,
+				2,
+				2,
+				3,
+				3,
+				3,
+				4
+			};
 		}
 	}
 }

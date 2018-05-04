@@ -35,10 +35,5 @@ namespace StaRTS.Main.Views.Projectors
 		{
 			return null;
 		}
-
-		virtual bool DoesRenderTextureNeedReload()
-		{
-			return base.DoesRenderTextureNeedReload();
-		}
 	}
 }

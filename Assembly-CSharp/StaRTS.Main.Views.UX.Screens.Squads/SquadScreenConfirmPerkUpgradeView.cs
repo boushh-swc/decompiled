@@ -42,6 +42,8 @@ namespace StaRTS.Main.Views.UX.Screens.Squads
 
 		private const string LANG_PERK_UPGRADE_LVL_REQ = "PERK_UPGRADE_LVL_REQ";
 
+		public static readonly string PERK_INVEST_CONFIRM_VIEW = "UpgradeSelectedGroupPerks";
+
 		private const string PERK_UPGRADE_CONFIRM_BACK_BTN = "BtnBack";
 
 		private const string PERK_UPGRADE_CONFIRM_BACK_LABEL = "LabelBack";
@@ -93,8 +95,6 @@ namespace StaRTS.Main.Views.UX.Screens.Squads
 		private const string PERK_TITLE_GROUP = "TitleGroupPerks";
 
 		private const string PERK_TABS_GROUP = "TabGroupPerks";
-
-		public static readonly string PERK_INVEST_CONFIRM_VIEW = "UpgradeSelectedGroupPerks";
 
 		private UXButton backBtn;
 

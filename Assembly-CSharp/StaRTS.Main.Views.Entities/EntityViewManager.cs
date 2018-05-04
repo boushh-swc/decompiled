@@ -68,8 +68,10 @@ namespace StaRTS.Main.Views.Entities
 			if (entity.GameObjectViewComp != null)
 			{
 				gameObjectViewComponent = entity.GameObjectViewComp;
+				Vector3 position = gameObjectViewComponent.MainTransform.position;
 				UnityEngine.Object.Destroy(gameObjectViewComponent.MainGameObject);
 				gameObjectViewComponent.MainGameObject = gameObject;
+				gameObjectViewComponent.MainTransform.position = position;
 			}
 			else
 			{
@@ -114,7 +116,7 @@ namespace StaRTS.Main.Views.Entities
 			if (trapComp != null && trapViewComponent == null)
 			{
 				Animator component2 = gameObjectViewComponent.MainGameObject.GetComponent<Animator>();
-				Transform transform = gameObjectViewComponent.MainGameObject.transform.FindChild("Contents");
+				Transform transform = gameObjectViewComponent.MainGameObject.transform.Find("Contents");
 				if (component2 == null)
 				{
 					Service.Logger.ErrorFormat("A trap has been added that does not have a MecAnim controller. Building Uid: {0}, AssetName: {1}", new object[]
@@ -146,7 +148,7 @@ namespace StaRTS.Main.Views.Entities
 					if (trapComp.Type.EventType == TrapEventType.Turret)
 					{
 						Transform transform2 = gameObjectViewComponent.MainGameObject.transform;
-						Transform transform3 = transform2.FindChild(trapComp.Type.TurretTED.TurretAnimatorName);
+						Transform transform3 = transform2.Find(trapComp.Type.TurretTED.TurretAnimatorName);
 						if (transform3 == null)
 						{
 							Service.Logger.ErrorFormat("Trap {0}: Cannot find a gameobject in path {1}", new object[]
@@ -764,7 +766,7 @@ namespace StaRTS.Main.Views.Entities
 				return;
 			}
 			string parentName = addOnViewParams.ParentName;
-			Transform transform = gameObjectViewComp.MainGameObject.transform.FindChild(parentName);
+			Transform transform = gameObjectViewComp.MainGameObject.transform.Find(parentName);
 			if (transform == null)
 			{
 				Service.Logger.ErrorFormat("Add On Parent not found!  There's a mismatch between the CMS AddOn parent name ({0}) and the loaded model ({1})", new object[]

@@ -112,7 +112,7 @@ public class UIButtonColor : UIWidgetContainer
 	protected virtual void OnInit()
 	{
 		this.mInitDone = true;
-		if (this.tweenTarget == null)
+		if (this.tweenTarget == null && !Application.isPlaying)
 		{
 			this.tweenTarget = base.gameObject;
 		}
@@ -171,14 +171,17 @@ public class UIButtonColor : UIWidgetContainer
 
 	protected virtual void OnDisable()
 	{
-		if (this.mInitDone && this.tweenTarget != null)
+		if (this.mInitDone && this.mState != UIButtonColor.State.Normal)
 		{
 			this.SetState(UIButtonColor.State.Normal, true);
-			TweenColor component = this.tweenTarget.GetComponent<TweenColor>();
-			if (component != null)
+			if (this.tweenTarget != null)
 			{
-				component.value = this.mDefaultColor;
-				component.enabled = false;
+				TweenColor component = this.tweenTarget.GetComponent<TweenColor>();
+				if (component != null)
+				{
+					component.value = this.mDefaultColor;
+					component.enabled = false;
+				}
 			}
 		}
 	}

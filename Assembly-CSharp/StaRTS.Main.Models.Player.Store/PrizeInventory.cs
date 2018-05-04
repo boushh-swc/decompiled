@@ -100,8 +100,7 @@ namespace StaRTS.Main.Models.Player.Store
 		{
 			if (dict.ContainsKey(key))
 			{
-				int num = dict[key];
-				dict[key] = num + delta;
+				dict[key] += delta;
 			}
 			else if (delta > 0)
 			{

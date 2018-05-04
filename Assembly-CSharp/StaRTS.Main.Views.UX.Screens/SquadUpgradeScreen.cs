@@ -1,4 +1,4 @@
-using Net.RichardLord.Ash.Core;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.Player.Store;
 using StaRTS.Main.Models.Static;
 using StaRTS.Main.Utils;
@@ -12,7 +12,7 @@ namespace StaRTS.Main.Views.UX.Screens
 	{
 		private const string UPGRADE_FIELD_CAPACITY = "UPGRADE_FIELD_CAPACITY";
 
-		public SquadUpgradeScreen(Entity selectedBuilding) : base(selectedBuilding)
+		public SquadUpgradeScreen(SmartEntity selectedBuilding) : base(selectedBuilding)
 		{
 			this.useUpgradeGroup = true;
 		}

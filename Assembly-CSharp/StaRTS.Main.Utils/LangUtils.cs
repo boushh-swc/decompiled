@@ -11,6 +11,7 @@ using StaRTS.Utils;
 using StaRTS.Utils.Core;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 using UnityEngine;
 
@@ -25,6 +26,8 @@ namespace StaRTS.Main.Utils
 		public const string HN_LANG_FILE = "strings-hn_{0}.json.joe";
 
 		private const string LOCAL_STRINGS_FILE = "strings_local_{0}.local.json";
+
+		public static readonly string DESYNC_BATCH_MAX_RETRY = "DESYNC_BATCH_MAX_RETRY";
 
 		public const string CONTEXT_PREFIX = "context_";
 
@@ -152,7 +155,11 @@ namespace StaRTS.Main.Utils
 
 		private const string EQUIPMENT_QUALITY_UNIT = "EQUIPMENT_QUALITY_UNIT";
 
-		public static readonly string DESYNC_BATCH_MAX_RETRY = "DESYNC_BATCH_MAX_RETRY";
+		[CompilerGenerated]
+		private static AssetSuccessDelegate <>f__mg$cache0;
+
+		[CompilerGenerated]
+		private static AssetFailureDelegate <>f__mg$cache1;
 
 		public static void CreateLangService()
 		{
@@ -211,7 +218,18 @@ namespace StaRTS.Main.Utils
 				Service.AssetManager.RegisterPreloadableAsset(assetName);
 				i++;
 			}
-			lang.LoadAssets(list, new AssetSuccessDelegate(LangUtils.OnLangComplete), new AssetFailureDelegate(LangUtils.OnLangFailure), onComplete);
+			Lang arg_B4_0 = lang;
+			List<string> arg_B4_1 = list;
+			if (LangUtils.<>f__mg$cache0 == null)
+			{
+				LangUtils.<>f__mg$cache0 = new AssetSuccessDelegate(LangUtils.OnLangComplete);
+			}
+			AssetSuccessDelegate arg_B4_2 = LangUtils.<>f__mg$cache0;
+			if (LangUtils.<>f__mg$cache1 == null)
+			{
+				LangUtils.<>f__mg$cache1 = new AssetFailureDelegate(LangUtils.OnLangFailure);
+			}
+			arg_B4_0.LoadAssets(arg_B4_1, arg_B4_2, LangUtils.<>f__mg$cache1, onComplete);
 		}
 
 		private static void OnLangComplete(object asset, object cookie)
@@ -421,7 +439,7 @@ namespace StaRTS.Main.Utils
 			case BuildingType.Starport:
 			case BuildingType.Wall:
 			case BuildingType.Turret:
-				IL_44:
+				IL_42:
 				switch (buildingType)
 				{
 				case BuildingType.Cantina:
@@ -439,7 +457,7 @@ namespace StaRTS.Main.Utils
 			case BuildingType.DefenseResearch:
 				return lang.Get("context_Upgrade_Defense", new object[0]);
 			}
-			goto IL_44;
+			goto IL_42;
 		}
 
 		public static string GetTroopDisplayName(TroopTypeVO troopInfo)
@@ -532,17 +550,23 @@ namespace StaRTS.Main.Utils
 		public static string GetSquadRoleDisplayName(SquadRole role)
 		{
 			string result = null;
-			switch (role)
+			if (role != SquadRole.Member)
 			{
-			case SquadRole.Member:
+				if (role != SquadRole.Officer)
+				{
+					if (role == SquadRole.Owner)
+					{
+						result = Service.Lang.Get("SQUAD_OWNER", new object[0]);
+					}
+				}
+				else
+				{
+					result = Service.Lang.Get("SQUAD_OFFICER", new object[0]);
+				}
+			}
+			else
+			{
 				result = Service.Lang.Get("SQUAD_MEMBER", new object[0]);
-				break;
-			case SquadRole.Officer:
-				result = Service.Lang.Get("SQUAD_OFFICER", new object[0]);
-				break;
-			case SquadRole.Owner:
-				result = Service.Lang.Get("SQUAD_OWNER", new object[0]);
-				break;
 			}
 			return result;
 		}
@@ -667,17 +691,19 @@ namespace StaRTS.Main.Utils
 			});
 			int num = Convert.ToInt32(array[array.Length - 1]);
 			Lang lang = Service.Lang;
-			switch (num)
+			if (num == 1)
 			{
-			case 1:
 				return lang.Get("MISSION_DIFFICULTY_EASY", new object[0]);
-			case 2:
+			}
+			if (num == 2)
+			{
 				return lang.Get("MISSION_DIFFICULTY_MEDIUM", new object[0]);
-			case 3:
-				return lang.Get("MISSION_DIFFICULTY_HARD", new object[0]);
-			default:
+			}
+			if (num != 3)
+			{
 				return null;
 			}
+			return lang.Get("MISSION_DIFFICULTY_HARD", new object[0]);
 		}
 
 		public static string GetFactionName(FactionType faction)

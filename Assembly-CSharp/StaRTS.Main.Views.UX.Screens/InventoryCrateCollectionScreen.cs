@@ -341,15 +341,6 @@ namespace StaRTS.Main.Views.UX.Screens
 			base.SetTrigger("ShowButton");
 		}
 
-		private void EnsurePrimaryButtonIsVisible()
-		{
-			if (!this.animator.GetCurrentAnimatorStateInfo(0).IsName("Show Button"))
-			{
-				base.ResetTrigger("ShowButton");
-				base.SetTrigger("ShowButton");
-			}
-		}
-
 		private void OnFinalSkipClicked(UXButton btn)
 		{
 			if (!this.rewardCycleReady)
@@ -545,7 +536,6 @@ namespace StaRTS.Main.Views.UX.Screens
 			this.btnFullScreen.OnClicked = new UXButtonClickedDelegate(this.OnFinalSkipClicked);
 			base.InitDefaultBackDelegate();
 			this.lblNextReward.Text = this.lang.Get("BUTTON_DONE", new object[0]);
-			this.EnsurePrimaryButtonIsVisible();
 		}
 
 		public override void Close(object modalResult)

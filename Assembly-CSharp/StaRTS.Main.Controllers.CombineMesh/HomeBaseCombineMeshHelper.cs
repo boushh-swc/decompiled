@@ -1,4 +1,3 @@
-using Net.RichardLord.Ash.Core;
 using StaRTS.Main.Controllers.GameStates;
 using StaRTS.Main.Models;
 using StaRTS.Main.Models.Entities;
@@ -38,7 +37,7 @@ namespace StaRTS.Main.Controllers.CombineMesh
 		{
 			if (this.IsHomeCombiningEligible())
 			{
-				Entity selectedBuilding = null;
+				SmartEntity selectedBuilding = null;
 				Vector3 zero = Vector3.zero;
 				BuildingMover buildingMoverForCombineMeshManager = Service.BuildingController.GetBuildingMoverForCombineMeshManager();
 				buildingMoverForCombineMeshManager.DeselectBuildingBeforeCombiningMesh(out selectedBuilding, out zero);
@@ -52,10 +51,10 @@ namespace StaRTS.Main.Controllers.CombineMesh
 			if (this.IsHomeCombiningEligible())
 			{
 				BuildingController buildingController = Service.BuildingController;
-				Entity selectedBuilding = buildingController.SelectedBuilding;
+				SmartEntity selectedBuilding = buildingController.SelectedBuilding;
 				if (selectedBuilding != null)
 				{
-					BuildingType buildingTypeFromBuilding = base.GetBuildingTypeFromBuilding((SmartEntity)selectedBuilding);
+					BuildingType buildingTypeFromBuilding = base.GetBuildingTypeFromBuilding(selectedBuilding);
 					BuildingMover buildingMoverForCombineMeshManager = Service.BuildingController.GetBuildingMoverForCombineMeshManager();
 					Vector3 zero = Vector3.zero;
 					if (buildingTypeFromBuilding == buildingType)
@@ -94,7 +93,7 @@ namespace StaRTS.Main.Controllers.CombineMesh
 			return result;
 		}
 
-		protected override List<Entity> GetBuildingEntityListByType(BuildingType buildingType)
+		protected override List<SmartEntity> GetBuildingEntityListByType(BuildingType buildingType)
 		{
 			return Service.BuildingLookupController.GetBuildingListByType(buildingType);
 		}

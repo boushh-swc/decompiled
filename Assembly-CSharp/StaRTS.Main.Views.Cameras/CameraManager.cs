@@ -131,7 +131,7 @@ namespace StaRTS.Main.Views.Cameras
 			{
 				int depth = 16;
 				renderTexture = new RenderTexture(width, height, depth);
-				renderTexture.generateMips = false;
+				renderTexture.autoGenerateMips = false;
 				renderTexture.filterMode = FilterMode.Point;
 				RenderTextureItem renderTextureItem3 = new RenderTextureItem(renderTexture, width, height);
 				renderTextureItem3.InUse = true;

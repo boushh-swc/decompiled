@@ -128,7 +128,7 @@ namespace StaRTS.Main.Controllers
 		private void OnSpawnTimer(uint id, object cookie)
 		{
 			TroopTypeVO troopVO = this.spawnQueue[0];
-			TeamType teamType = (TeamType)((int)cookie);
+			TeamType teamType = (TeamType)cookie;
 			Entity entity = Service.TroopController.DeployTroopWithOffset(troopVO, ref this.currentOffsetIndex, this.spawnPosition, false, teamType);
 			if (entity != null)
 			{

@@ -1,6 +1,7 @@
 using Net.RichardLord.Ash.Internal;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Net.RichardLord.Ash.Core
 {
@@ -24,9 +25,57 @@ namespace Net.RichardLord.Ash.Core
 
 		private List<INodeList> nodeLists;
 
-		public event Action UpdateSimComplete;
+		public event Action UpdateSimComplete
+		{
+			add
+			{
+				Action action = this.UpdateSimComplete;
+				Action action2;
+				do
+				{
+					action2 = action;
+					action = Interlocked.CompareExchange<Action>(ref this.UpdateSimComplete, (Action)Delegate.Combine(action2, value), action);
+				}
+				while (action != action2);
+			}
+			remove
+			{
+				Action action = this.UpdateSimComplete;
+				Action action2;
+				do
+				{
+					action2 = action;
+					action = Interlocked.CompareExchange<Action>(ref this.UpdateSimComplete, (Action)Delegate.Remove(action2, value), action);
+				}
+				while (action != action2);
+			}
+		}
 
-		public event Action UpdateViewComplete;
+		public event Action UpdateViewComplete
+		{
+			add
+			{
+				Action action = this.UpdateViewComplete;
+				Action action2;
+				do
+				{
+					action2 = action;
+					action = Interlocked.CompareExchange<Action>(ref this.UpdateViewComplete, (Action)Delegate.Combine(action2, value), action);
+				}
+				while (action != action2);
+			}
+			remove
+			{
+				Action action = this.UpdateViewComplete;
+				Action action2;
+				do
+				{
+					action2 = action;
+					action = Interlocked.CompareExchange<Action>(ref this.UpdateViewComplete, (Action)Delegate.Remove(action2, value), action);
+				}
+				while (action != action2);
+			}
+		}
 
 		public bool Updating
 		{

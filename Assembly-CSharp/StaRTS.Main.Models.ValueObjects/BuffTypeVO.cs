@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace StaRTS.Main.Models.ValueObjects
 {
-	public class BuffTypeVO : IAssetVO, IValueObject
+	public class BuffTypeVO : IValueObject, IAssetVO
 	{
 		private const string BUFF_DEFLECT_UID = "buffDeflect";
 
@@ -541,17 +541,24 @@ namespace StaRTS.Main.Models.ValueObjects
 				int num3 = commaSeparatedStrings.Length;
 				while (j < num3)
 				{
-					switch (StringUtils.ParseEnum<BuffApplyTo>(commaSeparatedStrings[j]))
+					BuffApplyTo buffApplyTo = StringUtils.ParseEnum<BuffApplyTo>(commaSeparatedStrings[j]);
+					if (buffApplyTo != BuffApplyTo.Self)
 					{
-					case BuffApplyTo.Self:
+						if (buffApplyTo != BuffApplyTo.Allies)
+						{
+							if (buffApplyTo == BuffApplyTo.Enemies)
+							{
+								this.ApplyToEnemies = true;
+							}
+						}
+						else
+						{
+							this.ApplyToAllies = true;
+						}
+					}
+					else
+					{
 						this.ApplyToSelf = true;
-						break;
-					case BuffApplyTo.Allies:
-						this.ApplyToAllies = true;
-						break;
-					case BuffApplyTo.Enemies:
-						this.ApplyToEnemies = true;
-						break;
 					}
 					j++;
 				}

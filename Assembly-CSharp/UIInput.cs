@@ -62,6 +62,8 @@ public class UIInput : MonoBehaviour
 	[NonSerialized]
 	public bool selectAllTextOnFocus = true;
 
+	public bool submitOnUnselect;
+
 	public UIInput.Validation validation;
 
 	public int characterLimit;
@@ -99,7 +101,7 @@ public class UIInput : MonoBehaviour
 	protected bool mDoInit = true;
 
 	[NonSerialized]
-	protected UIWidget.Pivot mPivot;
+	protected NGUIText.Alignment mAlignment = NGUIText.Alignment.Left;
 
 	[NonSerialized]
 	protected bool mLoadSavedValue = true;
@@ -143,12 +145,21 @@ public class UIInput : MonoBehaviour
 	protected int mSelectTime = -1;
 
 	[NonSerialized]
+	protected bool mStarted;
+
+	[NonSerialized]
 	private UICamera mCam;
 
 	[NonSerialized]
 	private bool mEllipsis;
 
 	private static int mIgnoreKey;
+
+	[NonSerialized]
+	public Action onUpArrow;
+
+	[NonSerialized]
+	public Action onDownArrow;
 
 	public string defaultText
 	{
@@ -168,6 +179,26 @@ public class UIInput : MonoBehaviour
 			}
 			this.mDefaultText = value;
 			this.UpdateLabel();
+		}
+	}
+
+	public Color defaultColor
+	{
+		get
+		{
+			if (this.mDoInit)
+			{
+				this.Init();
+			}
+			return this.mDefaultColor;
+		}
+		set
+		{
+			this.mDefaultColor = value;
+			if (!this.isSelected)
+			{
+				this.label.color = value;
+			}
 		}
 	}
 
@@ -204,45 +235,7 @@ public class UIInput : MonoBehaviour
 		}
 		set
 		{
-			if (this.mDoInit)
-			{
-				this.Init();
-			}
-			UIInput.mDrawStart = 0;
-			if (Application.platform == RuntimePlatform.BlackBerryPlayer)
-			{
-				value = value.Replace("\\b", "\b");
-			}
-			value = this.Validate(value);
-			if (this.isSelected && UIInput.mKeyboard != null && this.mCached != value)
-			{
-				UIInput.mKeyboard.text = value;
-				this.mCached = value;
-			}
-			if (this.mValue != value)
-			{
-				this.mValue = value;
-				this.mLoadSavedValue = false;
-				if (this.isSelected)
-				{
-					if (string.IsNullOrEmpty(value))
-					{
-						this.mSelectionStart = 0;
-						this.mSelectionEnd = 0;
-					}
-					else
-					{
-						this.mSelectionStart = value.Length;
-						this.mSelectionEnd = this.mSelectionStart;
-					}
-				}
-				else
-				{
-					this.SaveToPlayerPrefs(value);
-				}
-				this.UpdateLabel();
-				this.ExecuteOnChange();
-			}
+			this.Set(value, true);
 		}
 	}
 
@@ -361,6 +354,52 @@ public class UIInput : MonoBehaviour
 		}
 	}
 
+	public void Set(string value, bool notify = true)
+	{
+		if (this.mDoInit)
+		{
+			this.Init();
+		}
+		if (value == this.value)
+		{
+			return;
+		}
+		UIInput.mDrawStart = 0;
+		value = this.Validate(value);
+		if (this.isSelected && UIInput.mKeyboard != null && this.mCached != value)
+		{
+			UIInput.mKeyboard.text = value;
+			this.mCached = value;
+		}
+		if (this.mValue != value)
+		{
+			this.mValue = value;
+			this.mLoadSavedValue = false;
+			if (this.isSelected)
+			{
+				if (string.IsNullOrEmpty(value))
+				{
+					this.mSelectionStart = 0;
+					this.mSelectionEnd = 0;
+				}
+				else
+				{
+					this.mSelectionStart = value.Length;
+					this.mSelectionEnd = this.mSelectionStart;
+				}
+			}
+			else if (this.mStarted)
+			{
+				this.SaveToPlayerPrefs(value);
+			}
+			this.UpdateLabel();
+			if (notify)
+			{
+				this.ExecuteOnChange();
+			}
+		}
+	}
+
 	public string Validate(string val)
 	{
 		if (string.IsNullOrEmpty(val))
@@ -391,8 +430,12 @@ public class UIInput : MonoBehaviour
 		return stringBuilder.ToString();
 	}
 
-	private void Start()
+	public void Start()
 	{
+		if (this.mStarted)
+		{
+			return;
+		}
 		if (this.selectOnTab != null)
 		{
 			UIKeyNavigation uIKeyNavigation = base.GetComponent<UIKeyNavigation>();
@@ -402,7 +445,7 @@ public class UIInput : MonoBehaviour
 				uIKeyNavigation.onDown = this.selectOnTab;
 			}
 			this.selectOnTab = null;
-			NGUITools.SetDirty(this);
+			NGUITools.SetDirty(this, "last change");
 		}
 		if (this.mLoadSavedValue && !string.IsNullOrEmpty(this.savedAs))
 		{
@@ -412,6 +455,7 @@ public class UIInput : MonoBehaviour
 		{
 			this.value = this.mValue.Replace("\\n", "\n");
 		}
+		this.mStarted = true;
 	}
 
 	protected void Init()
@@ -421,14 +465,13 @@ public class UIInput : MonoBehaviour
 			this.mDoInit = false;
 			this.mDefaultText = this.label.text;
 			this.mDefaultColor = this.label.color;
-			this.label.supportEncoding = false;
 			this.mEllipsis = this.label.overflowEllipsis;
 			if (this.label.alignment == NGUIText.Alignment.Justified)
 			{
 				this.label.alignment = NGUIText.Alignment.Left;
 				Debug.LogWarning("Input fields using labels with justified alignment are not supported at this time", this);
 			}
-			this.mPivot = this.label.pivot;
+			this.mAlignment = this.label.alignment;
 			this.mPosition = this.label.cachedTransform.localPosition.x;
 			this.UpdateLabel();
 		}
@@ -453,6 +496,10 @@ public class UIInput : MonoBehaviour
 	{
 		if (isSelected)
 		{
+			if (this.label != null)
+			{
+				this.label.supportEncoding = false;
+			}
 			this.OnSelectEvent();
 		}
 		else
@@ -509,10 +556,14 @@ public class UIInput : MonoBehaviour
 				this.label.text = this.mValue;
 			}
 			Input.imeCompositionMode = IMECompositionMode.Auto;
-			this.RestoreLabelPivot();
+			this.label.alignment = this.mAlignment;
 		}
 		UIInput.selection = null;
 		this.UpdateLabel();
+		if (this.submitOnUnselect)
+		{
+			this.Submit();
+		}
 	}
 
 	protected virtual void Update()
@@ -541,7 +592,7 @@ public class UIInput : MonoBehaviour
 			this.mSelectionStart = ((!this.selectAllTextOnFocus) ? this.mSelectionEnd : 0);
 			this.label.color = this.activeTextColor;
 			RuntimePlatform platform = Application.platform;
-			if (platform == RuntimePlatform.IPhonePlayer || platform == RuntimePlatform.Android || platform == RuntimePlatform.WP8Player || platform == RuntimePlatform.BlackBerryPlayer || platform == RuntimePlatform.MetroPlayerARM || platform == RuntimePlatform.MetroPlayerX64 || platform == RuntimePlatform.MetroPlayerX86)
+			if (platform == RuntimePlatform.IPhonePlayer || platform == RuntimePlatform.Android || platform == RuntimePlatform.MetroPlayerARM || platform == RuntimePlatform.MetroPlayerX64 || platform == RuntimePlatform.MetroPlayerX86)
 			{
 				TouchScreenKeyboardType touchScreenKeyboardType;
 				string text;
@@ -637,7 +688,10 @@ public class UIInput : MonoBehaviour
 								{
 									if (c != '')
 									{
-										this.Insert(c.ToString());
+										if (c != '')
+										{
+											this.Insert(c.ToString());
+										}
 									}
 								}
 							}
@@ -668,9 +722,21 @@ public class UIInput : MonoBehaviour
 		}
 		if (this.mCam != null)
 		{
-			if (UICamera.GetKeyDown(this.mCam.submitKey0))
+			bool flag = false;
+			if (this.label.multiLine)
 			{
-				bool flag = this.onReturnKey == UIInput.OnReturnKey.NewLine || (this.onReturnKey == UIInput.OnReturnKey.Default && this.label.multiLine && !Input.GetKey(KeyCode.LeftControl) && !Input.GetKey(KeyCode.RightControl) && this.label.overflowMethod != UILabel.Overflow.ClampContent && this.validation == UIInput.Validation.None);
+				bool flag2 = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+				if (this.onReturnKey == UIInput.OnReturnKey.Submit)
+				{
+					flag = flag2;
+				}
+				else
+				{
+					flag = !flag2;
+				}
+			}
+			if (UICamera.GetKeyDown(this.mCam.submitKey0) || (this.mCam.submitKey0 == KeyCode.Return && UICamera.GetKeyDown(KeyCode.KeypadEnter)))
+			{
 				if (flag)
 				{
 					this.Insert("\n");
@@ -685,10 +751,9 @@ public class UIInput : MonoBehaviour
 					this.Submit();
 				}
 			}
-			if (UICamera.GetKeyDown(this.mCam.submitKey1))
+			if (UICamera.GetKeyDown(this.mCam.submitKey1) || (this.mCam.submitKey1 == KeyCode.Return && UICamera.GetKeyDown(KeyCode.KeypadEnter)))
 			{
-				bool flag2 = this.onReturnKey == UIInput.OnReturnKey.NewLine || (this.onReturnKey == UIInput.OnReturnKey.Default && this.label.multiLine && !Input.GetKey(KeyCode.LeftControl) && !Input.GetKey(KeyCode.RightControl) && this.label.overflowMethod != UILabel.Overflow.ClampContent && this.validation == UIInput.Validation.None);
-				if (flag2)
+				if (flag)
 				{
 					this.Insert("\n");
 				}
@@ -814,7 +879,12 @@ public class UIInput : MonoBehaviour
 
 	protected string GetLeftText()
 	{
-		int num = Mathf.Min(this.mSelectionStart, this.mSelectionEnd);
+		int num = Mathf.Min(new int[]
+		{
+			this.mSelectionStart,
+			this.mSelectionEnd,
+			this.mValue.Length
+		});
 		return (!string.IsNullOrEmpty(this.mValue) && num >= 0) ? this.mValue.Substring(0, num) : string.Empty;
 	}
 
@@ -917,7 +987,7 @@ public class UIInput : MonoBehaviour
 			if (flag)
 			{
 				text = ((!isSelected) ? this.mDefaultText : string.Empty);
-				this.RestoreLabelPivot();
+				this.label.alignment = this.mAlignment;
 			}
 			else
 			{
@@ -954,17 +1024,17 @@ public class UIInput : MonoBehaviour
 					if (num2 == 0)
 					{
 						UIInput.mDrawStart = 0;
-						this.RestoreLabelPivot();
+						this.label.alignment = this.mAlignment;
 					}
 					else if (num < UIInput.mDrawStart)
 					{
 						UIInput.mDrawStart = num;
-						this.SetPivotToLeft();
+						this.label.alignment = NGUIText.Alignment.Left;
 					}
 					else if (num2 < UIInput.mDrawStart)
 					{
 						UIInput.mDrawStart = num2;
-						this.SetPivotToLeft();
+						this.label.alignment = NGUIText.Alignment.Left;
 					}
 					else
 					{
@@ -972,7 +1042,7 @@ public class UIInput : MonoBehaviour
 						if (num2 > UIInput.mDrawStart)
 						{
 							UIInput.mDrawStart = num2;
-							this.SetPivotToRight();
+							this.label.alignment = NGUIText.Alignment.Right;
 						}
 					}
 					if (UIInput.mDrawStart != 0)
@@ -983,7 +1053,7 @@ public class UIInput : MonoBehaviour
 				else
 				{
 					UIInput.mDrawStart = 0;
-					this.RestoreLabelPivot();
+					this.label.alignment = this.mAlignment;
 				}
 			}
 			this.label.text = text;
@@ -1007,7 +1077,7 @@ public class UIInput : MonoBehaviour
 				{
 					if (this.mHighlight == null)
 					{
-						this.mHighlight = NGUITools.AddWidget<UITexture>(this.label.cachedGameObject, 2147483647);
+						this.mHighlight = this.label.cachedGameObject.AddWidget(2147483647);
 						this.mHighlight.name = "Input Highlight";
 						this.mHighlight.mainTexture = this.mBlankTex;
 						this.mHighlight.fillGeometry = false;
@@ -1024,7 +1094,7 @@ public class UIInput : MonoBehaviour
 				}
 				if (this.mCaret == null)
 				{
-					this.mCaret = NGUITools.AddWidget<UITexture>(this.label.cachedGameObject, 2147483647);
+					this.mCaret = this.label.cachedGameObject.AddWidget(2147483647);
 					this.mCaret.name = "Input Caret";
 					this.mCaret.mainTexture = this.mBlankTex;
 					this.mCaret.fillGeometry = false;
@@ -1058,28 +1128,6 @@ public class UIInput : MonoBehaviour
 			{
 				this.Cleanup();
 			}
-		}
-	}
-
-	protected void SetPivotToLeft()
-	{
-		Vector2 pivotOffset = NGUIMath.GetPivotOffset(this.mPivot);
-		pivotOffset.x = 0f;
-		this.label.pivot = NGUIMath.GetPivot(pivotOffset);
-	}
-
-	protected void SetPivotToRight()
-	{
-		Vector2 pivotOffset = NGUIMath.GetPivotOffset(this.mPivot);
-		pivotOffset.x = 1f;
-		this.label.pivot = NGUIMath.GetPivot(pivotOffset);
-	}
-
-	protected void RestoreLabelPivot()
-	{
-		if (this.label != null && this.label.pivot != this.mPivot)
-		{
-			this.label.pivot = this.mPivot;
 		}
 	}
 

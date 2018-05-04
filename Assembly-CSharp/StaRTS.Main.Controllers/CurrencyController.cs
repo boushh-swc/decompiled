@@ -20,11 +20,13 @@ using System;
 
 namespace StaRTS.Main.Controllers
 {
-	public class CurrencyController : ICurrencyController, IEventObserver
+	public class CurrencyController : IEventObserver, ICurrencyController
 	{
 		private const int MIN_FOR_COLLECTION = 1;
 
 		private const int INITIAL_CONTRABAND_SEED = 1;
+
+		private EntityController entityController;
 
 		public const string BUILD_MORE_CREDIT_STORAGE = "BUILD_MORE_CREDIT_STORAGE";
 
@@ -44,8 +46,6 @@ namespace StaRTS.Main.Controllers
 
 		public const string UPGRADE_CONTRABAND_STORAGE = "UPGRADE_CONTRABAND_STORAGE";
 
-		private EntityController entityController;
-
 		public CurrencyController()
 		{
 			Service.ICurrencyController = this;
@@ -57,7 +57,7 @@ namespace StaRTS.Main.Controllers
 			Service.EventManager.RegisterObserver(this, EventId.PlanetRelocateStarted, EventPriority.Default);
 		}
 
-		public bool TryCollectCurrencyOnSelection(Entity entity)
+		public bool TryCollectCurrencyOnSelection(SmartEntity entity)
 		{
 			if (!(Service.GameStateMachine.CurrentState is HomeState))
 			{
@@ -103,17 +103,23 @@ namespace StaRTS.Main.Controllers
 			int num = this.CollectCurrencyFromGenerator(buildingEntity, true);
 			string contextId = string.Empty;
 			CurrencyType currency = buildingComponent.BuildingType.Currency;
-			switch (currency)
+			if (currency != CurrencyType.Credits)
 			{
-			case CurrencyType.Credits:
+				if (currency != CurrencyType.Materials)
+				{
+					if (currency == CurrencyType.Contraband)
+					{
+						contextId = "Contraband";
+					}
+				}
+				else
+				{
+					contextId = "Materials";
+				}
+			}
+			else
+			{
 				contextId = "Credits";
-				break;
-			case CurrencyType.Materials:
-				contextId = "Materials";
-				break;
-			case CurrencyType.Contraband:
-				contextId = "Contraband";
-				break;
 			}
 			if (buildingTO.AccruedCurrency < 1)
 			{
@@ -168,24 +174,27 @@ namespace StaRTS.Main.Controllers
 			}
 			bool flag = num2 < num;
 			string instructions = string.Empty;
-			switch (currencyType)
+			if (currencyType != CurrencyType.Credits)
 			{
-			case CurrencyType.Credits:
-				if (flag)
+				if (currencyType != CurrencyType.Materials)
 				{
-					instructions = Service.Lang.Get("BUILD_MORE_CREDIT_STORAGE", new object[0]);
+					if (currencyType == CurrencyType.Contraband)
+					{
+						if (flag)
+						{
+							instructions = Service.Lang.Get("BUILD_MORE_CONTRABAND_STORAGE", new object[0]);
+						}
+						else if (num3 == num2)
+						{
+							instructions = Service.Lang.Get("FULL_CONTRABAND_STORAGE", new object[0]);
+						}
+						else
+						{
+							instructions = Service.Lang.Get("UPGRADE_CONTRABAND_STORAGE", new object[0]);
+						}
+					}
 				}
-				else if (num3 == num2)
-				{
-					instructions = Service.Lang.Get("FULL_CREDIT_STORAGE", new object[0]);
-				}
-				else
-				{
-					instructions = Service.Lang.Get("UPGRADE_CREDIT_STORAGE", new object[0]);
-				}
-				break;
-			case CurrencyType.Materials:
-				if (flag)
+				else if (flag)
 				{
 					instructions = Service.Lang.Get("BUILD_MORE_MATERIAL_STORAGE", new object[0]);
 				}
@@ -197,21 +206,18 @@ namespace StaRTS.Main.Controllers
 				{
 					instructions = Service.Lang.Get("UPGRADE_MATERIAL_STORAGE", new object[0]);
 				}
-				break;
-			case CurrencyType.Contraband:
-				if (flag)
-				{
-					instructions = Service.Lang.Get("BUILD_MORE_CONTRABAND_STORAGE", new object[0]);
-				}
-				else if (num3 == num2)
-				{
-					instructions = Service.Lang.Get("FULL_CONTRABAND_STORAGE", new object[0]);
-				}
-				else
-				{
-					instructions = Service.Lang.Get("UPGRADE_CONTRABAND_STORAGE", new object[0]);
-				}
-				break;
+			}
+			else if (flag)
+			{
+				instructions = Service.Lang.Get("BUILD_MORE_CREDIT_STORAGE", new object[0]);
+			}
+			else if (num3 == num2)
+			{
+				instructions = Service.Lang.Get("FULL_CREDIT_STORAGE", new object[0]);
+			}
+			else
+			{
+				instructions = Service.Lang.Get("UPGRADE_CREDIT_STORAGE", new object[0]);
 			}
 			Service.UXController.MiscElementsManager.ShowPlayerInstructions(instructions);
 		}
@@ -295,17 +301,24 @@ namespace StaRTS.Main.Controllers
 			if (this.GetTimePassed(buildingTO, out secondsPassed, true))
 			{
 				num = this.CalculateAccruedCurrency(buildingTO.CurrentStorage, buildingComponent.BuildingType, secondsPassed);
-				switch (buildingComponent.BuildingType.Currency)
+				CurrencyType currency = buildingComponent.BuildingType.Currency;
+				if (currency != CurrencyType.Credits)
 				{
-				case CurrencyType.Credits:
+					if (currency != CurrencyType.Materials)
+					{
+						if (currency == CurrencyType.Contraband)
+						{
+							num2 = inventory.ModifyContraband(num);
+						}
+					}
+					else
+					{
+						num2 = inventory.ModifyMaterials(num);
+					}
+				}
+				else
+				{
 					num2 = inventory.ModifyCredits(num);
-					break;
-				case CurrencyType.Materials:
-					num2 = inventory.ModifyMaterials(num);
-					break;
-				case CurrencyType.Contraband:
-					num2 = inventory.ModifyContraband(num);
-					break;
 				}
 			}
 			ServerAPI serverAPI = Service.ServerAPI;
@@ -327,17 +340,24 @@ namespace StaRTS.Main.Controllers
 			BuildingComponent buildingComponent = buildingEntity.Get<BuildingComponent>();
 			Inventory inventory = Service.CurrentPlayer.Inventory;
 			int num = 0;
-			switch (buildingComponent.BuildingType.Currency)
+			CurrencyType currency = buildingComponent.BuildingType.Currency;
+			if (currency != CurrencyType.Credits)
 			{
-			case CurrencyType.Credits:
+				if (currency != CurrencyType.Materials)
+				{
+					if (currency == CurrencyType.Contraband)
+					{
+						num = inventory.GetItemCapacity("contraband") - inventory.GetItemAmount("contraband");
+					}
+				}
+				else
+				{
+					num = inventory.GetItemCapacity("materials") - inventory.GetItemAmount("materials");
+				}
+			}
+			else
+			{
 				num = inventory.GetItemCapacity("credits") - inventory.GetItemAmount("credits");
-				break;
-			case CurrencyType.Materials:
-				num = inventory.GetItemCapacity("materials") - inventory.GetItemAmount("materials");
-				break;
-			case CurrencyType.Contraband:
-				num = inventory.GetItemCapacity("contraband") - inventory.GetItemAmount("contraband");
-				break;
 			}
 			return num > 0;
 		}
@@ -415,17 +435,24 @@ namespace StaRTS.Main.Controllers
 			if (flag)
 			{
 				string contextId = null;
-				switch (buildingType.Currency)
+				CurrencyType currency = buildingType.Currency;
+				if (currency != CurrencyType.Credits)
 				{
-				case CurrencyType.Credits:
+					if (currency != CurrencyType.Materials)
+					{
+						if (currency == CurrencyType.Contraband)
+						{
+							contextId = "Contraband";
+						}
+					}
+					else
+					{
+						contextId = "Materials";
+					}
+				}
+				else
+				{
 					contextId = "Credits";
-					break;
-				case CurrencyType.Materials:
-					contextId = "Materials";
-					break;
-				case CurrencyType.Contraband:
-					contextId = "Contraband";
-					break;
 				}
 				Service.UXController.HUD.ToggleContextButton(contextId, this.IsGeneratorCollectable(entity));
 			}

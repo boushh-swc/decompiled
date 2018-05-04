@@ -18,9 +18,9 @@ namespace StaRTS.Main.Controllers
 {
 	public class TroopController : AbstractDeployableController
 	{
-		private const int DROPSHIP_SEARCH_RADIUS = 2;
-
 		private BoardController boardController;
+
+		private const int DROPSHIP_SEARCH_RADIUS = 2;
 
 		public TroopController()
 		{

@@ -27,17 +27,17 @@ namespace StaRTS.Main.Controllers.CombineMesh
 			return this.BATTLE_SUPPORTED_BUILDING_TYPES;
 		}
 
-		protected override List<Entity> GetBuildingEntityListByType(BuildingType buildingType)
+		protected override List<SmartEntity> GetBuildingEntityListByType(BuildingType buildingType)
 		{
 			EntityController entityController = Service.EntityController;
-			List<Entity> list = new List<Entity>();
+			List<SmartEntity> list = new List<SmartEntity>();
 			NodeList<BuildingNode> nodeList = entityController.GetNodeList<BuildingNode>();
 			for (BuildingNode buildingNode = nodeList.Head; buildingNode != null; buildingNode = buildingNode.Next)
 			{
 				BuildingType type = buildingNode.BuildingComp.BuildingType.Type;
 				if (buildingType == type)
 				{
-					list.Add(buildingNode.Entity);
+					list.Add((SmartEntity)buildingNode.Entity);
 				}
 			}
 			return list;

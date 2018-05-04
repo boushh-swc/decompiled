@@ -1,4 +1,3 @@
-using Net.RichardLord.Ash.Core;
 using StaRTS.Assets;
 using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.Entities.Components;
@@ -43,7 +42,7 @@ namespace StaRTS.Main.Views.World
 
 		private bool ready;
 
-		private Entity pendingEntity;
+		private SmartEntity pendingEntity;
 
 		public RadiusView() : this("fx_radius_ring")
 		{
@@ -78,7 +77,7 @@ namespace StaRTS.Main.Views.World
 
 		protected void TryFindParticleSystem(ref ParticleSystem particlesToSet, string name)
 		{
-			Transform transform = this.radiusGameObject.transform.FindChild(name);
+			Transform transform = this.radiusGameObject.transform.Find(name);
 			if (transform != null)
 			{
 				particlesToSet = transform.gameObject.GetComponent<ParticleSystem>();
@@ -90,7 +89,7 @@ namespace StaRTS.Main.Views.World
 			}
 		}
 
-		public void ShowHighlight(Entity entity)
+		public void ShowHighlight(SmartEntity entity)
 		{
 			if (!this.ready)
 			{
@@ -102,7 +101,7 @@ namespace StaRTS.Main.Views.World
 				Service.Logger.Error("RadiusView.ShowHighlight: Entity = null");
 				return;
 			}
-			this.govc = entity.Get<GameObjectViewComponent>();
+			this.govc = entity.GameObjectViewComp;
 			if (this.govc == null)
 			{
 				return;
@@ -123,21 +122,20 @@ namespace StaRTS.Main.Views.World
 			}
 		}
 
-		protected virtual bool SetupParticlesOnShow(Entity entity)
+		protected virtual bool SetupParticlesOnShow(SmartEntity entity)
 		{
-			SmartEntity smartEntity = (SmartEntity)entity;
 			uint minRange;
-			if (smartEntity.ShooterComp != null)
+			if (entity.ShooterComp != null)
 			{
-				minRange = smartEntity.ShooterComp.ShooterVO.MaxAttackRange;
+				minRange = entity.ShooterComp.ShooterVO.MaxAttackRange;
 			}
 			else
 			{
-				if (smartEntity.TrapComp == null)
+				if (entity.TrapComp == null)
 				{
 					return false;
 				}
-				minRange = TrapUtils.GetTrapAttackRadius(smartEntity.TrapComp.Type);
+				minRange = TrapUtils.GetTrapAttackRadius(entity.TrapComp.Type);
 			}
 			this.SetupParticleSystemWithRange(this.whiteRingParticles, 5f, minRange);
 			return true;
@@ -154,7 +152,7 @@ namespace StaRTS.Main.Views.World
 					{
 						particles.gameObject.SetActive(true);
 					}
-					particles.startSize = num;
+					particles.main.startSize.constant = num;
 					particles.Simulate(prewarm);
 					particles.Play();
 				}

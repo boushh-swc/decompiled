@@ -4,7 +4,7 @@ using System;
 
 namespace StaRTS.Main.Models.ValueObjects
 {
-	public class TransportTypeVO : IAssetVO, IValueObject
+	public class TransportTypeVO : IValueObject, IAssetVO
 	{
 		public int SizeX;
 

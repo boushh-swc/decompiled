@@ -222,7 +222,7 @@ namespace StaRTS.Main.Controllers.Missions
 			case EventId.WorldOutTransitionComplete:
 			case EventId.WorldReset:
 			{
-				IL_1B:
+				IL_19:
 				if (id == EventId.StoryChainCompleted)
 				{
 					ActionChain chain = cookie as ActionChain;
@@ -239,7 +239,7 @@ namespace StaRTS.Main.Controllers.Missions
 				return EatResponse.NotEaten;
 			}
 			}
-			goto IL_1B;
+			goto IL_19;
 		}
 
 		private void CompleteChain(ActionChain chain)

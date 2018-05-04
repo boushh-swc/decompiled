@@ -1,5 +1,6 @@
 using Net.RichardLord.Ash.Core;
 using StaRTS.Main.Models;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.Entities.Components;
 using StaRTS.Main.Models.Entities.Nodes;
 using StaRTS.Main.Models.Static;
@@ -315,14 +316,14 @@ namespace StaRTS.Main.Controllers
 			return 0;
 		}
 
-		public List<Entity> GetBuildingListByType(BuildingType type)
+		public List<SmartEntity> GetBuildingListByType(BuildingType type)
 		{
-			List<Entity> list = new List<Entity>();
+			List<SmartEntity> list = new List<SmartEntity>();
 			this.FillBuildingListByType(list, type);
 			return list;
 		}
 
-		private void FillBuildingListByType(List<Entity> list, BuildingType type)
+		private void FillBuildingListByType(List<SmartEntity> list, BuildingType type)
 		{
 			switch (type)
 			{
@@ -331,149 +332,146 @@ namespace StaRTS.Main.Controllers
 				NodeList<BuildingNode> nodeList = this.entityController.GetNodeList<BuildingNode>();
 				for (BuildingNode buildingNode = nodeList.Head; buildingNode != null; buildingNode = buildingNode.Next)
 				{
-					if (type == BuildingType.Any || type == buildingNode.BuildingComp.BuildingType.Type)
-					{
-						list.Add(buildingNode.Entity);
-					}
+					list.Add((SmartEntity)buildingNode.Entity);
 				}
 				return;
 			}
 			case BuildingType.HQ:
 				for (HQNode hQNode = this.HQNodeList.Head; hQNode != null; hQNode = hQNode.Next)
 				{
-					list.Add(hQNode.Entity);
+					list.Add((SmartEntity)hQNode.Entity);
 				}
 				return;
 			case BuildingType.Barracks:
 				for (BarracksNode barracksNode = this.BarracksNodeList.Head; barracksNode != null; barracksNode = barracksNode.Next)
 				{
-					list.Add(barracksNode.Entity);
+					list.Add((SmartEntity)barracksNode.Entity);
 				}
 				return;
 			case BuildingType.Factory:
 				for (FactoryNode factoryNode = this.FactoryNodeList.Head; factoryNode != null; factoryNode = factoryNode.Next)
 				{
-					list.Add(factoryNode.Entity);
+					list.Add((SmartEntity)factoryNode.Entity);
 				}
 				return;
 			case BuildingType.FleetCommand:
 				for (FleetCommandNode fleetCommandNode = this.FleetCommandNodeList.Head; fleetCommandNode != null; fleetCommandNode = fleetCommandNode.Next)
 				{
-					list.Add(fleetCommandNode.Entity);
+					list.Add((SmartEntity)fleetCommandNode.Entity);
 				}
 				return;
 			case BuildingType.HeroMobilizer:
 				for (TacticalCommandNode tacticalCommandNode = this.TacticalCommandNodeList.Head; tacticalCommandNode != null; tacticalCommandNode = tacticalCommandNode.Next)
 				{
-					list.Add(tacticalCommandNode.Entity);
+					list.Add((SmartEntity)tacticalCommandNode.Entity);
 				}
 				return;
 			case BuildingType.ChampionPlatform:
 				for (ChampionPlatformNode championPlatformNode = this.ChampionPlatformNodeList.Head; championPlatformNode != null; championPlatformNode = championPlatformNode.Next)
 				{
-					list.Add(championPlatformNode.Entity);
+					list.Add((SmartEntity)championPlatformNode.Entity);
 				}
 				return;
 			case BuildingType.Housing:
 				for (HousingNode housingNode = this.HousingNodeList.Head; housingNode != null; housingNode = housingNode.Next)
 				{
-					list.Add(housingNode.Entity);
+					list.Add((SmartEntity)housingNode.Entity);
 				}
 				return;
 			case BuildingType.Squad:
 				for (SquadBuildingNode squadBuildingNode = this.SquadBuildingNodeList.Head; squadBuildingNode != null; squadBuildingNode = squadBuildingNode.Next)
 				{
-					list.Add(squadBuildingNode.Entity);
+					list.Add((SmartEntity)squadBuildingNode.Entity);
 				}
 				return;
 			case BuildingType.Starport:
 				for (StarportNode starportNode = this.StarportNodeList.Head; starportNode != null; starportNode = starportNode.Next)
 				{
-					list.Add(starportNode.Entity);
+					list.Add((SmartEntity)starportNode.Entity);
 				}
 				return;
 			case BuildingType.DroidHut:
 				for (DroidHutNode droidHutNode = this.DroidHutNodeList.Head; droidHutNode != null; droidHutNode = droidHutNode.Next)
 				{
-					list.Add(droidHutNode.Entity);
+					list.Add((SmartEntity)droidHutNode.Entity);
 				}
 				return;
 			case BuildingType.Wall:
 				for (WallNode wallNode = this.WallNodeList.Head; wallNode != null; wallNode = wallNode.Next)
 				{
-					list.Add(wallNode.Entity);
+					list.Add((SmartEntity)wallNode.Entity);
 				}
 				return;
 			case BuildingType.Turret:
 				for (TurretBuildingNode turretBuildingNode = this.TurretBuildingNodeList.Head; turretBuildingNode != null; turretBuildingNode = turretBuildingNode.Next)
 				{
-					list.Add(turretBuildingNode.Entity);
+					list.Add((SmartEntity)turretBuildingNode.Entity);
 				}
 				return;
 			case BuildingType.TroopResearch:
 				for (OffenseLabNode offenseLabNode = this.OffenseLabNodeList.Head; offenseLabNode != null; offenseLabNode = offenseLabNode.Next)
 				{
-					list.Add(offenseLabNode.Entity);
+					list.Add((SmartEntity)offenseLabNode.Entity);
 				}
 				return;
 			case BuildingType.DefenseResearch:
 				for (DefenseLabNode defenseLabNode = this.DefenseLabNodeList.Head; defenseLabNode != null; defenseLabNode = defenseLabNode.Next)
 				{
-					list.Add(defenseLabNode.Entity);
+					list.Add((SmartEntity)defenseLabNode.Entity);
 				}
 				return;
 			case BuildingType.Resource:
 				for (GeneratorNode generatorNode = this.GeneratorNodeList.Head; generatorNode != null; generatorNode = generatorNode.Next)
 				{
-					list.Add(generatorNode.Entity);
+					list.Add((SmartEntity)generatorNode.Entity);
 				}
 				return;
 			case BuildingType.Storage:
 				for (StorageNode storageNode = this.StorageNodeList.Head; storageNode != null; storageNode = storageNode.Next)
 				{
-					list.Add(storageNode.Entity);
+					list.Add((SmartEntity)storageNode.Entity);
 				}
 				return;
 			case BuildingType.ShieldGenerator:
 				for (ShieldGeneratorNode shieldGeneratorNode = this.ShieldGeneratorNodeList.Head; shieldGeneratorNode != null; shieldGeneratorNode = shieldGeneratorNode.Next)
 				{
-					list.Add(shieldGeneratorNode.Entity);
+					list.Add((SmartEntity)shieldGeneratorNode.Entity);
 				}
 				return;
 			case BuildingType.Clearable:
 				for (ClearableNode clearableNode = this.ClearableNodeList.Head; clearableNode != null; clearableNode = clearableNode.Next)
 				{
-					list.Add(clearableNode.Entity);
+					list.Add((SmartEntity)clearableNode.Entity);
 				}
 				return;
 			case BuildingType.Trap:
 				for (TrapNode trapNode = this.TrapNodeList.Head; trapNode != null; trapNode = trapNode.Next)
 				{
-					list.Add(trapNode.Entity);
+					list.Add((SmartEntity)trapNode.Entity);
 				}
 				return;
 			case BuildingType.Cantina:
 				for (CantinaNode cantinaNode = this.CantinaNodeList.Head; cantinaNode != null; cantinaNode = cantinaNode.Next)
 				{
-					list.Add(cantinaNode.Entity);
+					list.Add((SmartEntity)cantinaNode.Entity);
 				}
 				return;
 			case BuildingType.NavigationCenter:
 				for (NavigationCenterNode navigationCenterNode = this.NavigationCenterNodeList.Head; navigationCenterNode != null; navigationCenterNode = navigationCenterNode.Next)
 				{
-					list.Add(navigationCenterNode.Entity);
+					list.Add((SmartEntity)navigationCenterNode.Entity);
 				}
 				return;
 			case BuildingType.ScoutTower:
 				for (ScoutTowerNode scoutTowerNode = this.ScoutTowerNodeList.Head; scoutTowerNode != null; scoutTowerNode = scoutTowerNode.Next)
 				{
-					list.Add(scoutTowerNode.Entity);
+					list.Add((SmartEntity)scoutTowerNode.Entity);
 				}
 				return;
 			case BuildingType.Armory:
 				for (ArmoryNode armoryNode = this.ArmoryNodeList.Head; armoryNode != null; armoryNode = armoryNode.Next)
 				{
-					list.Add(armoryNode.Entity);
+					list.Add((SmartEntity)armoryNode.Entity);
 				}
 				return;
 			}
@@ -509,7 +507,7 @@ namespace StaRTS.Main.Controllers
 			int num = 0;
 			for (HQNode hQNode = this.HQNodeList.Head; hQNode != null; hQNode = hQNode.Next)
 			{
-				int buildingEffectiveLevel = GameUtils.GetBuildingEffectiveLevel(hQNode.Entity);
+				int buildingEffectiveLevel = GameUtils.GetBuildingEffectiveLevel((SmartEntity)hQNode.Entity);
 				if (buildingEffectiveLevel > num)
 				{
 					num = buildingEffectiveLevel;
@@ -584,7 +582,7 @@ namespace StaRTS.Main.Controllers
 			case BuildingType.HQ:
 				for (HQNode hQNode = this.HQNodeList.Head; hQNode != null; hQNode = hQNode.Next)
 				{
-					if (GameUtils.GetBuildingEffectiveLevel(hQNode.BuildingComp.Entity) >= lvl)
+					if (GameUtils.GetBuildingEffectiveLevel((SmartEntity)hQNode.BuildingComp.Entity) >= lvl)
 					{
 						return true;
 					}
@@ -593,7 +591,7 @@ namespace StaRTS.Main.Controllers
 			case BuildingType.Barracks:
 				for (BarracksNode barracksNode = this.BarracksNodeList.Head; barracksNode != null; barracksNode = barracksNode.Next)
 				{
-					if (GameUtils.GetBuildingEffectiveLevel(barracksNode.BuildingComp.Entity) >= lvl)
+					if (GameUtils.GetBuildingEffectiveLevel((SmartEntity)barracksNode.BuildingComp.Entity) >= lvl)
 					{
 						return true;
 					}
@@ -602,7 +600,7 @@ namespace StaRTS.Main.Controllers
 			case BuildingType.Factory:
 				for (FactoryNode factoryNode = this.FactoryNodeList.Head; factoryNode != null; factoryNode = factoryNode.Next)
 				{
-					if (GameUtils.GetBuildingEffectiveLevel(factoryNode.BuildingComp.Entity) >= lvl)
+					if (GameUtils.GetBuildingEffectiveLevel((SmartEntity)factoryNode.BuildingComp.Entity) >= lvl)
 					{
 						return true;
 					}
@@ -611,7 +609,7 @@ namespace StaRTS.Main.Controllers
 			case BuildingType.FleetCommand:
 				for (FleetCommandNode fleetCommandNode = this.FleetCommandNodeList.Head; fleetCommandNode != null; fleetCommandNode = fleetCommandNode.Next)
 				{
-					if (GameUtils.GetBuildingEffectiveLevel(fleetCommandNode.BuildingComp.Entity) >= lvl)
+					if (GameUtils.GetBuildingEffectiveLevel((SmartEntity)fleetCommandNode.BuildingComp.Entity) >= lvl)
 					{
 						return true;
 					}
@@ -620,7 +618,7 @@ namespace StaRTS.Main.Controllers
 			case BuildingType.HeroMobilizer:
 				for (TacticalCommandNode tacticalCommandNode = this.TacticalCommandNodeList.Head; tacticalCommandNode != null; tacticalCommandNode = tacticalCommandNode.Next)
 				{
-					if (GameUtils.GetBuildingEffectiveLevel(tacticalCommandNode.BuildingComp.Entity) >= lvl)
+					if (GameUtils.GetBuildingEffectiveLevel((SmartEntity)tacticalCommandNode.BuildingComp.Entity) >= lvl)
 					{
 						return true;
 					}
@@ -629,7 +627,7 @@ namespace StaRTS.Main.Controllers
 			case BuildingType.ChampionPlatform:
 				for (ChampionPlatformNode championPlatformNode = this.ChampionPlatformNodeList.Head; championPlatformNode != null; championPlatformNode = championPlatformNode.Next)
 				{
-					if (GameUtils.GetBuildingEffectiveLevel(championPlatformNode.BuildingComp.Entity) >= lvl)
+					if (GameUtils.GetBuildingEffectiveLevel((SmartEntity)championPlatformNode.BuildingComp.Entity) >= lvl)
 					{
 						return true;
 					}
@@ -638,7 +636,7 @@ namespace StaRTS.Main.Controllers
 			case BuildingType.Housing:
 				for (HousingNode housingNode = this.HousingNodeList.Head; housingNode != null; housingNode = housingNode.Next)
 				{
-					if (GameUtils.GetBuildingEffectiveLevel(housingNode.BuildingComp.Entity) >= lvl)
+					if (GameUtils.GetBuildingEffectiveLevel((SmartEntity)housingNode.BuildingComp.Entity) >= lvl)
 					{
 						return true;
 					}
@@ -647,7 +645,7 @@ namespace StaRTS.Main.Controllers
 			case BuildingType.Squad:
 				for (SquadBuildingNode squadBuildingNode = this.SquadBuildingNodeList.Head; squadBuildingNode != null; squadBuildingNode = squadBuildingNode.Next)
 				{
-					if (GameUtils.GetBuildingEffectiveLevel(squadBuildingNode.BuildingComp.Entity) >= lvl)
+					if (GameUtils.GetBuildingEffectiveLevel((SmartEntity)squadBuildingNode.BuildingComp.Entity) >= lvl)
 					{
 						return true;
 					}
@@ -656,7 +654,7 @@ namespace StaRTS.Main.Controllers
 			case BuildingType.Starport:
 				for (StarportNode starportNode = this.StarportNodeList.Head; starportNode != null; starportNode = starportNode.Next)
 				{
-					if (GameUtils.GetBuildingEffectiveLevel(starportNode.BuildingComp.Entity) >= lvl)
+					if (GameUtils.GetBuildingEffectiveLevel((SmartEntity)starportNode.BuildingComp.Entity) >= lvl)
 					{
 						return true;
 					}
@@ -665,7 +663,7 @@ namespace StaRTS.Main.Controllers
 			case BuildingType.DroidHut:
 				for (DroidHutNode droidHutNode = this.DroidHutNodeList.Head; droidHutNode != null; droidHutNode = droidHutNode.Next)
 				{
-					if (GameUtils.GetBuildingEffectiveLevel(droidHutNode.BuildingComp.Entity) >= lvl)
+					if (GameUtils.GetBuildingEffectiveLevel((SmartEntity)droidHutNode.BuildingComp.Entity) >= lvl)
 					{
 						return true;
 					}
@@ -674,7 +672,7 @@ namespace StaRTS.Main.Controllers
 			case BuildingType.Wall:
 				for (WallNode wallNode = this.WallNodeList.Head; wallNode != null; wallNode = wallNode.Next)
 				{
-					if (GameUtils.GetBuildingEffectiveLevel(wallNode.BuildingComp.Entity) >= lvl)
+					if (GameUtils.GetBuildingEffectiveLevel((SmartEntity)wallNode.BuildingComp.Entity) >= lvl)
 					{
 						return true;
 					}
@@ -683,7 +681,7 @@ namespace StaRTS.Main.Controllers
 			case BuildingType.Turret:
 				for (TurretBuildingNode turretBuildingNode = this.TurretBuildingNodeList.Head; turretBuildingNode != null; turretBuildingNode = turretBuildingNode.Next)
 				{
-					if (turretBuildingNode.BuildingComp.BuildingType.UpgradeGroup == reqBuilding.UpgradeGroup && GameUtils.GetBuildingEffectiveLevel(turretBuildingNode.BuildingComp.Entity) >= lvl)
+					if (turretBuildingNode.BuildingComp.BuildingType.UpgradeGroup == reqBuilding.UpgradeGroup && GameUtils.GetBuildingEffectiveLevel((SmartEntity)turretBuildingNode.BuildingComp.Entity) >= lvl)
 					{
 						return true;
 					}
@@ -692,7 +690,7 @@ namespace StaRTS.Main.Controllers
 			case BuildingType.TroopResearch:
 				for (OffenseLabNode offenseLabNode = this.OffenseLabNodeList.Head; offenseLabNode != null; offenseLabNode = offenseLabNode.Next)
 				{
-					if (GameUtils.GetBuildingEffectiveLevel(offenseLabNode.BuildingComp.Entity) >= lvl)
+					if (GameUtils.GetBuildingEffectiveLevel((SmartEntity)offenseLabNode.BuildingComp.Entity) >= lvl)
 					{
 						return true;
 					}
@@ -701,7 +699,7 @@ namespace StaRTS.Main.Controllers
 			case BuildingType.DefenseResearch:
 				for (DefenseLabNode defenseLabNode = this.DefenseLabNodeList.Head; defenseLabNode != null; defenseLabNode = defenseLabNode.Next)
 				{
-					if (GameUtils.GetBuildingEffectiveLevel(defenseLabNode.BuildingComp.Entity) >= lvl)
+					if (GameUtils.GetBuildingEffectiveLevel((SmartEntity)defenseLabNode.BuildingComp.Entity) >= lvl)
 					{
 						return true;
 					}
@@ -710,7 +708,7 @@ namespace StaRTS.Main.Controllers
 			case BuildingType.Resource:
 				for (GeneratorNode generatorNode = this.GeneratorNodeList.Head; generatorNode != null; generatorNode = generatorNode.Next)
 				{
-					if (generatorNode.BuildingComp.BuildingType.Currency == reqBuilding.Currency && GameUtils.GetBuildingEffectiveLevel(generatorNode.BuildingComp.Entity) >= lvl)
+					if (generatorNode.BuildingComp.BuildingType.Currency == reqBuilding.Currency && GameUtils.GetBuildingEffectiveLevel((SmartEntity)generatorNode.BuildingComp.Entity) >= lvl)
 					{
 						return true;
 					}
@@ -719,7 +717,7 @@ namespace StaRTS.Main.Controllers
 			case BuildingType.Storage:
 				for (StorageNode storageNode = this.StorageNodeList.Head; storageNode != null; storageNode = storageNode.Next)
 				{
-					if (storageNode.BuildingComp.BuildingType.Currency == reqBuilding.Currency && GameUtils.GetBuildingEffectiveLevel(storageNode.BuildingComp.Entity) >= lvl)
+					if (storageNode.BuildingComp.BuildingType.Currency == reqBuilding.Currency && GameUtils.GetBuildingEffectiveLevel((SmartEntity)storageNode.BuildingComp.Entity) >= lvl)
 					{
 						return true;
 					}
@@ -728,7 +726,7 @@ namespace StaRTS.Main.Controllers
 			case BuildingType.Trap:
 				for (TrapNode trapNode = this.TrapNodeList.Head; trapNode != null; trapNode = trapNode.Next)
 				{
-					if (GameUtils.GetBuildingEffectiveLevel(trapNode.BuildingComp.Entity) >= lvl)
+					if (GameUtils.GetBuildingEffectiveLevel((SmartEntity)trapNode.BuildingComp.Entity) >= lvl)
 					{
 						return true;
 					}
@@ -737,7 +735,7 @@ namespace StaRTS.Main.Controllers
 			case BuildingType.Cantina:
 				for (CantinaNode cantinaNode = this.CantinaNodeList.Head; cantinaNode != null; cantinaNode = cantinaNode.Next)
 				{
-					if (GameUtils.GetBuildingEffectiveLevel(cantinaNode.BuildingComp.Entity) >= lvl)
+					if (GameUtils.GetBuildingEffectiveLevel((SmartEntity)cantinaNode.BuildingComp.Entity) >= lvl)
 					{
 						return true;
 					}
@@ -746,7 +744,7 @@ namespace StaRTS.Main.Controllers
 			case BuildingType.NavigationCenter:
 				for (NavigationCenterNode navigationCenterNode = this.NavigationCenterNodeList.Head; navigationCenterNode != null; navigationCenterNode = navigationCenterNode.Next)
 				{
-					if (GameUtils.GetBuildingEffectiveLevel(navigationCenterNode.BuildingComp.Entity) >= lvl)
+					if (GameUtils.GetBuildingEffectiveLevel((SmartEntity)navigationCenterNode.BuildingComp.Entity) >= lvl)
 					{
 						return true;
 					}
@@ -755,7 +753,7 @@ namespace StaRTS.Main.Controllers
 			case BuildingType.ScoutTower:
 				for (ScoutTowerNode scoutTowerNode = this.ScoutTowerNodeList.Head; scoutTowerNode != null; scoutTowerNode = scoutTowerNode.Next)
 				{
-					if (GameUtils.GetBuildingEffectiveLevel(scoutTowerNode.BuildingComp.Entity) >= lvl)
+					if (GameUtils.GetBuildingEffectiveLevel((SmartEntity)scoutTowerNode.BuildingComp.Entity) >= lvl)
 					{
 						return true;
 					}
@@ -764,7 +762,7 @@ namespace StaRTS.Main.Controllers
 			case BuildingType.Armory:
 				for (ArmoryNode armoryNode = this.ArmoryNodeList.Head; armoryNode != null; armoryNode = armoryNode.Next)
 				{
-					if (GameUtils.GetBuildingEffectiveLevel(armoryNode.BuildingComp.Entity) >= lvl)
+					if (GameUtils.GetBuildingEffectiveLevel((SmartEntity)armoryNode.BuildingComp.Entity) >= lvl)
 					{
 						return true;
 					}
@@ -793,11 +791,8 @@ namespace StaRTS.Main.Controllers
 						if (dictionary.ContainsKey(minLevel))
 						{
 							Dictionary<BuildingTypeVO, int> dictionary2;
-							Dictionary<BuildingTypeVO, int> expr_C1 = dictionary2 = dictionary;
 							BuildingTypeVO key;
-							BuildingTypeVO expr_C6 = key = minLevel;
-							int num3 = dictionary2[key];
-							expr_C1[expr_C6] = num3 + num2;
+							(dictionary2 = dictionary)[key = minLevel] = dictionary2[key] + num2;
 						}
 						else
 						{
@@ -961,7 +956,8 @@ namespace StaRTS.Main.Controllers
 			List<BuildingComponent> list = new List<BuildingComponent>();
 			for (BarracksNode barracksNode = this.BarracksNodeList.Head; barracksNode != null; barracksNode = barracksNode.Next)
 			{
-				if (!ContractUtils.IsBuildingConstructing(barracksNode.Entity) && !ContractUtils.IsBuildingUpgrading(barracksNode.Entity))
+				SmartEntity selectedBuilding = (SmartEntity)barracksNode.Entity;
+				if (!ContractUtils.IsBuildingConstructing(selectedBuilding) && !ContractUtils.IsBuildingUpgrading(selectedBuilding))
 				{
 					list.Add(barracksNode.BuildingComp);
 				}
@@ -975,7 +971,8 @@ namespace StaRTS.Main.Controllers
 			List<BuildingComponent> list = new List<BuildingComponent>();
 			for (FactoryNode factoryNode = this.FactoryNodeList.Head; factoryNode != null; factoryNode = factoryNode.Next)
 			{
-				if (!ContractUtils.IsBuildingConstructing(factoryNode.Entity) && !ContractUtils.IsBuildingUpgrading(factoryNode.Entity))
+				SmartEntity selectedBuilding = (SmartEntity)factoryNode.Entity;
+				if (!ContractUtils.IsBuildingConstructing(selectedBuilding) && !ContractUtils.IsBuildingUpgrading(selectedBuilding))
 				{
 					list.Add(factoryNode.BuildingComp);
 				}
@@ -988,7 +985,8 @@ namespace StaRTS.Main.Controllers
 		{
 			for (ScoutTowerNode scoutTowerNode = this.ScoutTowerNodeList.Head; scoutTowerNode != null; scoutTowerNode = scoutTowerNode.Next)
 			{
-				if (!ContractUtils.IsBuildingConstructing(scoutTowerNode.Entity) && !ContractUtils.IsBuildingUpgrading(scoutTowerNode.Entity))
+				SmartEntity selectedBuilding = (SmartEntity)scoutTowerNode.Entity;
+				if (!ContractUtils.IsBuildingConstructing(selectedBuilding) && !ContractUtils.IsBuildingUpgrading(selectedBuilding))
 				{
 					return scoutTowerNode.Entity;
 				}
@@ -996,13 +994,14 @@ namespace StaRTS.Main.Controllers
 			return null;
 		}
 
-		public Entity GetAvailableTroopResearchLab()
+		public SmartEntity GetAvailableTroopResearchLab()
 		{
 			for (OffenseLabNode offenseLabNode = this.OffenseLabNodeList.Head; offenseLabNode != null; offenseLabNode = offenseLabNode.Next)
 			{
-				if (!ContractUtils.IsBuildingConstructing(offenseLabNode.Entity) && !ContractUtils.IsBuildingUpgrading(offenseLabNode.Entity))
+				SmartEntity selectedBuilding = (SmartEntity)offenseLabNode.Entity;
+				if (!ContractUtils.IsBuildingConstructing(selectedBuilding) && !ContractUtils.IsBuildingUpgrading(selectedBuilding))
 				{
-					return offenseLabNode.Entity;
+					return (SmartEntity)offenseLabNode.Entity;
 				}
 			}
 			return null;
@@ -1103,7 +1102,7 @@ namespace StaRTS.Main.Controllers
 			bool result = false;
 			for (NavigationCenterNode navigationCenterNode = this.NavigationCenterNodeList.Head; navigationCenterNode != null; navigationCenterNode = navigationCenterNode.Next)
 			{
-				result = !ContractUtils.IsBuildingConstructing(navigationCenterNode.BuildingComp.Entity);
+				result = !ContractUtils.IsBuildingConstructing((SmartEntity)navigationCenterNode.BuildingComp.Entity);
 			}
 			return result;
 		}

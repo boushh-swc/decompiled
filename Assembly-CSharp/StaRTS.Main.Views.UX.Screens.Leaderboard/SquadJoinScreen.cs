@@ -13,6 +13,7 @@ using StaRTS.Utils.Core;
 using StaRTS.Utils.State;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace StaRTS.Main.Views.UX.Screens.Leaderboard
 {
@@ -67,6 +68,9 @@ namespace StaRTS.Main.Views.UX.Screens.Leaderboard
 		private JewelControl invitesJewel;
 
 		private List<string> squadIdsRequiringDetails;
+
+		[CompilerGenerated]
+		private static UIInput.OnValidate <>f__mg$cache0;
 
 		public SquadJoinScreen()
 		{
@@ -200,7 +204,12 @@ namespace StaRTS.Main.Views.UX.Screens.Leaderboard
 			this.searchInput.Text = string.Empty;
 			this.searchInput.InitText(this.lang.Get("s_Search", new object[0]));
 			UIInput uIInputComponent = this.searchInput.GetUIInputComponent();
-			uIInputComponent.onValidate = new UIInput.OnValidate(LangUtils.OnValidateWSpaces);
+			UIInput arg_106_0 = uIInputComponent;
+			if (SquadJoinScreen.<>f__mg$cache0 == null)
+			{
+				SquadJoinScreen.<>f__mg$cache0 = new UIInput.OnValidate(LangUtils.OnValidateWSpaces);
+			}
+			arg_106_0.onValidate = SquadJoinScreen.<>f__mg$cache0;
 			EventDelegate item = new EventDelegate(new EventDelegate.Callback(this.OnChange));
 			uIInputComponent.onChange.Add(item);
 		}
@@ -262,18 +271,25 @@ namespace StaRTS.Main.Views.UX.Screens.Leaderboard
 			string playerId = button.Tag as string;
 			bool isFriend = false;
 			string tabName = null;
-			switch (this.curTab)
+			SocialTabs curTab = this.curTab;
+			if (curTab != SocialTabs.Friends)
 			{
-			case SocialTabs.Featured:
-				tabName = "JoinSquad_Featured";
-				break;
-			case SocialTabs.Friends:
+				if (curTab != SocialTabs.Search)
+				{
+					if (curTab == SocialTabs.Featured)
+					{
+						tabName = "JoinSquad_Featured";
+					}
+				}
+				else
+				{
+					tabName = "JoinSquad_Search";
+				}
+			}
+			else
+			{
 				isFriend = true;
 				tabName = "JoinSquad_Friends";
-				break;
-			case SocialTabs.Search:
-				tabName = "JoinSquad_Search";
-				break;
 			}
 			PlayerVisitTag cookie = new PlayerVisitTag(false, isFriend, tabName, playerId);
 			Service.EventManager.SendEvent(EventId.VisitPlayer, cookie);
@@ -433,20 +449,26 @@ namespace StaRTS.Main.Views.UX.Screens.Leaderboard
 
 		public override EatResponse OnEvent(EventId id, object cookie)
 		{
-			switch (id)
+			if (id != EventId.SquadJoinInviteReceived)
 			{
-			case EventId.SquadJoinInviteRemoved:
-				this.UpdateInvitesJewel();
-				break;
-			case EventId.SquadJoinInviteReceived:
+				if (id != EventId.SquadJoinInvitesReceived)
+				{
+					if (id == EventId.SquadJoinInviteRemoved)
+					{
+						this.UpdateInvitesJewel();
+					}
+				}
+				else
+				{
+					this.UpdateSquadDataForInvites((List<SquadInvite>)cookie);
+					this.UpdateInvitesJewel();
+					Service.EventManager.UnregisterObserver(this, EventId.SquadJoinInvitesReceived);
+				}
+			}
+			else
+			{
 				this.UpdateSquadDataForInvite((SquadInvite)cookie, Service.LeaderboardController);
 				this.UpdateInvitesJewel();
-				break;
-			case EventId.SquadJoinInvitesReceived:
-				this.UpdateSquadDataForInvites((List<SquadInvite>)cookie);
-				this.UpdateInvitesJewel();
-				Service.EventManager.UnregisterObserver(this, EventId.SquadJoinInvitesReceived);
-				break;
 			}
 			return base.OnEvent(id, cookie);
 		}

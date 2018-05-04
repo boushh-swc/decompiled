@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace StaRTS.Main.Models.ValueObjects
 {
-	public class CurrencyIconVO : IGeometryVO, IValueObject
+	public class CurrencyIconVO : IValueObject, IGeometryVO
 	{
 		public static int COLUMN_assetName
 		{

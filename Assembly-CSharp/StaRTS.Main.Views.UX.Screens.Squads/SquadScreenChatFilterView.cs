@@ -195,7 +195,7 @@ namespace StaRTS.Main.Views.UX.Screens.Squads
 			if (selected)
 			{
 				chatFilterOption.Selected = false;
-				this.HandleFilterSelection((ChatFilterType)((int)chatFilterOption.Tag), false);
+				this.HandleFilterSelection((ChatFilterType)chatFilterOption.Tag, false);
 			}
 			this.HideView();
 		}

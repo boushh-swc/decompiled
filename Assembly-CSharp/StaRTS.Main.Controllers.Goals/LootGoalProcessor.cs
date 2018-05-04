@@ -20,23 +20,29 @@ namespace StaRTS.Main.Controllers.Goals
 		public LootGoalProcessor(IValueObject vo, AbstractGoalManager parent) : base(vo, parent)
 		{
 			string goalItem = parent.GetGoalItem(vo);
-			switch (goalItem)
+			if (goalItem != null)
 			{
-			case "credits":
-				this.itemType = 0;
-				goto IL_C1;
-			case "materials":
-				this.itemType = 1;
-				goto IL_C1;
-			case "contraband":
-				this.itemType = 2;
-				goto IL_C1;
+				if (goalItem == "credits")
+				{
+					this.itemType = 0;
+					goto IL_92;
+				}
+				if (goalItem == "materials")
+				{
+					this.itemType = 1;
+					goto IL_92;
+				}
+				if (goalItem == "contraband")
+				{
+					this.itemType = 2;
+					goto IL_92;
+				}
 			}
 			Service.Logger.ErrorFormat("Loot type not found for goal {0}", new object[]
 			{
 				vo.Uid
 			});
-			IL_C1:
+			IL_92:
 			Service.EventManager.RegisterObserver(this, EventId.BattleEndProcessing);
 		}
 

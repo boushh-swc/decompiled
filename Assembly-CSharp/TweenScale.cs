@@ -71,7 +71,7 @@ public class TweenScale : UITweener
 
 	public static TweenScale Begin(GameObject go, float duration, Vector3 scale)
 	{
-		TweenScale tweenScale = UITweener.Begin<TweenScale>(go, duration);
+		TweenScale tweenScale = UITweener.Begin<TweenScale>(go, duration, 0f);
 		tweenScale.from = tweenScale.value;
 		tweenScale.to = scale;
 		if (duration <= 0f)

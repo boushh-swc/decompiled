@@ -4,7 +4,6 @@ using StaRTS.Main.Models.Static;
 using StaRTS.Main.Models.ValueObjects;
 using StaRTS.Utils.Core;
 using System;
-using System.Collections.Generic;
 
 namespace StaRTS.Main.Utils
 {
@@ -63,31 +62,13 @@ namespace StaRTS.Main.Utils
 			}
 			if (condition != null)
 			{
-				if (CrateUtils.<>f__switch$map12 == null)
+				if (condition == "ownsArmory")
 				{
-					CrateUtils.<>f__switch$map12 = new Dictionary<string, int>(2)
-					{
-						{
-							"ownsArmory",
-							0
-						},
-						{
-							"hasAvailableEquipment",
-							1
-						}
-					};
+					return ArmoryUtils.PlayerHasArmory();
 				}
-				int num;
-				if (CrateUtils.<>f__switch$map12.TryGetValue(condition, out num))
+				if (condition == "hasAvailableEquipment")
 				{
-					if (num == 0)
-					{
-						return ArmoryUtils.PlayerHasArmory();
-					}
-					if (num == 1)
-					{
-						return CrateUtils.PlayerHasEquipmentAvailable();
-					}
+					return CrateUtils.PlayerHasEquipmentAvailable();
 				}
 			}
 			if (condition.StartsWith("hq"))

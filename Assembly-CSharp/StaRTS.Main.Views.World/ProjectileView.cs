@@ -233,9 +233,9 @@ namespace StaRTS.Main.Views.World
 
 		private void PlayEmitter(ParticleSystem particle)
 		{
-			if (Mathf.Approximately(particle.emissionRate, 0f))
+			if (Mathf.Approximately(particle.emission.rateOverTime.constant, 0f))
 			{
-				particle.startLifetime = this.LifetimeSeconds;
+				particle.main.startLifetime.constant = this.LifetimeSeconds;
 			}
 			UnityUtils.PlayParticleEmitter(particle);
 		}

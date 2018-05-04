@@ -346,7 +346,7 @@ namespace StaRTS.Main.Controllers
 
 		private void ResetAttackFSM(SmartEntity troopEntity)
 		{
-			Logger logger = Service.Logger;
+			StaRTS.Utils.Diagnostics.Logger logger = Service.Logger;
 			StateComponent stateComp = troopEntity.StateComp;
 			if (stateComp == null)
 			{

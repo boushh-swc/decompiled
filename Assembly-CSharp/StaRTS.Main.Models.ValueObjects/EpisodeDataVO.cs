@@ -6,7 +6,7 @@ using System.Xml;
 
 namespace StaRTS.Main.Models.ValueObjects
 {
-	public class EpisodeDataVO : IEpisodeTimeVO, IValueObject
+	public class EpisodeDataVO : IValueObject, IEpisodeTimeVO
 	{
 		public static int COLUMN_uid
 		{

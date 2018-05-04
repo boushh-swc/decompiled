@@ -1,15 +1,20 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class UIGeometry
 {
-	public BetterList<Vector3> verts = new BetterList<Vector3>();
+	public delegate void OnCustomWrite(List<Vector3> v, List<Vector2> u, List<Color> c, List<Vector3> n, List<Vector4> t, List<Vector4> u2);
 
-	public BetterList<Vector2> uvs = new BetterList<Vector2>();
+	public List<Vector3> verts = new List<Vector3>();
 
-	public BetterList<Color32> cols = new BetterList<Color32>();
+	public List<Vector2> uvs = new List<Vector2>();
 
-	private BetterList<Vector3> mRtpVerts = new BetterList<Vector3>();
+	public List<Color> cols = new List<Color>();
+
+	public UIGeometry.OnCustomWrite onCustomWrite;
+
+	private List<Vector3> mRtpVerts = new List<Vector3>();
 
 	private Vector3 mRtpNormal;
 
@@ -19,7 +24,7 @@ public class UIGeometry
 	{
 		get
 		{
-			return this.verts.size > 0;
+			return this.verts.Count > 0;
 		}
 	}
 
@@ -27,7 +32,7 @@ public class UIGeometry
 	{
 		get
 		{
-			return this.mRtpVerts != null && this.mRtpVerts.size > 0 && this.mRtpVerts.size == this.verts.size;
+			return this.mRtpVerts != null && this.mRtpVerts.Count > 0 && this.mRtpVerts.Count == this.verts.Count;
 		}
 	}
 
@@ -41,12 +46,12 @@ public class UIGeometry
 
 	public void ApplyTransform(Matrix4x4 widgetToPanel, bool generateNormals = true)
 	{
-		if (this.verts.size > 0)
+		if (this.verts.Count > 0)
 		{
 			this.mRtpVerts.Clear();
 			int i = 0;
-			int size = this.verts.size;
-			while (i < size)
+			int count = this.verts.Count;
+			while (i < count)
 			{
 				this.mRtpVerts.Add(widgetToPanel.MultiplyPoint3x4(this.verts[i]));
 				i++;
@@ -64,29 +69,52 @@ public class UIGeometry
 		}
 	}
 
-	public void WriteToBuffers(BetterList<Vector3> v, BetterList<Vector2> u, BetterList<Color32> c, BetterList<Vector3> n, BetterList<Vector4> t)
+	public void WriteToBuffers(List<Vector3> v, List<Vector2> u, List<Color> c, List<Vector3> n, List<Vector4> t, List<Vector4> u2)
 	{
-		if (this.mRtpVerts != null && this.mRtpVerts.size > 0)
+		if (this.mRtpVerts != null && this.mRtpVerts.Count > 0)
 		{
 			if (n == null)
 			{
-				for (int i = 0; i < this.mRtpVerts.size; i++)
+				int i = 0;
+				int count = this.mRtpVerts.Count;
+				while (i < count)
 				{
-					v.Add(this.mRtpVerts.buffer[i]);
-					u.Add(this.uvs.buffer[i]);
-					c.Add(this.cols.buffer[i]);
+					v.Add(this.mRtpVerts[i]);
+					u.Add(this.uvs[i]);
+					c.Add(this.cols[i]);
+					i++;
 				}
 			}
 			else
 			{
-				for (int j = 0; j < this.mRtpVerts.size; j++)
+				int j = 0;
+				int count2 = this.mRtpVerts.Count;
+				while (j < count2)
 				{
-					v.Add(this.mRtpVerts.buffer[j]);
-					u.Add(this.uvs.buffer[j]);
-					c.Add(this.cols.buffer[j]);
+					v.Add(this.mRtpVerts[j]);
+					u.Add(this.uvs[j]);
+					c.Add(this.cols[j]);
 					n.Add(this.mRtpNormal);
 					t.Add(this.mRtpTan);
+					j++;
 				}
+			}
+			if (u2 != null)
+			{
+				Vector4 zero = Vector4.zero;
+				int k = 0;
+				int count3 = this.verts.Count;
+				while (k < count3)
+				{
+					zero.x = this.verts[k].x;
+					zero.y = this.verts[k].y;
+					u2.Add(zero);
+					k++;
+				}
+			}
+			if (this.onCustomWrite != null)
+			{
+				this.onCustomWrite(v, u, c, n, t, u2);
 			}
 		}
 	}

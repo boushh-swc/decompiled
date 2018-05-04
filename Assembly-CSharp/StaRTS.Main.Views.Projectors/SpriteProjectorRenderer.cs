@@ -73,10 +73,5 @@ namespace StaRTS.Main.Views.Projectors
 				this.uiTexture.color = config.Tint;
 			}
 		}
-
-		virtual bool DoesRenderTextureNeedReload()
-		{
-			return base.DoesRenderTextureNeedReload();
-		}
 	}
 }

@@ -28,8 +28,6 @@ namespace StaRTS.Main.Views.UX.Screens.Squads
 
 		private const float DESTROY_DELAY_TIME = 0.5f;
 
-		private const float CHAT_TIMESTAP_UPDATE_INTERVAL = 60f;
-
 		private UXElement chatContainer;
 
 		private UXCheckbox tabButton;
@@ -47,6 +45,8 @@ namespace StaRTS.Main.Views.UX.Screens.Squads
 		private HashSet<SquadMsg> existingMsgsProcessed;
 
 		private uint timestampUpdateTimerId;
+
+		private const float CHAT_TIMESTAP_UPDATE_INTERVAL = 60f;
 
 		public bool ChatDisplaySetup
 		{

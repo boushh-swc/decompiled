@@ -17,16 +17,6 @@ namespace StaRTS.GameBoard.Pathfinding
 {
 	public class Path
 	{
-		public const int DIST_STRAIGHT = 1000;
-
-		public const int DIST_DIAGONAL = 1414;
-
-		public const int MAX_SPEED_NORMALIZER = 10;
-
-		private const int DIR_LEN = 8;
-
-		private const int CELLS_LIST_INITIAL_CAPACITY = 64;
-
 		private BoardCellDynamicArray pathCells;
 
 		private BoardCellDynamicArray scratchCells;
@@ -46,6 +36,12 @@ namespace StaRTS.GameBoard.Pathfinding
 		private Board board;
 
 		private PathingManager pathingManager;
+
+		public const int DIST_STRAIGHT = 1000;
+
+		public const int DIST_DIAGONAL = 1414;
+
+		public const int MAX_SPEED_NORMALIZER = 10;
 
 		private int damagePerSecond;
 
@@ -69,9 +65,13 @@ namespace StaRTS.GameBoard.Pathfinding
 
 		private uint targetInRangeModifier;
 
+		private const int DIR_LEN = 8;
+
 		private static readonly int[] dirX;
 
 		private static readonly int[] dirY;
+
+		private const int CELLS_LIST_INITIAL_CAPACITY = 64;
 
 		private int priorityQueueSize;
 
@@ -100,6 +100,37 @@ namespace StaRTS.GameBoard.Pathfinding
 			get
 			{
 				return this.turns.Length;
+			}
+		}
+
+		static Path()
+		{
+			Path.dirX = new int[]
+			{
+				-1,
+				-1,
+				-1,
+				0,
+				0,
+				1,
+				1,
+				1
+			};
+			Path.dirY = new int[]
+			{
+				-1,
+				0,
+				1,
+				-1,
+				1,
+				-1,
+				0,
+				1
+			};
+			for (int i = 0; i < 8; i++)
+			{
+				Path.dirX[i] += 23;
+				Path.dirY[i] += 23;
 			}
 		}
 
@@ -146,37 +177,6 @@ namespace StaRTS.GameBoard.Pathfinding
 			this.curPathingCell.InClosedSet = true;
 		}
 
-		static Path()
-		{
-			Path.dirX = new int[]
-			{
-				-1,
-				-1,
-				-1,
-				0,
-				0,
-				1,
-				1,
-				1
-			};
-			Path.dirY = new int[]
-			{
-				-1,
-				0,
-				1,
-				-1,
-				1,
-				-1,
-				0,
-				1
-			};
-			for (int i = 0; i < 8; i++)
-			{
-				Path.dirX[i] += 23;
-				Path.dirY[i] += 23;
-			}
-		}
-
 		public BoardCell GetDestCell()
 		{
 			return this.destCell;
@@ -221,9 +221,9 @@ namespace StaRTS.GameBoard.Pathfinding
 			int num5 = num2 - z;
 			int num6 = num5 + ((num5 <= 0) ? -1 : 1);
 			int num7 = num4 * num4 + num6 * num6;
-			num7 *= 1;
+			num7 = num7;
 			int num8 = num3 * num3 + num5 * num5;
-			num8 *= 1;
+			num8 = num8;
 			uint num9 = this.maxShooterRange * this.maxShooterRange;
 			uint num10 = this.minShooterRange * this.minShooterRange;
 			if (this.isHealer)

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 [AddComponentMenu("NGUI/UI/NGUI Event System (UICamera)"), ExecuteInEditMode, RequireComponent(typeof(Camera))]
@@ -80,6 +81,44 @@ public class UICamera : MonoBehaviour
 		UI_2D = 3
 	}
 
+	public delegate bool GetKeyStateFunc(KeyCode key);
+
+	public delegate float GetAxisFunc(string name);
+
+	public delegate bool GetAnyKeyFunc();
+
+	public delegate UICamera.MouseOrTouch GetMouseDelegate(int button);
+
+	public delegate UICamera.MouseOrTouch GetTouchDelegate(int id, bool createIfMissing);
+
+	public delegate void RemoveTouchDelegate(int id);
+
+	public delegate void OnScreenResize();
+
+	public enum ProcessEventsIn
+	{
+		Update = 0,
+		LateUpdate = 1
+	}
+
+	public delegate void OnCustomInput();
+
+	public delegate void OnSchemeChange();
+
+	public delegate void MoveDelegate(Vector2 delta);
+
+	public delegate void VoidDelegate(GameObject go);
+
+	public delegate void BoolDelegate(GameObject go, bool state);
+
+	public delegate void FloatDelegate(GameObject go, float delta);
+
+	public delegate void VectorDelegate(GameObject go, Vector2 delta);
+
+	public delegate void ObjectDelegate(GameObject go, GameObject obj);
+
+	public delegate void KeyCodeDelegate(GameObject go, KeyCode key);
+
 	private struct DepthEntry
 	{
 		public int depth;
@@ -102,47 +141,74 @@ public class UICamera : MonoBehaviour
 		public int tapCount;
 	}
 
-	public delegate bool GetKeyStateFunc(KeyCode key);
-
-	public delegate float GetAxisFunc(string name);
-
-	public delegate bool GetAnyKeyFunc();
-
-	public delegate void OnScreenResize();
-
-	public delegate void OnCustomInput();
-
-	public delegate void OnSchemeChange();
-
-	public delegate void MoveDelegate(Vector2 delta);
-
-	public delegate void VoidDelegate(GameObject go);
-
-	public delegate void BoolDelegate(GameObject go, bool state);
-
-	public delegate void FloatDelegate(GameObject go, float delta);
-
-	public delegate void VectorDelegate(GameObject go, Vector2 delta);
-
-	public delegate void ObjectDelegate(GameObject go, GameObject obj);
-
-	public delegate void KeyCodeDelegate(GameObject go, KeyCode key);
-
 	public delegate int GetTouchCountCallback();
 
 	public delegate UICamera.Touch GetTouchCallback(int index);
 
 	public static BetterList<UICamera> list = new BetterList<UICamera>();
 
-	public static UICamera.GetKeyStateFunc GetKeyDown = new UICamera.GetKeyStateFunc(Input.GetKeyDown);
+	public static UICamera.GetKeyStateFunc GetKeyDown = (KeyCode key) => (key < KeyCode.JoystickButton0 || !UICamera.ignoreControllerInput) && Input.GetKeyDown(key);
 
-	public static UICamera.GetKeyStateFunc GetKeyUp = new UICamera.GetKeyStateFunc(Input.GetKeyUp);
+	public static UICamera.GetKeyStateFunc GetKeyUp = (KeyCode key) => (key < KeyCode.JoystickButton0 || !UICamera.ignoreControllerInput) && Input.GetKeyUp(key);
 
-	public static UICamera.GetKeyStateFunc GetKey = new UICamera.GetKeyStateFunc(Input.GetKey);
+	public static UICamera.GetKeyStateFunc GetKey = (KeyCode key) => (key < KeyCode.JoystickButton0 || !UICamera.ignoreControllerInput) && Input.GetKey(key);
 
-	public static UICamera.GetAxisFunc GetAxis = new UICamera.GetAxisFunc(Input.GetAxis);
+	public static UICamera.GetAxisFunc GetAxis = delegate(string axis)
+	{
+		if (UICamera.ignoreControllerInput)
+		{
+			return 0f;
+		}
+		return Input.GetAxis(axis);
+	};
 
 	public static UICamera.GetAnyKeyFunc GetAnyKeyDown;
+
+	public static UICamera.GetMouseDelegate GetMouse = (int button) => UICamera.mMouse[button];
+
+	public static UICamera.GetTouchDelegate GetTouch = delegate(int id, bool createIfMissing)
+	{
+		if (id < 0)
+		{
+			return UICamera.GetMouse(-id - 1);
+		}
+		int i = 0;
+		int count = UICamera.mTouchIDs.Count;
+		while (i < count)
+		{
+			if (UICamera.mTouchIDs[i] == id)
+			{
+				return UICamera.activeTouches[i];
+			}
+			i++;
+		}
+		if (createIfMissing)
+		{
+			UICamera.MouseOrTouch mouseOrTouch = new UICamera.MouseOrTouch();
+			mouseOrTouch.pressTime = RealTime.time;
+			mouseOrTouch.touchBegan = true;
+			UICamera.activeTouches.Add(mouseOrTouch);
+			UICamera.mTouchIDs.Add(id);
+			return mouseOrTouch;
+		}
+		return null;
+	};
+
+	public static UICamera.RemoveTouchDelegate RemoveTouch = delegate(int id)
+	{
+		int i = 0;
+		int count = UICamera.mTouchIDs.Count;
+		while (i < count)
+		{
+			if (UICamera.mTouchIDs[i] == id)
+			{
+				UICamera.mTouchIDs.RemoveAt(i);
+				UICamera.activeTouches.RemoveAt(i);
+				return;
+			}
+			i++;
+		}
+	};
 
 	public static UICamera.OnScreenResize onScreenResize;
 
@@ -151,6 +217,8 @@ public class UICamera : MonoBehaviour
 	public bool eventsGoToColliders;
 
 	public LayerMask eventReceiverMask = -1;
+
+	public UICamera.ProcessEventsIn processEventsIn;
 
 	public bool debug;
 
@@ -190,6 +258,7 @@ public class UICamera : MonoBehaviour
 
 	public string scrollAxisName = "Mouse ScrollWheel";
 
+	[Tooltip("If enabled, command-click will result in a right-click event on OSX")]
 	public bool commandClick = true;
 
 	public KeyCode submitKey0 = KeyCode.Return;
@@ -206,11 +275,17 @@ public class UICamera : MonoBehaviour
 
 	public static bool showTooltips = true;
 
+	public static bool ignoreAllEvents = false;
+
+	public static bool ignoreControllerInput = false;
+
 	private static bool mDisableController = false;
 
 	private static Vector2 mLastPos = Vector2.zero;
 
 	public static Vector3 lastWorldPosition = Vector3.zero;
+
+	public static Ray lastWorldRay = default(Ray);
 
 	public static RaycastHit lastHit;
 
@@ -295,6 +370,18 @@ public class UICamera : MonoBehaviour
 
 	public static bool isDragging = false;
 
+	private static int mLastInteractionCheck = -1;
+
+	private static bool mLastInteractionResult = false;
+
+	private static int mLastFocusCheck = -1;
+
+	private static bool mLastFocusResult = false;
+
+	private static int mLastOverCheck = -1;
+
+	private static bool mLastOverResult = false;
+
 	private static GameObject mRayHitObject;
 
 	private static GameObject mHover;
@@ -304,6 +391,10 @@ public class UICamera : MonoBehaviour
 	private static UICamera.DepthEntry mHit = default(UICamera.DepthEntry);
 
 	private static BetterList<UICamera.DepthEntry> mHits = new BetterList<UICamera.DepthEntry>();
+
+	private static RaycastHit[] mRayHits;
+
+	private static Collider2D[] mOverlap;
 
 	private static Plane m2DPlane = new Plane(Vector3.back, 0f);
 
@@ -316,6 +407,12 @@ public class UICamera : MonoBehaviour
 	public static UICamera.GetTouchCountCallback GetInputTouchCount;
 
 	public static UICamera.GetTouchCallback GetInputTouch;
+
+	[CompilerGenerated]
+	private static BetterList<UICamera>.CompareFunc <>f__mg$cache0;
+
+	[CompilerGenerated]
+	private static BetterList<UICamera>.CompareFunc <>f__mg$cache1;
 
 	[Obsolete("Use new OnDragStart / OnDragOver / OnDragOut / OnDragEnd events instead")]
 	public bool stickyPress
@@ -398,31 +495,46 @@ public class UICamera : MonoBehaviour
 			{
 				return UICamera.ControlScheme.Controller;
 			}
-			if (UICamera.current != null && UICamera.mLastScheme == UICamera.ControlScheme.Controller && (UICamera.mCurrentKey == UICamera.current.submitKey0 || UICamera.mCurrentKey == UICamera.current.submitKey1))
+			if (!(UICamera.current != null))
+			{
+				return UICamera.ControlScheme.Mouse;
+			}
+			if (UICamera.mLastScheme == UICamera.ControlScheme.Controller && (UICamera.mCurrentKey == UICamera.current.submitKey0 || UICamera.mCurrentKey == UICamera.current.submitKey1))
 			{
 				return UICamera.ControlScheme.Controller;
 			}
-			return UICamera.ControlScheme.Mouse;
+			if (UICamera.current.useMouse)
+			{
+				return UICamera.ControlScheme.Mouse;
+			}
+			if (UICamera.current.useTouch)
+			{
+				return UICamera.ControlScheme.Touch;
+			}
+			return UICamera.ControlScheme.Controller;
 		}
 		set
 		{
-			if (value == UICamera.ControlScheme.Mouse)
+			if (UICamera.mLastScheme != value)
 			{
-				UICamera.currentKey = KeyCode.Mouse0;
+				if (value == UICamera.ControlScheme.Mouse)
+				{
+					UICamera.currentKey = KeyCode.Mouse0;
+				}
+				else if (value == UICamera.ControlScheme.Controller)
+				{
+					UICamera.currentKey = KeyCode.JoystickButton0;
+				}
+				else if (value == UICamera.ControlScheme.Touch)
+				{
+					UICamera.currentKey = KeyCode.None;
+				}
+				else
+				{
+					UICamera.currentKey = KeyCode.Alpha0;
+				}
+				UICamera.mLastScheme = value;
 			}
-			else if (value == UICamera.ControlScheme.Controller)
-			{
-				UICamera.currentKey = KeyCode.JoystickButton0;
-			}
-			else if (value == UICamera.ControlScheme.Touch)
-			{
-				UICamera.currentKey = KeyCode.None;
-			}
-			else
-			{
-				UICamera.currentKey = KeyCode.Alpha0;
-			}
-			UICamera.mLastScheme = value;
 		}
 	}
 
@@ -474,15 +586,7 @@ public class UICamera : MonoBehaviour
 	{
 		get
 		{
-			if (UICamera.mInputFocus)
-			{
-				if (UICamera.mSelected && UICamera.mSelected.activeInHierarchy)
-				{
-					return true;
-				}
-				UICamera.mInputFocus = false;
-			}
-			return false;
+			return UICamera.mInputFocus && UICamera.mSelected && UICamera.mSelected.activeInHierarchy;
 		}
 	}
 
@@ -496,6 +600,30 @@ public class UICamera : MonoBehaviour
 		set
 		{
 			UICamera.mGenericHandler = value;
+		}
+	}
+
+	public static UICamera.MouseOrTouch mouse0
+	{
+		get
+		{
+			return UICamera.mMouse[0];
+		}
+	}
+
+	public static UICamera.MouseOrTouch mouse1
+	{
+		get
+		{
+			return UICamera.mMouse[1];
+		}
+	}
+
+	public static UICamera.MouseOrTouch mouse2
+	{
+		get
+		{
+			return UICamera.mMouse[2];
 		}
 	}
 
@@ -525,28 +653,142 @@ public class UICamera : MonoBehaviour
 		{
 			return UICamera.mTooltip;
 		}
+		set
+		{
+			UICamera.ShowTooltip(value);
+		}
 	}
 
 	public static bool isOverUI
 	{
 		get
 		{
-			if (UICamera.currentTouch != null)
+			int frameCount = Time.frameCount;
+			if (UICamera.mLastOverCheck != frameCount)
 			{
-				return UICamera.currentTouch.isOverUI;
-			}
-			int i = 0;
-			int count = UICamera.activeTouches.Count;
-			while (i < count)
-			{
-				UICamera.MouseOrTouch mouseOrTouch = UICamera.activeTouches[i];
-				if (mouseOrTouch.pressed != null && mouseOrTouch.pressed != UICamera.fallThrough && NGUITools.FindInParents<UIRoot>(mouseOrTouch.pressed) != null)
+				UICamera.mLastOverCheck = frameCount;
+				if (UICamera.currentTouch != null)
 				{
-					return true;
+					if (UICamera.currentTouch.pressed != null)
+					{
+						UICamera.mLastOverResult = UICamera.IsPartOfUI(UICamera.currentTouch.pressed);
+						return UICamera.mLastOverResult;
+					}
+					UICamera.mLastOverResult = UICamera.IsPartOfUI(UICamera.currentTouch.current);
+					return UICamera.mLastOverResult;
 				}
-				i++;
+				else
+				{
+					int i = 0;
+					int count = UICamera.activeTouches.Count;
+					while (i < count)
+					{
+						UICamera.MouseOrTouch mouseOrTouch = UICamera.activeTouches[i];
+						if (UICamera.IsPartOfUI(mouseOrTouch.pressed))
+						{
+							UICamera.mLastOverResult = true;
+							return UICamera.mLastOverResult;
+						}
+						i++;
+					}
+					for (int j = 0; j < 3; j++)
+					{
+						UICamera.MouseOrTouch mouseOrTouch2 = UICamera.mMouse[j];
+						if (UICamera.IsPartOfUI((!(mouseOrTouch2.pressed != null)) ? mouseOrTouch2.current : mouseOrTouch2.pressed))
+						{
+							UICamera.mLastOverResult = true;
+							return UICamera.mLastOverResult;
+						}
+					}
+					UICamera.mLastOverResult = UICamera.IsPartOfUI(UICamera.controller.pressed);
+				}
 			}
-			return (UICamera.mMouse[0].current != null && UICamera.mMouse[0].current != UICamera.fallThrough && NGUITools.FindInParents<UIRoot>(UICamera.mMouse[0].current) != null) || (UICamera.controller.pressed != null && UICamera.controller.pressed != UICamera.fallThrough && NGUITools.FindInParents<UIRoot>(UICamera.controller.pressed) != null);
+			return UICamera.mLastOverResult;
+		}
+	}
+
+	public static bool uiHasFocus
+	{
+		get
+		{
+			int frameCount = Time.frameCount;
+			if (UICamera.mLastFocusCheck != frameCount)
+			{
+				UICamera.mLastFocusCheck = frameCount;
+				if (UICamera.inputHasFocus)
+				{
+					UICamera.mLastFocusResult = true;
+					return UICamera.mLastFocusResult;
+				}
+				if (UICamera.currentTouch != null)
+				{
+					UICamera.mLastFocusResult = UICamera.currentTouch.isOverUI;
+					return UICamera.mLastFocusResult;
+				}
+				int i = 0;
+				int count = UICamera.activeTouches.Count;
+				while (i < count)
+				{
+					UICamera.MouseOrTouch mouseOrTouch = UICamera.activeTouches[i];
+					if (UICamera.IsPartOfUI(mouseOrTouch.pressed))
+					{
+						UICamera.mLastFocusResult = true;
+						return UICamera.mLastFocusResult;
+					}
+					i++;
+				}
+				for (int j = 0; j < 3; j++)
+				{
+					UICamera.MouseOrTouch mouseOrTouch2 = UICamera.mMouse[j];
+					if (UICamera.IsPartOfUI(mouseOrTouch2.pressed) || UICamera.IsPartOfUI(mouseOrTouch2.current))
+					{
+						UICamera.mLastFocusResult = true;
+						return UICamera.mLastFocusResult;
+					}
+				}
+				UICamera.mLastFocusResult = UICamera.IsPartOfUI(UICamera.controller.pressed);
+			}
+			return UICamera.mLastFocusResult;
+		}
+	}
+
+	public static bool interactingWithUI
+	{
+		get
+		{
+			int frameCount = Time.frameCount;
+			if (UICamera.mLastInteractionCheck != frameCount)
+			{
+				UICamera.mLastInteractionCheck = frameCount;
+				if (UICamera.inputHasFocus)
+				{
+					UICamera.mLastInteractionResult = true;
+					return UICamera.mLastInteractionResult;
+				}
+				int i = 0;
+				int count = UICamera.activeTouches.Count;
+				while (i < count)
+				{
+					UICamera.MouseOrTouch mouseOrTouch = UICamera.activeTouches[i];
+					if (UICamera.IsPartOfUI(mouseOrTouch.pressed))
+					{
+						UICamera.mLastInteractionResult = true;
+						return UICamera.mLastInteractionResult;
+					}
+					i++;
+				}
+				for (int j = 0; j < 3; j++)
+				{
+					UICamera.MouseOrTouch mouseOrTouch2 = UICamera.mMouse[j];
+					if (UICamera.IsPartOfUI(mouseOrTouch2.pressed))
+					{
+						UICamera.mLastInteractionResult = true;
+						return UICamera.mLastInteractionResult;
+					}
+				}
+				UICamera.mLastInteractionResult = UICamera.IsPartOfUI(UICamera.controller.pressed);
+			}
+			return UICamera.mLastInteractionResult;
 		}
 	}
 
@@ -554,7 +796,7 @@ public class UICamera : MonoBehaviour
 	{
 		get
 		{
-			if (UICamera.currentTouch != null && UICamera.currentTouch.dragStarted)
+			if (UICamera.currentTouch != null && (UICamera.currentScheme != UICamera.ControlScheme.Mouse || UICamera.currentTouch.dragStarted))
 			{
 				return UICamera.currentTouch.current;
 			}
@@ -638,7 +880,7 @@ public class UICamera : MonoBehaviour
 			{
 				return UICamera.controller.current;
 			}
-			if (UICamera.currentScheme == UICamera.ControlScheme.Controller && UICamera.current != null && UICamera.current.useController && UIKeyNavigation.list.size > 0)
+			if (UICamera.currentScheme == UICamera.ControlScheme.Controller && UICamera.current != null && UICamera.current.useController && !UICamera.ignoreControllerInput && UIKeyNavigation.list.size > 0)
 			{
 				for (int i = 0; i < UIKeyNavigation.list.size; i++)
 				{
@@ -822,6 +1064,11 @@ public class UICamera : MonoBehaviour
 		}
 	}
 
+	public static bool IsPartOfUI(GameObject go)
+	{
+		return !(go == null) && !(go == UICamera.fallThrough) && NGUITools.FindInParents<UIRoot>(go) != null;
+	}
+
 	public static bool IsPressed(GameObject go)
 	{
 		for (int i = 0; i < 3; i++)
@@ -892,7 +1139,7 @@ public class UICamera : MonoBehaviour
 		{
 			if (trans.GetComponent<UIPanel>() != null)
 			{
-				return null;
+				break;
 			}
 			Rigidbody component = trans.GetComponent<Rigidbody>();
 			if (component != null)
@@ -910,7 +1157,7 @@ public class UICamera : MonoBehaviour
 		{
 			if (trans.GetComponent<UIPanel>() != null)
 			{
-				return null;
+				break;
 			}
 			Rigidbody2D component = trans.GetComponent<Rigidbody2D>();
 			if (component != null)
@@ -945,226 +1192,240 @@ public class UICamera : MonoBehaviour
 			if (uICamera.enabled && NGUITools.GetActive(uICamera.gameObject))
 			{
 				UICamera.currentCamera = uICamera.cachedCamera;
-				Vector3 vector = UICamera.currentCamera.ScreenToViewportPoint(inPos);
-				if (!float.IsNaN(vector.x) && !float.IsNaN(vector.y))
+				if (UICamera.currentCamera.targetDisplay == 0)
 				{
-					if (vector.x >= 0f && vector.x <= 1f && vector.y >= 0f && vector.y <= 1f)
+					Vector3 vector = UICamera.currentCamera.ScreenToViewportPoint(inPos);
+					if (!float.IsNaN(vector.x) && !float.IsNaN(vector.y))
 					{
-						Ray ray = UICamera.currentCamera.ScreenPointToRay(inPos);
-						int layerMask = UICamera.currentCamera.cullingMask & uICamera.eventReceiverMask;
-						float num = (uICamera.rangeDistance <= 0f) ? (UICamera.currentCamera.farClipPlane - UICamera.currentCamera.nearClipPlane) : uICamera.rangeDistance;
-						if (uICamera.eventType == UICamera.EventType.World_3D)
+						if (vector.x >= 0f && vector.x <= 1f && vector.y >= 0f && vector.y <= 1f)
 						{
-							if (Physics.Raycast(ray, out UICamera.lastHit, num, layerMask))
+							Ray ray = UICamera.currentCamera.ScreenPointToRay(inPos);
+							int layerMask = UICamera.currentCamera.cullingMask & uICamera.eventReceiverMask;
+							float num = (uICamera.rangeDistance <= 0f) ? (UICamera.currentCamera.farClipPlane - UICamera.currentCamera.nearClipPlane) : uICamera.rangeDistance;
+							if (uICamera.eventType == UICamera.EventType.World_3D)
 							{
-								UICamera.lastWorldPosition = UICamera.lastHit.point;
-								UICamera.mRayHitObject = UICamera.lastHit.collider.gameObject;
-								if (!UICamera.list[0].eventsGoToColliders)
+								UICamera.lastWorldRay = ray;
+								if (Physics.Raycast(ray, out UICamera.lastHit, num, layerMask, QueryTriggerInteraction.Ignore))
 								{
-									Rigidbody rigidbody = UICamera.FindRootRigidbody(UICamera.mRayHitObject.transform);
-									if (rigidbody != null)
-									{
-										UICamera.mRayHitObject = rigidbody.gameObject;
-									}
-								}
-								return true;
-							}
-						}
-						else if (uICamera.eventType == UICamera.EventType.UI_3D)
-						{
-							RaycastHit[] array = Physics.RaycastAll(ray, num, layerMask);
-							if (array.Length > 1)
-							{
-								int j = 0;
-								while (j < array.Length)
-								{
-									GameObject gameObject = array[j].collider.gameObject;
-									UIWidget component = gameObject.GetComponent<UIWidget>();
-									if (component != null)
-									{
-										if (component.isVisible)
-										{
-											if (component.hitCheck == null || component.hitCheck(array[j].point))
-											{
-												goto IL_260;
-											}
-										}
-									}
-									else
-									{
-										UIRect uIRect = NGUITools.FindInParents<UIRect>(gameObject);
-										if (!(uIRect != null) || uIRect.finalAlpha >= 0.001f)
-										{
-											goto IL_260;
-										}
-									}
-									IL_2E1:
-									j++;
-									continue;
-									IL_260:
-									UICamera.mHit.depth = NGUITools.CalculateRaycastDepth(gameObject);
-									if (UICamera.mHit.depth != 2147483647)
-									{
-										UICamera.mHit.hit = array[j];
-										UICamera.mHit.point = array[j].point;
-										UICamera.mHit.go = array[j].collider.gameObject;
-										UICamera.mHits.Add(UICamera.mHit);
-										goto IL_2E1;
-									}
-									goto IL_2E1;
-								}
-								UICamera.mHits.Sort((UICamera.DepthEntry r1, UICamera.DepthEntry r2) => r2.depth.CompareTo(r1.depth));
-								for (int k = 0; k < UICamera.mHits.size; k++)
-								{
-									if (UICamera.IsVisible(ref UICamera.mHits.buffer[k]))
-									{
-										UICamera.lastHit = UICamera.mHits[k].hit;
-										UICamera.mRayHitObject = UICamera.mHits[k].go;
-										UICamera.lastWorldPosition = UICamera.mHits[k].point;
-										UICamera.mHits.Clear();
-										return true;
-									}
-								}
-								UICamera.mHits.Clear();
-							}
-							else if (array.Length == 1)
-							{
-								GameObject gameObject2 = array[0].collider.gameObject;
-								UIWidget component2 = gameObject2.GetComponent<UIWidget>();
-								if (component2 != null)
-								{
-									if (!component2.isVisible)
-									{
-										goto IL_7E2;
-									}
-									if (component2.hitCheck != null && !component2.hitCheck(array[0].point))
-									{
-										goto IL_7E2;
-									}
-								}
-								else
-								{
-									UIRect uIRect2 = NGUITools.FindInParents<UIRect>(gameObject2);
-									if (uIRect2 != null && uIRect2.finalAlpha < 0.001f)
-									{
-										goto IL_7E2;
-									}
-								}
-								if (UICamera.IsVisible(array[0].point, array[0].collider.gameObject))
-								{
-									UICamera.lastHit = array[0];
-									UICamera.lastWorldPosition = array[0].point;
+									UICamera.lastWorldPosition = UICamera.lastHit.point;
 									UICamera.mRayHitObject = UICamera.lastHit.collider.gameObject;
-									return true;
-								}
-							}
-						}
-						else if (uICamera.eventType == UICamera.EventType.World_2D)
-						{
-							if (UICamera.m2DPlane.Raycast(ray, out num))
-							{
-								Vector3 point = ray.GetPoint(num);
-								Collider2D collider2D = Physics2D.OverlapPoint(point, layerMask);
-								if (collider2D)
-								{
-									UICamera.lastWorldPosition = point;
-									UICamera.mRayHitObject = collider2D.gameObject;
 									if (!uICamera.eventsGoToColliders)
 									{
-										Rigidbody2D rigidbody2D = UICamera.FindRootRigidbody2D(UICamera.mRayHitObject.transform);
-										if (rigidbody2D != null)
+										Rigidbody componentInParent = UICamera.mRayHitObject.gameObject.GetComponentInParent<Rigidbody>();
+										if (componentInParent != null)
 										{
-											UICamera.mRayHitObject = rigidbody2D.gameObject;
+											UICamera.mRayHitObject = componentInParent.gameObject;
 										}
 									}
 									return true;
 								}
 							}
-						}
-						else if (uICamera.eventType == UICamera.EventType.UI_2D)
-						{
-							if (UICamera.m2DPlane.Raycast(ray, out num))
+							else if (uICamera.eventType == UICamera.EventType.UI_3D)
 							{
-								UICamera.lastWorldPosition = ray.GetPoint(num);
-								Collider2D[] array2 = Physics2D.OverlapPointAll(UICamera.lastWorldPosition, layerMask);
-								if (array2.Length > 1)
+								if (UICamera.mRayHits == null)
 								{
-									int l = 0;
-									while (l < array2.Length)
+									UICamera.mRayHits = new RaycastHit[50];
+								}
+								int num2 = Physics.RaycastNonAlloc(ray, UICamera.mRayHits, num, layerMask, QueryTriggerInteraction.Collide);
+								if (num2 > 1)
+								{
+									int j = 0;
+									while (j < num2)
 									{
-										GameObject gameObject3 = array2[l].gameObject;
-										UIWidget component3 = gameObject3.GetComponent<UIWidget>();
-										if (component3 != null)
+										GameObject gameObject = UICamera.mRayHits[j].collider.gameObject;
+										UIWidget component = gameObject.GetComponent<UIWidget>();
+										if (component != null)
 										{
-											if (component3.isVisible)
+											if (component.isVisible)
 											{
-												if (component3.hitCheck == null || component3.hitCheck(UICamera.lastWorldPosition))
+												if (component.hitCheck == null || component.hitCheck(UICamera.mRayHits[j].point))
 												{
-													goto IL_639;
+													goto IL_291;
 												}
 											}
 										}
 										else
 										{
-											UIRect uIRect3 = NGUITools.FindInParents<UIRect>(gameObject3);
-											if (!(uIRect3 != null) || uIRect3.finalAlpha >= 0.001f)
+											UIRect uIRect = NGUITools.FindInParents<UIRect>(gameObject);
+											if (!(uIRect != null) || uIRect.finalAlpha >= 0.001f)
 											{
-												goto IL_639;
+												goto IL_291;
 											}
 										}
-										IL_688:
-										l++;
+										IL_31B:
+										j++;
 										continue;
-										IL_639:
-										UICamera.mHit.depth = NGUITools.CalculateRaycastDepth(gameObject3);
+										IL_291:
+										UICamera.mHit.depth = NGUITools.CalculateRaycastDepth(gameObject);
 										if (UICamera.mHit.depth != 2147483647)
 										{
-											UICamera.mHit.go = gameObject3;
-											UICamera.mHit.point = UICamera.lastWorldPosition;
+											UICamera.mHit.hit = UICamera.mRayHits[j];
+											UICamera.mHit.point = UICamera.mRayHits[j].point;
+											UICamera.mHit.go = UICamera.mRayHits[j].collider.gameObject;
 											UICamera.mHits.Add(UICamera.mHit);
-											goto IL_688;
+											goto IL_31B;
 										}
-										goto IL_688;
+										goto IL_31B;
 									}
 									UICamera.mHits.Sort((UICamera.DepthEntry r1, UICamera.DepthEntry r2) => r2.depth.CompareTo(r1.depth));
-									for (int m = 0; m < UICamera.mHits.size; m++)
+									for (int k = 0; k < UICamera.mHits.size; k++)
 									{
-										if (UICamera.IsVisible(ref UICamera.mHits.buffer[m]))
+										if (UICamera.IsVisible(ref UICamera.mHits.buffer[k]))
 										{
-											UICamera.mRayHitObject = UICamera.mHits[m].go;
+											UICamera.lastHit = UICamera.mHits[k].hit;
+											UICamera.mRayHitObject = UICamera.mHits[k].go;
+											UICamera.lastWorldRay = ray;
+											UICamera.lastWorldPosition = UICamera.mHits[k].point;
 											UICamera.mHits.Clear();
 											return true;
 										}
 									}
 									UICamera.mHits.Clear();
 								}
-								else if (array2.Length == 1)
+								else if (num2 == 1)
 								{
-									GameObject gameObject4 = array2[0].gameObject;
-									UIWidget component4 = gameObject4.GetComponent<UIWidget>();
-									if (component4 != null)
+									GameObject gameObject2 = UICamera.mRayHits[0].collider.gameObject;
+									UIWidget component2 = gameObject2.GetComponent<UIWidget>();
+									if (component2 != null)
 									{
-										if (!component4.isVisible)
+										if (!component2.isVisible)
 										{
-											goto IL_7E2;
+											goto IL_851;
 										}
-										if (component4.hitCheck != null && !component4.hitCheck(UICamera.lastWorldPosition))
+										if (component2.hitCheck != null && !component2.hitCheck(UICamera.mRayHits[0].point))
 										{
-											goto IL_7E2;
+											goto IL_851;
 										}
 									}
 									else
 									{
-										UIRect uIRect4 = NGUITools.FindInParents<UIRect>(gameObject4);
-										if (uIRect4 != null && uIRect4.finalAlpha < 0.001f)
+										UIRect uIRect2 = NGUITools.FindInParents<UIRect>(gameObject2);
+										if (uIRect2 != null && uIRect2.finalAlpha < 0.001f)
 										{
-											goto IL_7E2;
+											goto IL_851;
 										}
 									}
-									if (UICamera.IsVisible(UICamera.lastWorldPosition, gameObject4))
+									if (UICamera.IsVisible(UICamera.mRayHits[0].point, UICamera.mRayHits[0].collider.gameObject))
 									{
-										UICamera.mRayHitObject = gameObject4;
+										UICamera.lastHit = UICamera.mRayHits[0];
+										UICamera.lastWorldRay = ray;
+										UICamera.lastWorldPosition = UICamera.mRayHits[0].point;
+										UICamera.mRayHitObject = UICamera.lastHit.collider.gameObject;
 										return true;
+									}
+								}
+							}
+							else if (uICamera.eventType == UICamera.EventType.World_2D)
+							{
+								if (UICamera.m2DPlane.Raycast(ray, out num))
+								{
+									Vector3 point = ray.GetPoint(num);
+									Collider2D collider2D = Physics2D.OverlapPoint(point, layerMask);
+									if (collider2D)
+									{
+										UICamera.lastWorldPosition = point;
+										UICamera.mRayHitObject = collider2D.gameObject;
+										if (!uICamera.eventsGoToColliders)
+										{
+											Rigidbody2D rigidbody2D = UICamera.FindRootRigidbody2D(UICamera.mRayHitObject.transform);
+											if (rigidbody2D != null)
+											{
+												UICamera.mRayHitObject = rigidbody2D.gameObject;
+											}
+										}
+										return true;
+									}
+								}
+							}
+							else if (uICamera.eventType == UICamera.EventType.UI_2D)
+							{
+								if (UICamera.m2DPlane.Raycast(ray, out num))
+								{
+									UICamera.lastWorldPosition = ray.GetPoint(num);
+									if (UICamera.mOverlap == null)
+									{
+										UICamera.mOverlap = new Collider2D[50];
+									}
+									int num3 = Physics2D.OverlapPointNonAlloc(UICamera.lastWorldPosition, UICamera.mOverlap, layerMask);
+									if (num3 > 1)
+									{
+										int l = 0;
+										while (l < num3)
+										{
+											GameObject gameObject3 = UICamera.mOverlap[l].gameObject;
+											UIWidget component3 = gameObject3.GetComponent<UIWidget>();
+											if (component3 != null)
+											{
+												if (component3.isVisible)
+												{
+													if (component3.hitCheck == null || component3.hitCheck(UICamera.lastWorldPosition))
+													{
+														goto IL_6A9;
+													}
+												}
+											}
+											else
+											{
+												UIRect uIRect3 = NGUITools.FindInParents<UIRect>(gameObject3);
+												if (!(uIRect3 != null) || uIRect3.finalAlpha >= 0.001f)
+												{
+													goto IL_6A9;
+												}
+											}
+											IL_6F8:
+											l++;
+											continue;
+											IL_6A9:
+											UICamera.mHit.depth = NGUITools.CalculateRaycastDepth(gameObject3);
+											if (UICamera.mHit.depth != 2147483647)
+											{
+												UICamera.mHit.go = gameObject3;
+												UICamera.mHit.point = UICamera.lastWorldPosition;
+												UICamera.mHits.Add(UICamera.mHit);
+												goto IL_6F8;
+											}
+											goto IL_6F8;
+										}
+										UICamera.mHits.Sort((UICamera.DepthEntry r1, UICamera.DepthEntry r2) => r2.depth.CompareTo(r1.depth));
+										for (int m = 0; m < UICamera.mHits.size; m++)
+										{
+											if (UICamera.IsVisible(ref UICamera.mHits.buffer[m]))
+											{
+												UICamera.mRayHitObject = UICamera.mHits[m].go;
+												UICamera.mHits.Clear();
+												return true;
+											}
+										}
+										UICamera.mHits.Clear();
+									}
+									else if (num3 == 1)
+									{
+										GameObject gameObject4 = UICamera.mOverlap[0].gameObject;
+										UIWidget component4 = gameObject4.GetComponent<UIWidget>();
+										if (component4 != null)
+										{
+											if (!component4.isVisible)
+											{
+												goto IL_851;
+											}
+											if (component4.hitCheck != null && !component4.hitCheck(UICamera.lastWorldPosition))
+											{
+												goto IL_851;
+											}
+										}
+										else
+										{
+											UIRect uIRect4 = NGUITools.FindInParents<UIRect>(gameObject4);
+											if (uIRect4 != null && uIRect4.finalAlpha < 0.001f)
+											{
+												goto IL_851;
+											}
+										}
+										if (UICamera.IsVisible(UICamera.lastWorldPosition, gameObject4))
+										{
+											UICamera.mRayHitObject = gameObject4;
+											return true;
+										}
 									}
 								}
 							}
@@ -1172,7 +1433,7 @@ public class UICamera : MonoBehaviour
 					}
 				}
 			}
-			IL_7E2:;
+			IL_851:;
 		}
 		return false;
 	}
@@ -1309,55 +1570,6 @@ public class UICamera : MonoBehaviour
 		}
 	}
 
-	public static UICamera.MouseOrTouch GetMouse(int button)
-	{
-		return UICamera.mMouse[button];
-	}
-
-	public static UICamera.MouseOrTouch GetTouch(int id, bool createIfMissing = false)
-	{
-		if (id < 0)
-		{
-			return UICamera.GetMouse(-id - 1);
-		}
-		int i = 0;
-		int count = UICamera.mTouchIDs.Count;
-		while (i < count)
-		{
-			if (UICamera.mTouchIDs[i] == id)
-			{
-				return UICamera.activeTouches[i];
-			}
-			i++;
-		}
-		if (createIfMissing)
-		{
-			UICamera.MouseOrTouch mouseOrTouch = new UICamera.MouseOrTouch();
-			mouseOrTouch.pressTime = RealTime.time;
-			mouseOrTouch.touchBegan = true;
-			UICamera.activeTouches.Add(mouseOrTouch);
-			UICamera.mTouchIDs.Add(id);
-			return mouseOrTouch;
-		}
-		return null;
-	}
-
-	public static void RemoveTouch(int id)
-	{
-		int i = 0;
-		int count = UICamera.mTouchIDs.Count;
-		while (i < count)
-		{
-			if (UICamera.mTouchIDs[i] == id)
-			{
-				UICamera.mTouchIDs.RemoveAt(i);
-				UICamera.activeTouches.RemoveAt(i);
-				return;
-			}
-			i++;
-		}
-	}
-
 	private void Awake()
 	{
 		UICamera.mWidth = Screen.width;
@@ -1375,7 +1587,12 @@ public class UICamera : MonoBehaviour
 	private void OnEnable()
 	{
 		UICamera.list.Add(this);
-		UICamera.list.Sort(new BetterList<UICamera>.CompareFunc(UICamera.CompareFunc));
+		BetterList<UICamera> arg_2D_0 = UICamera.list;
+		if (UICamera.<>f__mg$cache0 == null)
+		{
+			UICamera.<>f__mg$cache0 = new BetterList<UICamera>.CompareFunc(UICamera.CompareFunc);
+		}
+		arg_2D_0.Sort(UICamera.<>f__mg$cache0);
 	}
 
 	private void OnDisable()
@@ -1385,6 +1602,12 @@ public class UICamera : MonoBehaviour
 
 	private void Start()
 	{
+		BetterList<UICamera> arg_22_0 = UICamera.list;
+		if (UICamera.<>f__mg$cache1 == null)
+		{
+			UICamera.<>f__mg$cache1 = new BetterList<UICamera>.CompareFunc(UICamera.CompareFunc);
+		}
+		arg_22_0.Sort(UICamera.<>f__mg$cache1);
 		if (this.eventType != UICamera.EventType.World_3D && this.cachedCamera.transparencySortMode != TransparencySortMode.Orthographic)
 		{
 			this.cachedCamera.transparencySortMode = TransparencySortMode.Orthographic;
@@ -1394,15 +1617,7 @@ public class UICamera : MonoBehaviour
 			if (UICamera.fallThrough == null)
 			{
 				UIRoot uIRoot = NGUITools.FindInParents<UIRoot>(base.gameObject);
-				if (uIRoot != null)
-				{
-					UICamera.fallThrough = uIRoot.gameObject;
-				}
-				else
-				{
-					Transform transform = base.transform;
-					UICamera.fallThrough = ((!(transform.parent != null)) ? base.gameObject : transform.parent.gameObject);
-				}
+				UICamera.fallThrough = ((!(uIRoot != null)) ? base.gameObject : uIRoot.gameObject);
 			}
 			this.cachedCamera.eventMask = 0;
 		}
@@ -1410,10 +1625,46 @@ public class UICamera : MonoBehaviour
 
 	private void Update()
 	{
+		if (UICamera.ignoreAllEvents)
+		{
+			return;
+		}
 		if (!this.handlesEvents)
 		{
 			return;
 		}
+		if (this.processEventsIn == UICamera.ProcessEventsIn.Update)
+		{
+			this.ProcessEvents();
+		}
+	}
+
+	private void LateUpdate()
+	{
+		if (!this.handlesEvents)
+		{
+			return;
+		}
+		if (this.processEventsIn == UICamera.ProcessEventsIn.LateUpdate)
+		{
+			this.ProcessEvents();
+		}
+		int width = Screen.width;
+		int height = Screen.height;
+		if (width != UICamera.mWidth || height != UICamera.mHeight)
+		{
+			UICamera.mWidth = width;
+			UICamera.mHeight = height;
+			UIRoot.Broadcast("UpdateAnchors");
+			if (UICamera.onScreenResize != null)
+			{
+				UICamera.onScreenResize();
+			}
+		}
+	}
+
+	private void ProcessEvents()
+	{
 		UICamera.current = this;
 		NGUIDebug.debugRaycast = this.debug;
 		if (this.useTouch)
@@ -1428,7 +1679,7 @@ public class UICamera : MonoBehaviour
 		{
 			UICamera.onCustomInput();
 		}
-		if ((this.useKeyboard || this.useController) && !UICamera.disableController)
+		if ((this.useKeyboard || this.useController) && !UICamera.disableController && !UICamera.ignoreControllerInput)
 		{
 			this.ProcessOthers();
 		}
@@ -1443,7 +1694,7 @@ public class UICamera : MonoBehaviour
 				}
 				UICamera.Notify(UICamera.mHover, "OnScroll", num);
 			}
-			if (UICamera.showTooltips && UICamera.mTooltipTime != 0f && !UIPopupList.isOpen && UICamera.mMouse[0].dragged == null && (UICamera.mTooltipTime < RealTime.time || UICamera.GetKey(KeyCode.LeftShift) || UICamera.GetKey(KeyCode.RightShift)))
+			if (UICamera.currentScheme == UICamera.ControlScheme.Mouse && UICamera.showTooltips && UICamera.mTooltipTime != 0f && !UIPopupList.isOpen && UICamera.mMouse[0].dragged == null && (UICamera.mTooltipTime < RealTime.time || UICamera.GetKey(KeyCode.LeftShift) || UICamera.GetKey(KeyCode.RightShift)))
 			{
 				UICamera.currentTouch = UICamera.mMouse[0];
 				UICamera.currentTouchID = -1;
@@ -1456,26 +1707,6 @@ public class UICamera : MonoBehaviour
 		}
 		UICamera.current = null;
 		UICamera.currentTouchID = -100;
-	}
-
-	private void LateUpdate()
-	{
-		if (!this.handlesEvents)
-		{
-			return;
-		}
-		int width = Screen.width;
-		int height = Screen.height;
-		if (width != UICamera.mWidth || height != UICamera.mHeight)
-		{
-			UICamera.mWidth = width;
-			UICamera.mHeight = height;
-			UIRoot.Broadcast("UpdateAnchors");
-			if (UICamera.onScreenResize != null)
-			{
-				UICamera.onScreenResize();
-			}
-		}
 	}
 
 	public void ProcessMouse()
@@ -1496,7 +1727,7 @@ public class UICamera : MonoBehaviour
 				flag = true;
 			}
 		}
-		if (UICamera.currentScheme == UICamera.ControlScheme.Touch)
+		if (UICamera.currentScheme == UICamera.ControlScheme.Touch && UICamera.activeTouches.Count > 0)
 		{
 			return;
 		}
@@ -1538,14 +1769,27 @@ public class UICamera : MonoBehaviour
 		{
 			this.mNextRaycast = RealTime.time + 0.02f;
 			UICamera.Raycast(UICamera.currentTouch);
-			for (int k = 0; k < 3; k++)
+			if (flag)
 			{
-				UICamera.mMouse[k].current = UICamera.currentTouch.current;
+				flag3 = true;
+				for (int k = 0; k < 3; k++)
+				{
+					UICamera.mMouse[k].current = UICamera.currentTouch.current;
+				}
+			}
+			else if (UICamera.mMouse[0].current != UICamera.currentTouch.current)
+			{
+				UICamera.currentKey = KeyCode.Mouse0;
+				flag3 = true;
+				for (int l = 0; l < 3; l++)
+				{
+					UICamera.mMouse[l].current = UICamera.currentTouch.current;
+				}
 			}
 		}
 		bool flag4 = UICamera.currentTouch.last != UICamera.currentTouch.current;
 		bool flag5 = UICamera.currentTouch.pressed != null;
-		if (!flag5)
+		if (!flag5 && flag3)
 		{
 			UICamera.hoveredObject = UICamera.currentTouch.current;
 		}
@@ -1574,17 +1818,17 @@ public class UICamera : MonoBehaviour
 		{
 			UICamera.hoveredObject = null;
 		}
-		for (int l = 0; l < 3; l++)
+		for (int m = 0; m < 3; m++)
 		{
-			bool mouseButtonDown = Input.GetMouseButtonDown(l);
-			bool mouseButtonUp = Input.GetMouseButtonUp(l);
+			bool mouseButtonDown = Input.GetMouseButtonDown(m);
+			bool mouseButtonUp = Input.GetMouseButtonUp(m);
 			if (mouseButtonDown || mouseButtonUp)
 			{
-				UICamera.currentKey = KeyCode.Mouse0 + l;
+				UICamera.currentKey = KeyCode.Mouse0 + m;
 			}
-			UICamera.currentTouch = UICamera.mMouse[l];
-			UICamera.currentTouchID = -1 - l;
-			UICamera.currentKey = KeyCode.Mouse0 + l;
+			UICamera.currentTouch = UICamera.mMouse[m];
+			UICamera.currentTouchID = -1 - m;
+			UICamera.currentKey = KeyCode.Mouse0 + m;
 			if (mouseButtonDown)
 			{
 				UICamera.currentTouch.pressedCam = UICamera.currentCamera;
@@ -1599,16 +1843,16 @@ public class UICamera : MonoBehaviour
 		if (!flag && flag4)
 		{
 			UICamera.currentTouch = UICamera.mMouse[0];
-			UICamera.mTooltipTime = RealTime.time + this.tooltipDelay;
+			UICamera.mTooltipTime = Time.unscaledTime + this.tooltipDelay;
 			UICamera.currentTouchID = -1;
 			UICamera.currentKey = KeyCode.Mouse0;
 			UICamera.hoveredObject = UICamera.currentTouch.current;
 		}
 		UICamera.currentTouch = null;
 		UICamera.mMouse[0].last = UICamera.mMouse[0].current;
-		for (int m = 1; m < 3; m++)
+		for (int n = 1; n < 3; n++)
 		{
-			UICamera.mMouse[m].last = UICamera.mMouse[0].last;
+			UICamera.mMouse[n].last = UICamera.mMouse[0].last;
 		}
 	}
 
@@ -1641,7 +1885,6 @@ public class UICamera : MonoBehaviour
 			UICamera.currentTouch = UICamera.GetTouch(UICamera.currentTouchID, true);
 			bool flag = phase == TouchPhase.Began || UICamera.currentTouch.touchBegan;
 			bool flag2 = phase == TouchPhase.Canceled || phase == TouchPhase.Ended;
-			UICamera.currentTouch.touchBegan = false;
 			UICamera.currentTouch.delta = position - UICamera.currentTouch.pos;
 			UICamera.currentTouch.pos = position;
 			UICamera.currentKey = KeyCode.None;
@@ -1663,6 +1906,7 @@ public class UICamera : MonoBehaviour
 			{
 				UICamera.RemoveTouch(UICamera.currentTouchID);
 			}
+			UICamera.currentTouch.touchBegan = false;
 			UICamera.currentTouch.last = null;
 			UICamera.currentTouch = null;
 			if (!this.allowMultiTouch)
@@ -1773,7 +2017,7 @@ public class UICamera : MonoBehaviour
 			UICamera.currentTouch.last = UICamera.currentTouch.current;
 		}
 		KeyCode keyCode = KeyCode.None;
-		if (this.useController)
+		if (this.useController && !UICamera.ignoreControllerInput)
 		{
 			if (!UICamera.disableController && UICamera.currentScheme == UICamera.ControlScheme.Controller && (UICamera.currentTouch.current == null || !UICamera.currentTouch.current.activeInHierarchy))
 			{
@@ -1849,9 +2093,9 @@ public class UICamera : MonoBehaviour
 					{
 						if (this.useKeyboard || keyCode2 >= KeyCode.Mouse0)
 						{
-							if (this.useController || keyCode2 < KeyCode.JoystickButton0)
+							if ((this.useController && !UICamera.ignoreControllerInput) || keyCode2 < KeyCode.JoystickButton0)
 							{
-								if (this.useMouse || (keyCode2 < KeyCode.Mouse0 && keyCode2 > KeyCode.Mouse6))
+								if (this.useMouse || keyCode2 < KeyCode.Mouse0 || keyCode2 > KeyCode.Mouse6)
 								{
 									UICamera.currentKey = keyCode2;
 									if (UICamera.onKey != null)
@@ -1878,6 +2122,7 @@ public class UICamera : MonoBehaviour
 			{
 				UICamera.ShowTooltip(null);
 			}
+			UICamera.mTooltipTime = Time.unscaledTime + this.tooltipDelay;
 			UICamera.currentTouch.pressStarted = true;
 			if (UICamera.onPress != null && UICamera.currentTouch.pressed)
 			{
@@ -1898,10 +2143,6 @@ public class UICamera : MonoBehaviour
 				UICamera.onPress(UICamera.currentTouch.pressed, true);
 			}
 			UICamera.Notify(UICamera.currentTouch.pressed, "OnPress", true);
-			if (UICamera.mTooltip != null)
-			{
-				UICamera.ShowTooltip(null);
-			}
 			if (UICamera.mSelected != UICamera.currentTouch.pressed)
 			{
 				UICamera.mInputFocus = false;
@@ -2041,19 +2282,23 @@ public class UICamera : MonoBehaviour
 				UICamera.onPress(UICamera.currentTouch.pressed, false);
 			}
 			UICamera.Notify(UICamera.currentTouch.pressed, "OnPress", false);
-			if (isMouse && this.HasCollider(UICamera.currentTouch.pressed))
+			if (isMouse)
 			{
-				if (UICamera.mHover == UICamera.currentTouch.current)
+				bool flag = this.HasCollider(UICamera.currentTouch.pressed);
+				if (flag)
 				{
-					if (UICamera.onHover != null)
+					if (UICamera.mHover == UICamera.currentTouch.current)
 					{
-						UICamera.onHover(UICamera.currentTouch.current, true);
+						if (UICamera.onHover != null)
+						{
+							UICamera.onHover(UICamera.currentTouch.current, true);
+						}
+						UICamera.Notify(UICamera.currentTouch.current, "OnHover", true);
 					}
-					UICamera.Notify(UICamera.currentTouch.current, "OnHover", true);
-				}
-				else
-				{
-					UICamera.hoveredObject = UICamera.currentTouch.current;
+					else
+					{
+						UICamera.hoveredObject = UICamera.currentTouch.current;
+					}
 				}
 			}
 			if (UICamera.currentTouch.dragged == UICamera.currentTouch.current || (UICamera.currentScheme != UICamera.ControlScheme.Controller && UICamera.currentTouch.clickNotification != UICamera.ClickNotification.None && UICamera.currentTouch.totalDelta.sqrMagnitude < drag))
@@ -2109,9 +2354,9 @@ public class UICamera : MonoBehaviour
 
 	public void ProcessTouch(bool pressed, bool released)
 	{
-		if (pressed)
+		if (released)
 		{
-			UICamera.mTooltipTime = Time.unscaledTime + this.tooltipDelay;
+			UICamera.mTooltipTime = 0f;
 		}
 		bool flag = UICamera.currentScheme == UICamera.ControlScheme.Mouse;
 		float num = (!flag) ? this.touchDragThreshold : this.mouseDragThreshold;
@@ -2125,7 +2370,7 @@ public class UICamera : MonoBehaviour
 				this.ProcessRelease(flag, num);
 			}
 			this.ProcessPress(pressed, num2, num);
-			if (UICamera.currentTouch.pressed == UICamera.currentTouch.current && UICamera.mTooltipTime != 0f && UICamera.currentTouch.clickNotification != UICamera.ClickNotification.None && !UICamera.currentTouch.dragStarted && UICamera.currentTouch.deltaTime > this.tooltipDelay)
+			if (this.tooltipDelay != 0f && UICamera.currentTouch.deltaTime > this.tooltipDelay && UICamera.currentTouch.pressed == UICamera.currentTouch.current && UICamera.mTooltipTime != 0f && !UICamera.currentTouch.dragStarted)
 			{
 				UICamera.mTooltipTime = 0f;
 				UICamera.currentTouch.clickNotification = UICamera.ClickNotification.None;
@@ -2144,6 +2389,11 @@ public class UICamera : MonoBehaviour
 				this.ProcessRelease(flag, num);
 			}
 		}
+	}
+
+	public static void CancelNextTooltip()
+	{
+		UICamera.mTooltipTime = 0f;
 	}
 
 	public static bool ShowTooltip(GameObject go)

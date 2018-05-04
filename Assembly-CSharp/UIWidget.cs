@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using UnityEngine;
 
@@ -18,16 +19,16 @@ public class UIWidget : UIRect
 		BottomRight = 8
 	}
 
+	public delegate void OnDimensionsChanged();
+
+	public delegate void OnPostFillCallback(UIWidget widget, int bufferOffset, List<Vector3> verts, List<Vector2> uvs, List<Color> cols);
+
 	public enum AspectRatioSource
 	{
 		Free = 0,
 		BasedOnWidth = 1,
 		BasedOnHeight = 2
 	}
-
-	public delegate void OnDimensionsChanged();
-
-	public delegate void OnPostFillCallback(UIWidget widget, int bufferOffset, BetterList<Vector3> verts, BetterList<Vector2> uvs, BetterList<Color32> cols);
 
 	public delegate bool HitCheck(Vector3 worldPos);
 
@@ -45,6 +46,9 @@ public class UIWidget : UIRect
 
 	[HideInInspector, SerializeField]
 	protected int mDepth;
+
+	[HideInInspector, SerializeField, Tooltip("Custom material, if desired")]
+	protected Material mMat;
 
 	public UIWidget.OnDimensionsChanged onChange;
 
@@ -489,11 +493,16 @@ public class UIWidget : UIRect
 	{
 		get
 		{
-			return null;
+			return this.mMat;
 		}
 		set
 		{
-			throw new NotImplementedException(base.GetType() + " has no material setter");
+			if (this.mMat != value)
+			{
+				this.RemoveFromPanel();
+				this.mMat = value;
+				this.MarkAsChanged();
+			}
 		}
 	}
 
@@ -718,9 +727,14 @@ public class UIWidget : UIRect
 
 	public void ResizeCollider()
 	{
-		if (NGUITools.GetActive(this))
+		BoxCollider component = base.GetComponent<BoxCollider>();
+		if (component != null)
 		{
-			NGUITools.UpdateWidgetCollider(base.gameObject);
+			NGUITools.UpdateWidgetCollider(this, component);
+		}
+		else
+		{
+			NGUITools.UpdateWidgetCollider(this, base.GetComponent<BoxCollider2D>());
 		}
 	}
 
@@ -871,11 +885,6 @@ public class UIWidget : UIRect
 		base.OnInit();
 		this.RemoveFromPanel();
 		this.mMoved = true;
-		if (this.mWidth == 100 && this.mHeight == 100 && base.cachedTransform.localScale.magnitude > 8f)
-		{
-			this.UpgradeFrom265();
-			base.cachedTransform.localScale = Vector3.one;
-		}
 		base.Update();
 	}
 
@@ -1180,9 +1189,9 @@ public class UIWidget : UIRect
 		return false;
 	}
 
-	public void WriteToBuffers(BetterList<Vector3> v, BetterList<Vector2> u, BetterList<Color32> c, BetterList<Vector3> n, BetterList<Vector4> t)
+	public void WriteToBuffers(List<Vector3> v, List<Vector2> u, List<Color> c, List<Vector3> n, List<Vector4> t, List<Vector4> u2)
 	{
-		this.geometry.WriteToBuffers(v, u, c, n, t);
+		this.geometry.WriteToBuffers(v, u, c, n, t, u2);
 	}
 
 	public virtual void MakePixelPerfect()
@@ -1196,7 +1205,7 @@ public class UIWidget : UIRect
 		base.cachedTransform.localScale = new Vector3(Mathf.Sign(localScale.x), Mathf.Sign(localScale.y), 1f);
 	}
 
-	public virtual void OnFill(BetterList<Vector3> verts, BetterList<Vector2> uvs, BetterList<Color32> cols)
+	public virtual void OnFill(List<Vector3> verts, List<Vector2> uvs, List<Color> cols)
 	{
 	}
 }

@@ -6,7 +6,7 @@ using System.Globalization;
 
 namespace StaRTS.Main.Models.ValueObjects
 {
-	public class DevNoteEntryVO : ITimestamped, ICallToAction, IValueObject
+	public class DevNoteEntryVO : ITimestamped, IValueObject, ICallToAction
 	{
 		public static int COLUMN_startDate
 		{

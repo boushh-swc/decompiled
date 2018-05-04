@@ -4,7 +4,7 @@ using System;
 
 namespace StaRTS.Main.Controllers.Performance
 {
-	public class BIFrameMonitor : IPerformanceObserver, IViewFrameTimeObserver
+	public class BIFrameMonitor : IViewFrameTimeObserver, IPerformanceObserver
 	{
 		private const int SECONDS_TO_CAPTURE = 5;
 

@@ -120,8 +120,6 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		private const string EQUIPMENT_ARMORY_REQUIRED = "EQUIPMENT_ARMORY_REQUIRED";
 
-		private const int MAX_TIMER_LABEL_WIDTH = 200;
-
 		private Planet currentPlanet;
 
 		private UXSprite lockedSprite;
@@ -140,13 +138,15 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		private UXGrid rewardsGrid;
 
+		private const int MAX_TIMER_LABEL_WIDTH = 200;
+
 		private List<GeometryProjector> projectors;
 
 		protected override bool IsFullScreen
 		{
 			get
 			{
-				return true;
+				return false;
 			}
 		}
 

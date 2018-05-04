@@ -37,17 +37,24 @@ namespace StaRTS.Main.Controllers.VictoryConditions
 			{
 				LootData lootData = cookie as LootData;
 				int num = 0;
-				switch (this.currencyType)
+				CurrencyType currencyType = this.currencyType;
+				if (currencyType != CurrencyType.Credits)
 				{
-				case CurrencyType.Credits:
+					if (currencyType != CurrencyType.Materials)
+					{
+						if (currencyType == CurrencyType.Contraband)
+						{
+							num = lootData.Contraband;
+						}
+					}
+					else
+					{
+						num = lootData.Materials;
+					}
+				}
+				else
+				{
 					num = lootData.Credits;
-					break;
-				case CurrencyType.Materials:
-					num = lootData.Materials;
-					break;
-				case CurrencyType.Contraband:
-					num = lootData.Contraband;
-					break;
 				}
 				if (num > 0)
 				{

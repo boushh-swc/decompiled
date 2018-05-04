@@ -1,12 +1,20 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 public static class NGUITools
 {
+	public delegate void OnInitFunc<T>(T w) where T : UIWidget;
+
+	[NonSerialized]
 	private static AudioListener mListener;
+
+	[NonSerialized]
+	public static AudioSource audioSource;
 
 	private static bool mLoaded = false;
 
@@ -15,6 +23,8 @@ public static class NGUITools
 	private static float mLastTimestamp = 0f;
 
 	private static AudioClip mLastClip;
+
+	private static Dictionary<Type, string> mTypeNames = new Dictionary<Type, string>();
 
 	private static Vector3[] mSides = new Vector3[4];
 
@@ -167,6 +177,20 @@ public static class NGUITools
 		KeyCode.JoystickButton19
 	};
 
+	private static Dictionary<string, UIWidget> mWidgets = new Dictionary<string, UIWidget>();
+
+	private static UIPanel mRoot;
+
+	private static GameObject mGo;
+
+	private static ColorSpace mColorSpace = ColorSpace.Uninitialized;
+
+	[CompilerGenerated]
+	private static Comparison<UIWidget> <>f__mg$cache0;
+
+	[CompilerGenerated]
+	private static Comparison<UIPanel> <>f__mg$cache1;
+
 	public static float soundVolume
 	{
 		get
@@ -193,7 +217,7 @@ public static class NGUITools
 	{
 		get
 		{
-			return Application.platform != RuntimePlatform.WindowsWebPlayer && Application.platform != RuntimePlatform.OSXWebPlayer;
+			return Application.platform != RuntimePlatform.WebGLPlayer;
 		}
 	}
 
@@ -203,12 +227,12 @@ public static class NGUITools
 		{
 			TextEditor textEditor = new TextEditor();
 			textEditor.Paste();
-			return textEditor.content.text;
+			return textEditor.text;
 		}
 		set
 		{
 			TextEditor textEditor = new TextEditor();
-			textEditor.content = new GUIContent(value);
+			textEditor.text = value;
 			textEditor.OnFocus();
 			textEditor.Copy();
 		}
@@ -273,15 +297,18 @@ public static class NGUITools
 			}
 			if (NGUITools.mListener != null && NGUITools.mListener.enabled && NGUITools.GetActive(NGUITools.mListener.gameObject))
 			{
-				AudioSource audioSource = NGUITools.mListener.GetComponent<AudioSource>();
-				if (audioSource == null)
+				if (!NGUITools.audioSource)
 				{
-					audioSource = NGUITools.mListener.gameObject.AddComponent<AudioSource>();
+					NGUITools.audioSource = NGUITools.mListener.GetComponent<AudioSource>();
+					if (NGUITools.audioSource == null)
+					{
+						NGUITools.audioSource = NGUITools.mListener.gameObject.AddComponent<AudioSource>();
+					}
 				}
-				audioSource.priority = 50;
-				audioSource.pitch = pitch;
-				audioSource.PlayOneShot(clip, volume);
-				return audioSource;
+				NGUITools.audioSource.priority = 50;
+				NGUITools.audioSource.pitch = pitch;
+				NGUITools.audioSource.PlayOneShot(clip, volume);
+				return NGUITools.audioSource;
 			}
 		}
 		return null;
@@ -450,6 +477,63 @@ public static class NGUITools
 		}
 	}
 
+	public static void UpdateWidgetCollider(UIWidget w)
+	{
+		if (w == null)
+		{
+			return;
+		}
+		BoxCollider component = w.GetComponent<BoxCollider>();
+		if (component != null)
+		{
+			NGUITools.UpdateWidgetCollider(w, component);
+		}
+		else
+		{
+			NGUITools.UpdateWidgetCollider(w, w.GetComponent<BoxCollider2D>());
+		}
+	}
+
+	public static void UpdateWidgetCollider(UIWidget w, BoxCollider box)
+	{
+		if (box != null && w != null)
+		{
+			Vector4 drawRegion = w.drawRegion;
+			if (drawRegion.x != 0f || drawRegion.y != 0f || drawRegion.z != 1f || drawRegion.w != 1f)
+			{
+				Vector4 drawingDimensions = w.drawingDimensions;
+				box.center = new Vector3((drawingDimensions.x + drawingDimensions.z) * 0.5f, (drawingDimensions.y + drawingDimensions.w) * 0.5f);
+				box.size = new Vector3(drawingDimensions.z - drawingDimensions.x, drawingDimensions.w - drawingDimensions.y);
+			}
+			else
+			{
+				Vector3[] localCorners = w.localCorners;
+				box.center = Vector3.Lerp(localCorners[0], localCorners[2], 0.5f);
+				box.size = localCorners[2] - localCorners[0];
+			}
+		}
+	}
+
+	public static void UpdateWidgetCollider(UIWidget w, BoxCollider2D box)
+	{
+		if (box != null && w != null)
+		{
+			Vector4 drawRegion = w.drawRegion;
+			if (drawRegion.x != 0f || drawRegion.y != 0f || drawRegion.z != 1f || drawRegion.w != 1f)
+			{
+				Vector4 drawingDimensions = w.drawingDimensions;
+				box.offset = new Vector3((drawingDimensions.x + drawingDimensions.z) * 0.5f, (drawingDimensions.y + drawingDimensions.w) * 0.5f);
+				box.size = new Vector3(drawingDimensions.z - drawingDimensions.x, drawingDimensions.w - drawingDimensions.y);
+			}
+			else
+			{
+				Vector3[] localCorners = w.localCorners;
+				box.offset = Vector3.Lerp(localCorners[0], localCorners[2], 0.5f);
+				box.size = localCorners[2] - localCorners[0];
+			}
+		}
+	}
+
 	public static void UpdateWidgetCollider(BoxCollider2D box, bool considerInactive)
 	{
 		if (box != null)
@@ -458,9 +542,19 @@ public static class NGUITools
 			UIWidget component = gameObject.GetComponent<UIWidget>();
 			if (component != null)
 			{
-				Vector3[] localCorners = component.localCorners;
-				box.offset = Vector3.Lerp(localCorners[0], localCorners[2], 0.5f);
-				box.size = localCorners[2] - localCorners[0];
+				Vector4 drawRegion = component.drawRegion;
+				if (drawRegion.x != 0f || drawRegion.y != 0f || drawRegion.z != 1f || drawRegion.w != 1f)
+				{
+					Vector4 drawingDimensions = component.drawingDimensions;
+					box.offset = new Vector3((drawingDimensions.x + drawingDimensions.z) * 0.5f, (drawingDimensions.y + drawingDimensions.w) * 0.5f);
+					box.size = new Vector3(drawingDimensions.z - drawingDimensions.x, drawingDimensions.w - drawingDimensions.y);
+				}
+				else
+				{
+					Vector3[] localCorners = component.localCorners;
+					box.offset = Vector3.Lerp(localCorners[0], localCorners[2], 0.5f);
+					box.size = localCorners[2] - localCorners[0];
+				}
 			}
 			else
 			{
@@ -507,16 +601,26 @@ public static class NGUITools
 	{
 	}
 
-	public static void SetDirty(UnityEngine.Object obj)
+	public static void SetDirty(UnityEngine.Object obj, string undoName = "last change")
 	{
 	}
 
 	public static GameObject AddChild(GameObject parent)
 	{
-		return NGUITools.AddChild(parent, true);
+		return parent.AddChild(true, -1);
 	}
 
-	public static GameObject AddChild(GameObject parent, bool undo)
+	public static GameObject AddChild(this GameObject parent, int layer)
+	{
+		return parent.AddChild(true, layer);
+	}
+
+	public static GameObject AddChild(this GameObject parent, bool undo)
+	{
+		return parent.AddChild(undo, -1);
+	}
+
+	public static GameObject AddChild(this GameObject parent, bool undo, int layer)
 	{
 		GameObject gameObject = new GameObject();
 		if (parent != null)
@@ -526,22 +630,45 @@ public static class NGUITools
 			transform.localPosition = Vector3.zero;
 			transform.localRotation = Quaternion.identity;
 			transform.localScale = Vector3.one;
-			gameObject.layer = parent.layer;
+			if (layer == -1)
+			{
+				gameObject.layer = parent.layer;
+			}
+			else if (layer > -1 && layer < 32)
+			{
+				gameObject.layer = layer;
+			}
 		}
 		return gameObject;
 	}
 
-	public static GameObject AddChild(GameObject parent, GameObject prefab)
+	public static GameObject AddChild(this GameObject parent, GameObject prefab)
 	{
-		GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(prefab);
-		if (gameObject != null && parent != null)
+		return parent.AddChild(prefab, -1);
+	}
+
+	public static GameObject AddChild(this GameObject parent, GameObject prefab, int layer)
+	{
+		GameObject gameObject = (!(parent != null)) ? UnityEngine.Object.Instantiate<GameObject>(prefab) : UnityEngine.Object.Instantiate<GameObject>(prefab, parent.transform);
+		if (gameObject != null)
 		{
 			Transform transform = gameObject.transform;
-			transform.parent = parent.transform;
+			gameObject.name = prefab.name;
+			if (parent != null)
+			{
+				if (layer == -1)
+				{
+					gameObject.layer = parent.layer;
+				}
+				else if (layer > -1 && layer < 32)
+				{
+					gameObject.layer = layer;
+				}
+			}
 			transform.localPosition = Vector3.zero;
 			transform.localRotation = Quaternion.identity;
 			transform.localScale = Vector3.one;
-			gameObject.layer = parent.layer;
+			gameObject.SetActive(true);
 		}
 		return gameObject;
 	}
@@ -696,7 +823,11 @@ public static class NGUITools
 		int num = list.Length;
 		if (num > 0)
 		{
-			Array.Sort<UIWidget>(list, new Comparison<UIWidget>(UIWidget.FullCompareFunc));
+			if (NGUITools.<>f__mg$cache0 == null)
+			{
+				NGUITools.<>f__mg$cache0 = new Comparison<UIWidget>(UIWidget.FullCompareFunc);
+			}
+			Array.Sort<UIWidget>(list, NGUITools.<>f__mg$cache0);
 			int num2 = 0;
 			int depth = list[0].depth;
 			for (int i = 0; i < num; i++)
@@ -721,7 +852,12 @@ public static class NGUITools
 		int num = array.Length;
 		if (num > 0)
 		{
-			Array.Sort<UIPanel>(array, new Comparison<UIPanel>(UIPanel.CompareFunc));
+			UIPanel[] arg_2F_0 = array;
+			if (NGUITools.<>f__mg$cache1 == null)
+			{
+				NGUITools.<>f__mg$cache1 = new Comparison<UIPanel>(UIPanel.CompareFunc);
+			}
+			Array.Sort<UIPanel>(arg_2F_0, NGUITools.<>f__mg$cache1);
 			int num2 = 0;
 			int depth = array[0].depth;
 			for (int i = 0; i < num; i++)
@@ -792,7 +928,7 @@ public static class NGUITools
 		}
 		if (uIRoot == null)
 		{
-			GameObject gameObject2 = NGUITools.AddChild(null, false);
+			GameObject gameObject2 = NGUITools.AddChild((GameObject)null, false);
 			uIRoot = gameObject2.AddComponent<UIRoot>();
 			if (layer == -1)
 			{
@@ -813,6 +949,7 @@ public static class NGUITools
 				gameObject2.name = "UI Root";
 				uIRoot.scalingStyle = UIRoot.Scaling.Flexible;
 			}
+			uIRoot.UpdateScale(true);
 		}
 		UIPanel uIPanel2 = uIRoot.GetComponentInChildren<UIPanel>();
 		if (uIPanel2 == null)
@@ -831,7 +968,7 @@ public static class NGUITools
 				num = Mathf.Max(num, camera.depth);
 				camera.cullingMask &= ~num2;
 			}
-			Camera camera2 = NGUITools.AddChild<Camera>(uIRoot.gameObject, false);
+			Camera camera2 = uIRoot.gameObject.AddChild(false);
 			camera2.gameObject.AddComponent<UICamera>();
 			camera2.clearFlags = ((!flag) ? CameraClearFlags.Color : CameraClearFlags.Depth);
 			camera2.backgroundColor = Color.grey;
@@ -872,53 +1009,65 @@ public static class NGUITools
 				trans.parent = uIPanel2.transform;
 				trans.localScale = Vector3.one;
 				trans.localPosition = Vector3.zero;
-				NGUITools.SetChildLayer(uIPanel2.cachedTransform, uIPanel2.cachedGameObject.layer);
+				uIPanel2.cachedTransform.SetChildLayer(uIPanel2.cachedGameObject.layer);
 			}
 		}
 		return uIPanel2;
 	}
 
-	public static void SetChildLayer(Transform t, int layer)
+	public static void SetChildLayer(this Transform t, int layer)
 	{
 		for (int i = 0; i < t.childCount; i++)
 		{
 			Transform child = t.GetChild(i);
 			child.gameObject.layer = layer;
-			NGUITools.SetChildLayer(child, layer);
+			child.SetChildLayer(layer);
 		}
 	}
 
-	public static T AddChild<T>(GameObject parent) where T : Component
+	public static T AddChild<T>(this GameObject parent) where T : Component
 	{
 		GameObject gameObject = NGUITools.AddChild(parent);
-		gameObject.name = NGUITools.GetTypeName<T>();
+		string typeName;
+		if (!NGUITools.mTypeNames.TryGetValue(typeof(T), out typeName) || typeName == null)
+		{
+			typeName = NGUITools.GetTypeName<T>();
+			NGUITools.mTypeNames[typeof(T)] = typeName;
+		}
+		gameObject.name = typeName;
 		return gameObject.AddComponent<T>();
 	}
 
-	public static T AddChild<T>(GameObject parent, bool undo) where T : Component
+	public static T AddChild<T>(this GameObject parent, bool undo) where T : Component
 	{
-		GameObject gameObject = NGUITools.AddChild(parent, undo);
-		gameObject.name = NGUITools.GetTypeName<T>();
+		GameObject gameObject = parent.AddChild(undo);
+		string typeName;
+		if (!NGUITools.mTypeNames.TryGetValue(typeof(T), out typeName) || typeName == null)
+		{
+			typeName = NGUITools.GetTypeName<T>();
+			NGUITools.mTypeNames[typeof(T)] = typeName;
+		}
+		gameObject.name = typeName;
 		return gameObject.AddComponent<T>();
 	}
 
-	public static T AddWidget<T>(GameObject go, int depth = 2147483647) where T : UIWidget
+	public static T AddWidget<T>(this GameObject go, int depth = 2147483647) where T : UIWidget
 	{
 		if (depth == 2147483647)
 		{
 			depth = NGUITools.CalculateNextDepth(go);
 		}
-		T result = NGUITools.AddChild<T>(go);
+		T result = go.AddChild<T>();
 		result.width = 100;
 		result.height = 100;
 		result.depth = depth;
 		return result;
 	}
 
-	public static UISprite AddSprite(GameObject go, UIAtlas atlas, string spriteName, int depth = 2147483647)
+	public static UISprite AddSprite(this GameObject go, UIAtlas atlas, string spriteName, int depth = 2147483647)
 	{
 		UISpriteData uISpriteData = (!(atlas != null)) ? null : atlas.GetSprite(spriteName);
-		UISprite uISprite = NGUITools.AddWidget<UISprite>(go, depth);
+		UISprite uISprite = go.AddWidget(depth);
 		uISprite.type = ((uISpriteData != null && uISpriteData.hasBorder) ? UIBasicSprite.Type.Sliced : UIBasicSprite.Type.Simple);
 		uISprite.atlas = atlas;
 		uISprite.spriteName = spriteName;
@@ -946,17 +1095,7 @@ public static class NGUITools
 		{
 			return (T)((object)null);
 		}
-		T component = go.GetComponent<T>();
-		if (component == null)
-		{
-			Transform parent = go.transform.parent;
-			while (parent != null && component == null)
-			{
-				component = parent.gameObject.GetComponent<T>();
-				parent = parent.parent;
-			}
-		}
-		return component;
+		return go.GetComponentInParent<T>();
 	}
 
 	public static T FindInParents<T>(Transform trans) where T : Component
@@ -1070,19 +1209,7 @@ public static class NGUITools
 
 	public static bool IsChild(Transform parent, Transform child)
 	{
-		if (parent == null || child == null)
-		{
-			return false;
-		}
-		while (child != null)
-		{
-			if (child == parent)
-			{
-				return true;
-			}
-			child = child.parent;
-		}
-		return false;
+		return child.IsChildOf(parent);
 	}
 
 	private static void Activate(Transform t)
@@ -1252,6 +1379,86 @@ public static class NGUITools
 			NGUITools.MakePixelPerfect(t.GetChild(i));
 			i++;
 		}
+	}
+
+	public static void FitOnScreen(this Camera cam, Transform t, bool considerInactive = false, bool considerChildren = true)
+	{
+		Bounds bounds = NGUIMath.CalculateRelativeWidgetBounds(t, t, considerInactive, considerChildren);
+		Vector3 a = cam.WorldToScreenPoint(t.position);
+		Vector3 vector = a + bounds.min;
+		Vector3 vector2 = a + bounds.max;
+		int width = Screen.width;
+		int height = Screen.height;
+		Vector2 zero = Vector2.zero;
+		if (vector.x < 0f)
+		{
+			zero.x = -vector.x;
+		}
+		else if (vector2.x > (float)width)
+		{
+			zero.x = (float)width - vector2.x;
+		}
+		if (vector.y < 0f)
+		{
+			zero.y = -vector.y;
+		}
+		else if (vector2.y > (float)height)
+		{
+			zero.y = (float)height - vector2.y;
+		}
+		if (zero.sqrMagnitude > 0f)
+		{
+			t.localPosition += new Vector3(zero.x, zero.y, 0f);
+		}
+	}
+
+	public static void FitOnScreen(this Camera cam, Transform transform, Vector3 pos)
+	{
+		cam.FitOnScreen(transform, transform, pos, false);
+	}
+
+	public static void FitOnScreen(this Camera cam, Transform transform, Transform content, Vector3 pos, bool considerInactive = false)
+	{
+		Bounds bounds;
+		cam.FitOnScreen(transform, content, pos, out bounds, considerInactive);
+	}
+
+	public static void FitOnScreen(this Camera cam, Transform transform, Transform content, Vector3 pos, out Bounds bounds, bool considerInactive = false)
+	{
+		bounds = NGUIMath.CalculateRelativeWidgetBounds(transform, content, considerInactive, true);
+		Vector3 min = bounds.min;
+		Vector3 vector = bounds.max;
+		Vector3 size = bounds.size;
+		size.x += min.x;
+		size.y -= vector.y;
+		if (cam != null)
+		{
+			pos.x = Mathf.Clamp01(pos.x / (float)Screen.width);
+			pos.y = Mathf.Clamp01(pos.y / (float)Screen.height);
+			float num = cam.orthographicSize / transform.parent.lossyScale.y;
+			float num2 = (float)Screen.height * 0.5f / num;
+			vector = new Vector2(num2 * size.x / (float)Screen.width, num2 * size.y / (float)Screen.height);
+			pos.x = Mathf.Min(pos.x, 1f - vector.x);
+			pos.y = Mathf.Max(pos.y, vector.y);
+			transform.position = cam.ViewportToWorldPoint(pos);
+			pos = transform.localPosition;
+			pos.x = Mathf.Round(pos.x);
+			pos.y = Mathf.Round(pos.y);
+		}
+		else
+		{
+			if (pos.x + size.x > (float)Screen.width)
+			{
+				pos.x = (float)Screen.width - size.x;
+			}
+			if (pos.y - size.y < 0f)
+			{
+				pos.y = size.y;
+			}
+			pos.x -= (float)Screen.width * 0.5f;
+			pos.y -= (float)Screen.height * 0.5f;
+		}
+		transform.localPosition = pos;
 	}
 
 	public static bool Save(string fileName, byte[] bytes)
@@ -1526,366 +1733,433 @@ public static class NGUITools
 	{
 		switch (key)
 		{
-		case KeyCode.None:
-			return null;
-		case (KeyCode)1:
-		case (KeyCode)2:
-		case (KeyCode)3:
-		case (KeyCode)4:
-		case (KeyCode)5:
-		case (KeyCode)6:
-		case (KeyCode)7:
-		case (KeyCode)10:
-		case (KeyCode)11:
-		case (KeyCode)14:
-		case (KeyCode)15:
-		case (KeyCode)16:
-		case (KeyCode)17:
-		case (KeyCode)18:
-		case (KeyCode)20:
-		case (KeyCode)21:
-		case (KeyCode)22:
-		case (KeyCode)23:
-		case (KeyCode)24:
-		case (KeyCode)25:
-		case (KeyCode)26:
-		case (KeyCode)28:
-		case (KeyCode)29:
-		case (KeyCode)30:
-		case (KeyCode)31:
-		case (KeyCode)37:
-		case (KeyCode)65:
-		case (KeyCode)66:
-		case (KeyCode)67:
-		case (KeyCode)68:
-		case (KeyCode)69:
-		case (KeyCode)70:
-		case (KeyCode)71:
-		case (KeyCode)72:
-		case (KeyCode)73:
-		case (KeyCode)74:
-		case (KeyCode)75:
-		case (KeyCode)76:
-		case (KeyCode)77:
-		case (KeyCode)78:
-		case (KeyCode)79:
-		case (KeyCode)80:
-		case (KeyCode)81:
-		case (KeyCode)82:
-		case (KeyCode)83:
-		case (KeyCode)84:
-		case (KeyCode)85:
-		case (KeyCode)86:
-		case (KeyCode)87:
-		case (KeyCode)88:
-		case (KeyCode)89:
-		case (KeyCode)90:
-		case (KeyCode)123:
-		case (KeyCode)124:
-		case (KeyCode)125:
-		case (KeyCode)126:
-			IL_208:
+		case KeyCode.Keypad0:
+			return "K0";
+		case KeyCode.Keypad1:
+			return "K1";
+		case KeyCode.Keypad2:
+			return "K2";
+		case KeyCode.Keypad3:
+			return "K3";
+		case KeyCode.Keypad4:
+			return "K4";
+		case KeyCode.Keypad5:
+			return "K5";
+		case KeyCode.Keypad6:
+			return "K6";
+		case KeyCode.Keypad7:
+			return "K7";
+		case KeyCode.Keypad8:
+			return "K8";
+		case KeyCode.Keypad9:
+			return "K9";
+		case KeyCode.KeypadPeriod:
+			return ".";
+		case KeyCode.KeypadDivide:
+			return "/";
+		case KeyCode.KeypadMultiply:
+			return "*";
+		case KeyCode.KeypadMinus:
+			return "-";
+		case KeyCode.KeypadPlus:
+			return "+";
+		case KeyCode.KeypadEnter:
+			return "NT";
+		case KeyCode.KeypadEquals:
+			return "=";
+		case KeyCode.UpArrow:
+			return "UP";
+		case KeyCode.DownArrow:
+			return "DN";
+		case KeyCode.RightArrow:
+			return "LT";
+		case KeyCode.LeftArrow:
+			return "RT";
+		case KeyCode.Insert:
+			return "Ins";
+		case KeyCode.Home:
+			return "Home";
+		case KeyCode.End:
+			return "End";
+		case KeyCode.PageUp:
+			return "PU";
+		case KeyCode.PageDown:
+			return "PD";
+		case KeyCode.F1:
+			return "F1";
+		case KeyCode.F2:
+			return "F2";
+		case KeyCode.F3:
+			return "F3";
+		case KeyCode.F4:
+			return "F4";
+		case KeyCode.F5:
+			return "F5";
+		case KeyCode.F6:
+			return "F6";
+		case KeyCode.F7:
+			return "F7";
+		case KeyCode.F8:
+			return "F8";
+		case KeyCode.F9:
+			return "F9";
+		case KeyCode.F10:
+			return "F10";
+		case KeyCode.F11:
+			return "F11";
+		case KeyCode.F12:
+			return "F12";
+		case KeyCode.F13:
+			return "F13";
+		case KeyCode.F14:
+			return "F14";
+		case KeyCode.F15:
+			return "F15";
+		case (KeyCode)297:
+		case (KeyCode)298:
+		case (KeyCode)299:
+		case KeyCode.RightCommand:
+		case KeyCode.LeftCommand:
+		case KeyCode.LeftWindows:
+		case KeyCode.RightWindows:
+		case KeyCode.AltGr:
+		case (KeyCode)314:
+		case KeyCode.Help:
+		case KeyCode.Print:
+		case KeyCode.SysReq:
+		case KeyCode.Break:
+		case KeyCode.Menu:
+		case (KeyCode)320:
+		case (KeyCode)321:
+		case (KeyCode)322:
+			IL_184:
 			switch (key)
 			{
-			case KeyCode.Keypad0:
-				return "K0";
-			case KeyCode.Keypad1:
-				return "K1";
-			case KeyCode.Keypad2:
-				return "K2";
-			case KeyCode.Keypad3:
-				return "K3";
-			case KeyCode.Keypad4:
-				return "K4";
-			case KeyCode.Keypad5:
-				return "K5";
-			case KeyCode.Keypad6:
-				return "K6";
-			case KeyCode.Keypad7:
-				return "K7";
-			case KeyCode.Keypad8:
-				return "K8";
-			case KeyCode.Keypad9:
-				return "K9";
-			case KeyCode.KeypadPeriod:
-				return ".";
-			case KeyCode.KeypadDivide:
-				return "/";
-			case KeyCode.KeypadMultiply:
+			case KeyCode.Space:
+				return "SP";
+			case KeyCode.Exclaim:
+				return "!";
+			case KeyCode.DoubleQuote:
+				return "\"";
+			case KeyCode.Hash:
+				return "#";
+			case KeyCode.Dollar:
+				return "$";
+			case (KeyCode)37:
+			case (KeyCode)65:
+			case (KeyCode)66:
+			case (KeyCode)67:
+			case (KeyCode)68:
+			case (KeyCode)69:
+			case (KeyCode)70:
+			case (KeyCode)71:
+			case (KeyCode)72:
+			case (KeyCode)73:
+			case (KeyCode)74:
+			case (KeyCode)75:
+			case (KeyCode)76:
+			case (KeyCode)77:
+			case (KeyCode)78:
+			case (KeyCode)79:
+			case (KeyCode)80:
+			case (KeyCode)81:
+			case (KeyCode)82:
+			case (KeyCode)83:
+			case (KeyCode)84:
+			case (KeyCode)85:
+			case (KeyCode)86:
+			case (KeyCode)87:
+			case (KeyCode)88:
+			case (KeyCode)89:
+			case (KeyCode)90:
+			case (KeyCode)123:
+			case (KeyCode)124:
+			case (KeyCode)125:
+			case (KeyCode)126:
+				IL_30D:
+				switch (key)
+				{
+				case KeyCode.Backspace:
+					return "BS";
+				case KeyCode.Tab:
+					return "Tab";
+				case (KeyCode)10:
+				case (KeyCode)11:
+					IL_32D:
+					if (key == KeyCode.None)
+					{
+						return null;
+					}
+					if (key == KeyCode.Pause)
+					{
+						return "PS";
+					}
+					if (key != KeyCode.Escape)
+					{
+						return null;
+					}
+					return "Esc";
+				case KeyCode.Clear:
+					return "Clr";
+				case KeyCode.Return:
+					return "NT";
+				}
+				goto IL_32D;
+			case KeyCode.Ampersand:
+				return "&";
+			case KeyCode.Quote:
+				return "'";
+			case KeyCode.LeftParen:
+				return "(";
+			case KeyCode.RightParen:
+				return ")";
+			case KeyCode.Asterisk:
 				return "*";
-			case KeyCode.KeypadMinus:
-				return "-";
-			case KeyCode.KeypadPlus:
+			case KeyCode.Plus:
 				return "+";
-			case KeyCode.KeypadEnter:
-				return "NT";
-			case KeyCode.KeypadEquals:
+			case KeyCode.Comma:
+				return ",";
+			case KeyCode.Minus:
+				return "-";
+			case KeyCode.Period:
+				return ".";
+			case KeyCode.Slash:
+				return "/";
+			case KeyCode.Alpha0:
+				return "0";
+			case KeyCode.Alpha1:
+				return "1";
+			case KeyCode.Alpha2:
+				return "2";
+			case KeyCode.Alpha3:
+				return "3";
+			case KeyCode.Alpha4:
+				return "4";
+			case KeyCode.Alpha5:
+				return "5";
+			case KeyCode.Alpha6:
+				return "6";
+			case KeyCode.Alpha7:
+				return "7";
+			case KeyCode.Alpha8:
+				return "8";
+			case KeyCode.Alpha9:
+				return "9";
+			case KeyCode.Colon:
+				return ":";
+			case KeyCode.Semicolon:
+				return ";";
+			case KeyCode.Less:
+				return "<";
+			case KeyCode.Equals:
 				return "=";
-			case KeyCode.UpArrow:
-				return "UP";
-			case KeyCode.DownArrow:
-				return "DN";
-			case KeyCode.RightArrow:
-				return "LT";
-			case KeyCode.LeftArrow:
-				return "RT";
-			case KeyCode.Insert:
-				return "Ins";
-			case KeyCode.Home:
-				return "Home";
-			case KeyCode.End:
-				return "End";
-			case KeyCode.PageUp:
-				return "PU";
-			case KeyCode.PageDown:
-				return "PD";
-			case KeyCode.F1:
-				return "F1";
-			case KeyCode.F2:
-				return "F2";
-			case KeyCode.F3:
-				return "F3";
-			case KeyCode.F4:
-				return "F4";
-			case KeyCode.F5:
-				return "F5";
-			case KeyCode.F6:
-				return "F6";
-			case KeyCode.F7:
-				return "F7";
-			case KeyCode.F8:
-				return "F8";
-			case KeyCode.F9:
-				return "F9";
-			case KeyCode.F10:
-				return "F10";
-			case KeyCode.F11:
-				return "F11";
-			case KeyCode.F12:
-				return "F12";
-			case KeyCode.F13:
-				return "F13";
-			case KeyCode.F14:
-				return "F14";
-			case KeyCode.F15:
-				return "F15";
-			case KeyCode.Numlock:
-				return "Num";
-			case KeyCode.CapsLock:
-				return "Cap";
-			case KeyCode.ScrollLock:
-				return "Scr";
-			case KeyCode.RightShift:
-				return "RS";
-			case KeyCode.LeftShift:
-				return "LS";
-			case KeyCode.RightControl:
-				return "RC";
-			case KeyCode.LeftControl:
-				return "LC";
-			case KeyCode.RightAlt:
-				return "RA";
-			case KeyCode.LeftAlt:
-				return "LA";
-			case KeyCode.Mouse0:
-				return "M0";
-			case KeyCode.Mouse1:
-				return "M1";
-			case KeyCode.Mouse2:
-				return "M2";
-			case KeyCode.Mouse3:
-				return "M3";
-			case KeyCode.Mouse4:
-				return "M4";
-			case KeyCode.Mouse5:
-				return "M5";
-			case KeyCode.Mouse6:
-				return "M6";
-			case KeyCode.JoystickButton0:
-				return "(A)";
-			case KeyCode.JoystickButton1:
-				return "(B)";
-			case KeyCode.JoystickButton2:
-				return "(X)";
-			case KeyCode.JoystickButton3:
-				return "(Y)";
-			case KeyCode.JoystickButton4:
-				return "(RB)";
-			case KeyCode.JoystickButton5:
-				return "(LB)";
-			case KeyCode.JoystickButton6:
-				return "(Back)";
-			case KeyCode.JoystickButton7:
-				return "(Start)";
-			case KeyCode.JoystickButton8:
-				return "(LS)";
-			case KeyCode.JoystickButton9:
-				return "(RS)";
-			case KeyCode.JoystickButton10:
-				return "J10";
-			case KeyCode.JoystickButton11:
-				return "J11";
-			case KeyCode.JoystickButton12:
-				return "J12";
-			case KeyCode.JoystickButton13:
-				return "J13";
-			case KeyCode.JoystickButton14:
-				return "J14";
-			case KeyCode.JoystickButton15:
-				return "J15";
-			case KeyCode.JoystickButton16:
-				return "J16";
-			case KeyCode.JoystickButton17:
-				return "J17";
-			case KeyCode.JoystickButton18:
-				return "J18";
-			case KeyCode.JoystickButton19:
-				return "J19";
+			case KeyCode.Greater:
+				return ">";
+			case KeyCode.Question:
+				return "?";
+			case KeyCode.At:
+				return "@";
+			case KeyCode.LeftBracket:
+				return "[";
+			case KeyCode.Backslash:
+				return "\\";
+			case KeyCode.RightBracket:
+				return "]";
+			case KeyCode.Caret:
+				return "^";
+			case KeyCode.Underscore:
+				return "_";
+			case KeyCode.BackQuote:
+				return "`";
+			case KeyCode.A:
+				return "A";
+			case KeyCode.B:
+				return "B";
+			case KeyCode.C:
+				return "C";
+			case KeyCode.D:
+				return "D";
+			case KeyCode.E:
+				return "E";
+			case KeyCode.F:
+				return "F";
+			case KeyCode.G:
+				return "G";
+			case KeyCode.H:
+				return "H";
+			case KeyCode.I:
+				return "I";
+			case KeyCode.J:
+				return "J";
+			case KeyCode.K:
+				return "K";
+			case KeyCode.L:
+				return "L";
+			case KeyCode.M:
+				return "M";
+			case KeyCode.N:
+				return "N0";
+			case KeyCode.O:
+				return "O";
+			case KeyCode.P:
+				return "P";
+			case KeyCode.Q:
+				return "Q";
+			case KeyCode.R:
+				return "R";
+			case KeyCode.S:
+				return "S";
+			case KeyCode.T:
+				return "T";
+			case KeyCode.U:
+				return "U";
+			case KeyCode.V:
+				return "V";
+			case KeyCode.W:
+				return "W";
+			case KeyCode.X:
+				return "X";
+			case KeyCode.Y:
+				return "Y";
+			case KeyCode.Z:
+				return "Z";
+			case KeyCode.Delete:
+				return "Del";
 			}
-			return null;
-		case KeyCode.Backspace:
-			return "BS";
-		case KeyCode.Tab:
-			return "Tab";
-		case KeyCode.Clear:
-			return "Clr";
-		case KeyCode.Return:
-			return "NT";
-		case KeyCode.Pause:
-			return "PS";
-		case KeyCode.Escape:
-			return "Esc";
-		case KeyCode.Space:
-			return "SP";
-		case KeyCode.Exclaim:
-			return "!";
-		case KeyCode.DoubleQuote:
-			return "\"";
-		case KeyCode.Hash:
-			return "#";
-		case KeyCode.Dollar:
-			return "$";
-		case KeyCode.Ampersand:
-			return "&";
-		case KeyCode.Quote:
-			return "'";
-		case KeyCode.LeftParen:
-			return "(";
-		case KeyCode.RightParen:
-			return ")";
-		case KeyCode.Asterisk:
-			return "*";
-		case KeyCode.Plus:
-			return "+";
-		case KeyCode.Comma:
-			return ",";
-		case KeyCode.Minus:
-			return "-";
-		case KeyCode.Period:
-			return ".";
-		case KeyCode.Slash:
-			return "/";
-		case KeyCode.Alpha0:
-			return "0";
-		case KeyCode.Alpha1:
-			return "1";
-		case KeyCode.Alpha2:
-			return "2";
-		case KeyCode.Alpha3:
-			return "3";
-		case KeyCode.Alpha4:
-			return "4";
-		case KeyCode.Alpha5:
-			return "5";
-		case KeyCode.Alpha6:
-			return "6";
-		case KeyCode.Alpha7:
-			return "7";
-		case KeyCode.Alpha8:
-			return "8";
-		case KeyCode.Alpha9:
-			return "9";
-		case KeyCode.Colon:
-			return ":";
-		case KeyCode.Semicolon:
-			return ";";
-		case KeyCode.Less:
-			return "<";
-		case KeyCode.Equals:
-			return "=";
-		case KeyCode.Greater:
-			return ">";
-		case KeyCode.Question:
-			return "?";
-		case KeyCode.At:
-			return "@";
-		case KeyCode.LeftBracket:
-			return "[";
-		case KeyCode.Backslash:
-			return "\\";
-		case KeyCode.RightBracket:
-			return "]";
-		case KeyCode.Caret:
-			return "^";
-		case KeyCode.Underscore:
-			return "_";
-		case KeyCode.BackQuote:
-			return "`";
-		case KeyCode.A:
-			return "A";
-		case KeyCode.B:
-			return "B";
-		case KeyCode.C:
-			return "C";
-		case KeyCode.D:
-			return "D";
-		case KeyCode.E:
-			return "E";
-		case KeyCode.F:
-			return "F";
-		case KeyCode.G:
-			return "G";
-		case KeyCode.H:
-			return "H";
-		case KeyCode.I:
-			return "I";
-		case KeyCode.J:
-			return "J";
-		case KeyCode.K:
-			return "K";
-		case KeyCode.L:
-			return "L";
-		case KeyCode.M:
-			return "M";
-		case KeyCode.N:
-			return "N0";
-		case KeyCode.O:
-			return "O";
-		case KeyCode.P:
-			return "P";
-		case KeyCode.Q:
-			return "Q";
-		case KeyCode.R:
-			return "R";
-		case KeyCode.S:
-			return "S";
-		case KeyCode.T:
-			return "T";
-		case KeyCode.U:
-			return "U";
-		case KeyCode.V:
-			return "V";
-		case KeyCode.W:
-			return "W";
-		case KeyCode.X:
-			return "X";
-		case KeyCode.Y:
-			return "Y";
-		case KeyCode.Z:
-			return "Z";
-		case KeyCode.Delete:
-			return "Del";
+			goto IL_30D;
+		case KeyCode.Numlock:
+			return "Num";
+		case KeyCode.CapsLock:
+			return "Cap";
+		case KeyCode.ScrollLock:
+			return "Scr";
+		case KeyCode.RightShift:
+			return "RS";
+		case KeyCode.LeftShift:
+			return "LS";
+		case KeyCode.RightControl:
+			return "RC";
+		case KeyCode.LeftControl:
+			return "LC";
+		case KeyCode.RightAlt:
+			return "RA";
+		case KeyCode.LeftAlt:
+			return "LA";
+		case KeyCode.Mouse0:
+			return "M0";
+		case KeyCode.Mouse1:
+			return "M1";
+		case KeyCode.Mouse2:
+			return "M2";
+		case KeyCode.Mouse3:
+			return "M3";
+		case KeyCode.Mouse4:
+			return "M4";
+		case KeyCode.Mouse5:
+			return "M5";
+		case KeyCode.Mouse6:
+			return "M6";
+		case KeyCode.JoystickButton0:
+			return "(A)";
+		case KeyCode.JoystickButton1:
+			return "(B)";
+		case KeyCode.JoystickButton2:
+			return "(X)";
+		case KeyCode.JoystickButton3:
+			return "(Y)";
+		case KeyCode.JoystickButton4:
+			return "(RB)";
+		case KeyCode.JoystickButton5:
+			return "(LB)";
+		case KeyCode.JoystickButton6:
+			return "(Back)";
+		case KeyCode.JoystickButton7:
+			return "(Start)";
+		case KeyCode.JoystickButton8:
+			return "(LS)";
+		case KeyCode.JoystickButton9:
+			return "(RS)";
+		case KeyCode.JoystickButton10:
+			return "J10";
+		case KeyCode.JoystickButton11:
+			return "J11";
+		case KeyCode.JoystickButton12:
+			return "J12";
+		case KeyCode.JoystickButton13:
+			return "J13";
+		case KeyCode.JoystickButton14:
+			return "J14";
+		case KeyCode.JoystickButton15:
+			return "J15";
+		case KeyCode.JoystickButton16:
+			return "J16";
+		case KeyCode.JoystickButton17:
+			return "J17";
+		case KeyCode.JoystickButton18:
+			return "J18";
+		case KeyCode.JoystickButton19:
+			return "J19";
 		}
-		goto IL_208;
+		goto IL_184;
+	}
+
+	public static T Draw<T>(string id, NGUITools.OnInitFunc<T> onInit = null) where T : UIWidget
+	{
+		UIWidget uIWidget;
+		if (NGUITools.mWidgets.TryGetValue(id, out uIWidget) && uIWidget)
+		{
+			return (T)((object)uIWidget);
+		}
+		if (NGUITools.mRoot == null)
+		{
+			UICamera x = null;
+			UIRoot uIRoot = null;
+			for (int i = 0; i < UIRoot.list.Count; i++)
+			{
+				UIRoot uIRoot2 = UIRoot.list[i];
+				if (uIRoot2)
+				{
+					UICamera uICamera = UICamera.FindCameraForLayer(uIRoot2.gameObject.layer);
+					if (uICamera && uICamera.cachedCamera.orthographic)
+					{
+						x = uICamera;
+						uIRoot = uIRoot2;
+						break;
+					}
+				}
+			}
+			if (x == null)
+			{
+				NGUITools.mRoot = NGUITools.CreateUI(false, LayerMask.NameToLayer("UI"));
+			}
+			else
+			{
+				NGUITools.mRoot = uIRoot.gameObject.AddChild<UIPanel>();
+			}
+			NGUITools.mRoot.depth = 100000;
+			NGUITools.mGo = NGUITools.mRoot.gameObject;
+			NGUITools.mGo.name = "Immediate Mode GUI";
+		}
+		uIWidget = NGUITools.mGo.AddWidget(2147483647);
+		uIWidget.name = id;
+		NGUITools.mWidgets[id] = uIWidget;
+		if (onInit != null)
+		{
+			onInit((T)((object)uIWidget));
+		}
+		return (T)((object)uIWidget);
+	}
+
+	public static Color GammaToLinearSpace(this Color c)
+	{
+		if (NGUITools.mColorSpace == ColorSpace.Uninitialized)
+		{
+			NGUITools.mColorSpace = QualitySettings.activeColorSpace;
+		}
+		if (NGUITools.mColorSpace == ColorSpace.Linear)
+		{
+			return new Color(Mathf.GammaToLinearSpace(c.r), Mathf.GammaToLinearSpace(c.g), Mathf.GammaToLinearSpace(c.b), Mathf.GammaToLinearSpace(c.a));
+		}
+		return c;
 	}
 }

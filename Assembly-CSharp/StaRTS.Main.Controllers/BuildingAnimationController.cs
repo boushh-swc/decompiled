@@ -23,6 +23,8 @@ namespace StaRTS.Main.Controllers
 {
 	public class BuildingAnimationController : IEventObserver
 	{
+		private NodeList<BuildingRenderNode> nodeList;
+
 		private const string IDLE_ANIMATION_TRACK = "Idle";
 
 		private const string ACTIVE_ANIM = "Active";
@@ -44,8 +46,6 @@ namespace StaRTS.Main.Controllers
 		private const string TRAP_DEACTIVATE_TRACK = "Deactivate";
 
 		private const string TRAP_DEACTIVATED_LOOP = "DeactivatedIdle";
-
-		private NodeList<BuildingRenderNode> nodeList;
 
 		private string[] barracksOpenCloseAnims;
 
@@ -84,7 +84,7 @@ namespace StaRTS.Main.Controllers
 			};
 		}
 
-		private bool BuildingEligibleForActiveAnimation(Entity entity, IState gameState, BuildingAnimationComponent animComp)
+		private bool BuildingEligibleForActiveAnimation(SmartEntity entity, IState gameState, BuildingAnimationComponent animComp)
 		{
 			if (entity == null)
 			{
@@ -106,12 +106,12 @@ namespace StaRTS.Main.Controllers
 			{
 				return true;
 			}
-			BuildingComponent buildingComponent = entity.Get<BuildingComponent>();
-			if (buildingComponent == null)
+			BuildingComponent buildingComp = entity.BuildingComp;
+			if (buildingComp == null)
 			{
 				return false;
 			}
-			BuildingTypeVO buildingType = buildingComponent.BuildingType;
+			BuildingTypeVO buildingType = buildingComp.BuildingType;
 			if (buildingType.Type == BuildingType.HQ)
 			{
 				return true;
@@ -124,27 +124,27 @@ namespace StaRTS.Main.Controllers
 			{
 				return false;
 			}
-			if (buildingComponent.BuildingType.Type == BuildingType.Barracks || buildingComponent.BuildingType.Type == BuildingType.Cantina)
+			if (buildingComp.BuildingType.Type == BuildingType.Barracks || buildingComp.BuildingType.Type == BuildingType.Cantina)
 			{
 				return true;
 			}
-			if (buildingComponent.BuildingType.Type == BuildingType.DroidHut)
+			if (buildingComp.BuildingType.Type == BuildingType.DroidHut)
 			{
 				return true;
 			}
-			if (buildingComponent.BuildingType.Type == BuildingType.ScoutTower)
+			if (buildingComp.BuildingType.Type == BuildingType.ScoutTower)
 			{
 				return Service.RaidDefenseController.IsRaidAvailable();
 			}
-			if (buildingComponent.BuildingType.Type == BuildingType.Resource && buildingComponent.BuildingTO.AccruedCurrency < buildingType.Storage)
+			if (buildingComp.BuildingType.Type == BuildingType.Resource && buildingComp.BuildingTO.AccruedCurrency < buildingType.Storage)
 			{
 				return true;
 			}
-			if (buildingComponent.BuildingType.Type == BuildingType.Storage && buildingComponent.BuildingTO.CurrentStorage < buildingType.Storage)
+			if (buildingComp.BuildingType.Type == BuildingType.Storage && buildingComp.BuildingTO.CurrentStorage < buildingType.Storage)
 			{
 				return true;
 			}
-			if (buildingComponent.BuildingType.Type == BuildingType.Armory)
+			if (buildingComp.BuildingType.Type == BuildingType.Armory)
 			{
 				ActiveArmory activeArmory = Service.CurrentPlayer.ActiveArmory;
 				return ArmoryUtils.IsAnyEquipmentActive(activeArmory);
@@ -152,7 +152,7 @@ namespace StaRTS.Main.Controllers
 			return false;
 		}
 
-		private bool BuildingEligibleForIdleAnimation(Entity entity, IState gameState, BuildingAnimationComponent animComp)
+		private bool BuildingEligibleForIdleAnimation(SmartEntity entity, IState gameState, BuildingAnimationComponent animComp)
 		{
 			if (entity == null)
 			{
@@ -170,8 +170,8 @@ namespace StaRTS.Main.Controllers
 			{
 				return false;
 			}
-			BuildingComponent buildingComponent = entity.Get<BuildingComponent>();
-			if (buildingComponent == null)
+			BuildingComponent buildingComp = entity.BuildingComp;
+			if (buildingComp == null)
 			{
 				return false;
 			}
@@ -179,11 +179,11 @@ namespace StaRTS.Main.Controllers
 			{
 				return false;
 			}
-			if (buildingComponent.BuildingType.Type == BuildingType.ScoutTower)
+			if (buildingComp.BuildingType.Type == BuildingType.ScoutTower)
 			{
 				return true;
 			}
-			if (buildingComponent.BuildingType.Type == BuildingType.Armory)
+			if (buildingComp.BuildingType.Type == BuildingType.Armory)
 			{
 				ActiveArmory activeArmory = Service.CurrentPlayer.ActiveArmory;
 				return !ArmoryUtils.IsAnyEquipmentActive(activeArmory);
@@ -246,9 +246,9 @@ namespace StaRTS.Main.Controllers
 			}
 		}
 
-		private void UpdateAnimation(Entity entity, IState gameMode, BuildingAnimationComponent animComp, bool updateContraband)
+		private void UpdateAnimation(SmartEntity entity, IState gameMode, BuildingAnimationComponent animComp, bool updateContraband)
 		{
-			TrapComponent trapComp = ((SmartEntity)entity).TrapComp;
+			TrapComponent trapComp = entity.TrapComp;
 			if (trapComp != null)
 			{
 				return;
@@ -268,10 +268,10 @@ namespace StaRTS.Main.Controllers
 				this.StopAnimation(animComp.Anim);
 				this.StopFXs(animComp.ListOfParticleSystems);
 			}
-			this.UpdateArmoryAnimation((SmartEntity)entity);
+			this.UpdateArmoryAnimation(entity);
 			if (updateContraband)
 			{
-				this.UpdateContraBandShipAnimation((SmartEntity)entity);
+				this.UpdateContraBandShipAnimation(entity);
 			}
 		}
 
@@ -284,12 +284,13 @@ namespace StaRTS.Main.Controllers
 		{
 			for (BuildingRenderNode buildingRenderNode = this.nodeList.Head; buildingRenderNode != null; buildingRenderNode = buildingRenderNode.Next)
 			{
-				this.UpdateAnimation(buildingRenderNode.Entity, gameMode, buildingRenderNode.AnimComp, true);
+				SmartEntity entity = (SmartEntity)buildingRenderNode.Entity;
+				this.UpdateAnimation(entity, gameMode, buildingRenderNode.AnimComp, true);
 				BuildingComponent buildingComp = buildingRenderNode.BuildingComp;
 				BuildingTypeVO buildingType = buildingComp.BuildingType;
 				if (buildingType.Type == BuildingType.Resource && buildingComp.BuildingTO.CurrentStorage >= buildingType.Storage)
 				{
-					this.UpdateAnimationOnGeneratorFull((SmartEntity)buildingRenderNode.Entity, gameMode);
+					this.UpdateAnimationOnGeneratorFull(entity, gameMode);
 				}
 			}
 			if (gameMode is HomeState)
@@ -298,28 +299,28 @@ namespace StaRTS.Main.Controllers
 			}
 		}
 
-		private void StartAnimationOnContractStarted(Entity entity, Contract contract, IState currentState)
+		private void StartAnimationOnContractStarted(SmartEntity entity, Contract contract, IState currentState)
 		{
 			if (Service.ISupportController.IsBuildingFrozen(contract.ContractTO.BuildingKey))
 			{
 				return;
 			}
-			BuildingAnimationComponent buildingAnimationComponent = entity.Get<BuildingAnimationComponent>();
-			if (buildingAnimationComponent == null)
+			BuildingAnimationComponent buildingAnimationComp = entity.BuildingAnimationComp;
+			if (buildingAnimationComp == null)
 			{
 				return;
 			}
 			bool flag = contract.DeliveryType == DeliveryType.UpgradeBuilding || contract.DeliveryType == DeliveryType.Building;
 			if (flag)
 			{
-				buildingAnimationComponent.BuildingUpgrading = true;
+				buildingAnimationComp.BuildingUpgrading = true;
 			}
 			else
 			{
-				buildingAnimationComponent.BuildingUpgrading = false;
-				buildingAnimationComponent.Manufacturing = true;
+				buildingAnimationComp.BuildingUpgrading = false;
+				buildingAnimationComp.Manufacturing = true;
 			}
-			this.UpdateAnimation(entity, currentState, buildingAnimationComponent, true);
+			this.UpdateAnimation(entity, currentState, buildingAnimationComp, true);
 		}
 
 		public void FactorySpark(int message, GameObjectViewComponent gameObjViewComp)
@@ -354,7 +355,7 @@ namespace StaRTS.Main.Controllers
 					if (transform2 != null)
 					{
 						ParticleSystem component = transform2.GetComponent<ParticleSystem>();
-						component.simulationSpace = ParticleSystemSimulationSpace.World;
+						component.main.simulationSpace = ParticleSystemSimulationSpace.World;
 						if (component != null)
 						{
 							this.PlayStopParticle(0u, component);
@@ -364,22 +365,22 @@ namespace StaRTS.Main.Controllers
 			}
 		}
 
-		private void UpdateAnimationOnContractStopped(Entity entity, IState currentState)
+		private void UpdateAnimationOnContractStopped(SmartEntity entity, IState currentState)
 		{
-			BuildingAnimationComponent buildingAnimationComponent = entity.Get<BuildingAnimationComponent>();
-			if (buildingAnimationComponent == null)
+			BuildingAnimationComponent buildingAnimationComp = entity.BuildingAnimationComp;
+			if (buildingAnimationComp == null)
 			{
 				return;
 			}
-			if (buildingAnimationComponent.BuildingUpgrading)
+			if (buildingAnimationComp.BuildingUpgrading)
 			{
-				buildingAnimationComponent.BuildingUpgrading = false;
+				buildingAnimationComp.BuildingUpgrading = false;
 			}
-			else if (buildingAnimationComponent.Manufacturing)
+			else if (buildingAnimationComp.Manufacturing)
 			{
-				buildingAnimationComponent.Manufacturing = false;
+				buildingAnimationComp.Manufacturing = false;
 			}
-			this.UpdateAnimation(entity, currentState, buildingAnimationComponent, false);
+			this.UpdateAnimation(entity, currentState, buildingAnimationComp, false);
 		}
 
 		private void UpdateContraBandGeneratorAnimation(SmartEntity entity, ShuttleAnim currentState)
@@ -392,24 +393,23 @@ namespace StaRTS.Main.Controllers
 			{
 				BuildingAnimationComponent buildingAnimationComp = entity.BuildingAnimationComp;
 				Animation anim = buildingAnimationComp.Anim;
-				switch (currentState.State)
+				ShuttleState state = currentState.State;
+				if (state != ShuttleState.Landing && state != ShuttleState.LiftOff)
 				{
-				case ShuttleState.Landing:
-				case ShuttleState.LiftOff:
-					if (anim.GetClip("Full") != null)
+					if (state == ShuttleState.Idle)
 					{
-						anim.Stop();
-						anim.Play("Full");
+						if (anim.GetClip("Active") != null && anim.GetClip("Intro") != null)
+						{
+							anim.Stop();
+							anim.Play("Intro");
+							this.EnqueueAnimation(buildingAnimationComp, "Active");
+						}
 					}
-					break;
-				case ShuttleState.Idle:
-					if (anim.GetClip("Active") != null && anim.GetClip("Intro") != null)
-					{
-						anim.Stop();
-						anim.Play("Intro");
-						this.EnqueueAnimation(buildingAnimationComp, "Active");
-					}
-					break;
+				}
+				else if (anim.GetClip("Full") != null)
+				{
+					anim.Stop();
+					anim.Play("Full");
 				}
 			}
 		}
@@ -519,40 +519,40 @@ namespace StaRTS.Main.Controllers
 			}
 			case EventId.AudibleCurrencySpent:
 			case EventId.ViewObjectsPurged:
-				IL_32:
+				IL_2E:
 				switch (id)
 				{
-				case EventId.EntityPostBattleRepairStarted:
-				case EventId.EntityPostBattleRepairFinished:
+				case EventId.ContractStarted:
+				case EventId.ContractContinued:
 				{
-					SmartEntity smartEntity = (SmartEntity)cookie;
-					if (smartEntity == null)
-					{
-						return EatResponse.NotEaten;
-					}
-					BuildingAnimationComponent buildingAnimationComp = smartEntity.BuildingAnimationComp;
-					if (buildingAnimationComp == null)
-					{
-						return EatResponse.NotEaten;
-					}
-					this.UpdateAnimation(smartEntity, currentState, buildingAnimationComp, true);
+					ContractEventData contractEventData = (ContractEventData)cookie;
+					this.StartAnimationOnContractStarted(contractEventData.Entity, contractEventData.Contract, currentState);
 					return EatResponse.NotEaten;
 				}
-				case EventId.AllPostBattleRepairFinished:
-					IL_4F:
+				case EventId.ContractStopped:
+					this.UpdateAnimationOnContractStopped((SmartEntity)cookie, currentState);
+					return EatResponse.NotEaten;
+				default:
 					switch (id)
 					{
-					case EventId.ContractStarted:
-					case EventId.ContractContinued:
+					case EventId.EntityPostBattleRepairStarted:
+					case EventId.EntityPostBattleRepairFinished:
 					{
-						ContractEventData contractEventData = (ContractEventData)cookie;
-						this.StartAnimationOnContractStarted(contractEventData.Entity, contractEventData.Contract, currentState);
+						SmartEntity smartEntity = (SmartEntity)cookie;
+						if (smartEntity == null)
+						{
+							return EatResponse.NotEaten;
+						}
+						BuildingAnimationComponent buildingAnimationComp = smartEntity.BuildingAnimationComp;
+						if (buildingAnimationComp == null)
+						{
+							return EatResponse.NotEaten;
+						}
+						this.UpdateAnimation(smartEntity, currentState, buildingAnimationComp, true);
 						return EatResponse.NotEaten;
 					}
-					case EventId.ContractStopped:
-						this.UpdateAnimationOnContractStopped((Entity)cookie, currentState);
-						return EatResponse.NotEaten;
-					default:
+					case EventId.AllPostBattleRepairFinished:
+						IL_62:
 						if (id != EventId.BuildingViewReady)
 						{
 							if (id == EventId.TroopRecruited)
@@ -560,7 +560,7 @@ namespace StaRTS.Main.Controllers
 								ContractEventData contractEventData2 = cookie as ContractEventData;
 								if (contractEventData2.Contract.DeliveryType == DeliveryType.Infantry)
 								{
-									SmartEntity smartEntity = (SmartEntity)contractEventData2.Entity;
+									SmartEntity smartEntity = contractEventData2.Entity;
 									if (smartEntity != null)
 									{
 										BuildingAnimationComponent buildingAnimationComp = smartEntity.BuildingAnimationComp;
@@ -631,24 +631,24 @@ namespace StaRTS.Main.Controllers
 							return EatResponse.NotEaten;
 						}
 						break;
-					}
-					break;
-				case EventId.ShuttleAnimStateChanged:
-				{
-					ShuttleAnim shuttleAnim = (ShuttleAnim)cookie;
-					SmartEntity smartEntity = (SmartEntity)shuttleAnim.Starport;
-					if (smartEntity.BuildingComp.BuildingType.Type == BuildingType.Armory)
+					case EventId.ShuttleAnimStateChanged:
 					{
-						Service.ShuttleController.DestroyArmoryShuttle(smartEntity);
+						ShuttleAnim shuttleAnim = (ShuttleAnim)cookie;
+						SmartEntity smartEntity = shuttleAnim.Starport;
+						if (smartEntity.BuildingComp.BuildingType.Type == BuildingType.Armory)
+						{
+							Service.ShuttleController.DestroyArmoryShuttle(smartEntity);
+						}
+						else
+						{
+							this.UpdateContraBandGeneratorAnimation(smartEntity, shuttleAnim);
+						}
+						return EatResponse.NotEaten;
 					}
-					else
-					{
-						this.UpdateContraBandGeneratorAnimation(smartEntity, shuttleAnim);
 					}
-					return EatResponse.NotEaten;
+					goto IL_62;
 				}
-				}
-				goto IL_4F;
+				break;
 			case EventId.GeneratorJustFilled:
 				this.UpdateAnimationOnGeneratorFull((SmartEntity)cookie, currentState);
 				return EatResponse.NotEaten;
@@ -675,7 +675,7 @@ namespace StaRTS.Main.Controllers
 				return EatResponse.NotEaten;
 			}
 			}
-			goto IL_32;
+			goto IL_2E;
 		}
 	}
 }

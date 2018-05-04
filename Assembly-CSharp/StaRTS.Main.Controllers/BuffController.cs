@@ -79,7 +79,7 @@ namespace StaRTS.Main.Controllers
 			case EventId.EntityHealthChanged:
 			case EventId.EntityHitByBeam:
 			{
-				IL_21:
+				IL_1D:
 				if (id == EventId.TroopAbilityActivate)
 				{
 					this.AddTroopAbilitySelfBuff((SmartEntity)cookie);
@@ -139,7 +139,7 @@ namespace StaRTS.Main.Controllers
 				return EatResponse.NotEaten;
 			}
 			}
-			goto IL_21;
+			goto IL_1D;
 		}
 
 		public static string MakeFXAttachmentTag(string buffId)
@@ -410,12 +410,12 @@ namespace StaRTS.Main.Controllers
 			}
 			if (target.BuildingComp != null)
 			{
-				BuffAssetOffset offsetType = buffType.OffsetType;
-				if (offsetType == BuffAssetOffset.Top)
+				BuffAssetOffset offsetType2 = buffType.OffsetType;
+				if (offsetType2 == BuffAssetOffset.Top)
 				{
 					return target.BuildingComp.BuildingType.BuffAssetOffset;
 				}
-				if (offsetType == BuffAssetOffset.Base)
+				if (offsetType2 == BuffAssetOffset.Base)
 				{
 					return target.BuildingComp.BuildingType.BuffAssetBaseOffset;
 				}

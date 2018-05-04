@@ -11,7 +11,7 @@ namespace StaRTS.Main.Controllers
 {
 	public interface ICurrencyController
 	{
-		bool TryCollectCurrencyOnSelection(Entity entity);
+		bool TryCollectCurrencyOnSelection(SmartEntity entity);
 
 		void CollectCurrency(Entity buildingEntity);
 

@@ -10,12 +10,22 @@ using StaRTS.Utils;
 using StaRTS.Utils.Core;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace StaRTS.Main.Controllers
 {
 	public static class ResourceGenerationPerkUtils
 	{
+		[CompilerGenerated]
+		private static Comparison<uint> <>f__mg$cache0;
+
+		[CompilerGenerated]
+		private static Comparison<CurrencyPerkEffectDataTO> <>f__mg$cache1;
+
+		[CompilerGenerated]
+		private static Comparison<CurrencyPerkEffectDataTO> <>f__mg$cache2;
+
 		private static bool IsPerkActiveDuringTimeWindow(ActivatedPerkData perk, uint startTime, uint endTime)
 		{
 			return perk.StartTime <= endTime && perk.EndTime > startTime;
@@ -87,7 +97,12 @@ namespace StaRTS.Main.Controllers
 				list2.Add(currencyPerkEffectDataTO.StartTime);
 				list2.Add(currencyPerkEffectDataTO.EndTime);
 			}
-			list2.Sort(new Comparison<uint>(ResourceGenerationPerkUtils.TimeSegmentCompare));
+			List<uint> arg_66_0 = list2;
+			if (ResourceGenerationPerkUtils.<>f__mg$cache0 == null)
+			{
+				ResourceGenerationPerkUtils.<>f__mg$cache0 = new Comparison<uint>(ResourceGenerationPerkUtils.TimeSegmentCompare);
+			}
+			arg_66_0.Sort(ResourceGenerationPerkUtils.<>f__mg$cache0);
 			count = list2.Count;
 			for (int j = 0; j < count - 1; j++)
 			{
@@ -165,7 +180,12 @@ namespace StaRTS.Main.Controllers
 			if (allPerks != null && allPerks.Count > 0)
 			{
 				List<CurrencyPerkEffectDataTO> allCurrencyPerksEffectsActiveDuringTimeWindow = ResourceGenerationPerkUtils.GetAllCurrencyPerksEffectsActiveDuringTimeWindow(buildingVO.Currency, currentTime, currentTime, allPerks);
-				allCurrencyPerksEffectsActiveDuringTimeWindow.Sort(new Comparison<CurrencyPerkEffectDataTO>(ResourceGenerationPerkUtils.EndTimeCompare));
+				List<CurrencyPerkEffectDataTO> arg_48_0 = allCurrencyPerksEffectsActiveDuringTimeWindow;
+				if (ResourceGenerationPerkUtils.<>f__mg$cache1 == null)
+				{
+					ResourceGenerationPerkUtils.<>f__mg$cache1 = new Comparison<CurrencyPerkEffectDataTO>(ResourceGenerationPerkUtils.EndTimeCompare);
+				}
+				arg_48_0.Sort(ResourceGenerationPerkUtils.<>f__mg$cache1);
 				List<CurrencyPerkEffectDataTO> list = ResourceGenerationPerkUtils.CombineOverlappingPerkEffectsIntoFinalList(allCurrencyPerksEffectsActiveDuringTimeWindow, currentTime, 4294967295u);
 				int count = list.Count;
 				int num3 = 0;
@@ -200,7 +220,12 @@ namespace StaRTS.Main.Controllers
 			if (allPerks != null && allPerks.Count > 0)
 			{
 				List<CurrencyPerkEffectDataTO> allCurrencyPerksEffectsActiveDuringTimeWindow = ResourceGenerationPerkUtils.GetAllCurrencyPerksEffectsActiveDuringTimeWindow(buildingVO.Currency, startTime, endTime, allPerks);
-				allCurrencyPerksEffectsActiveDuringTimeWindow.Sort(new Comparison<CurrencyPerkEffectDataTO>(ResourceGenerationPerkUtils.StartTimeCompare));
+				List<CurrencyPerkEffectDataTO> arg_4C_0 = allCurrencyPerksEffectsActiveDuringTimeWindow;
+				if (ResourceGenerationPerkUtils.<>f__mg$cache2 == null)
+				{
+					ResourceGenerationPerkUtils.<>f__mg$cache2 = new Comparison<CurrencyPerkEffectDataTO>(ResourceGenerationPerkUtils.StartTimeCompare);
+				}
+				arg_4C_0.Sort(ResourceGenerationPerkUtils.<>f__mg$cache2);
 				List<CurrencyPerkEffectDataTO> list = ResourceGenerationPerkUtils.CombineOverlappingPerkEffectsIntoFinalList(allCurrencyPerksEffectsActiveDuringTimeWindow, startTime, endTime);
 				int count = list.Count;
 				int num4 = 0;

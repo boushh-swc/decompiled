@@ -15,8 +15,6 @@ namespace StaRTS.Main.Controllers.World
 {
 	public class NpcMapDataLoader : IMapDataLoader
 	{
-		private const WorldType worldType = WorldType.NPC;
-
 		private BattleInitializationData battleData;
 
 		private BattleTypeVO battle;
@@ -26,6 +24,8 @@ namespace StaRTS.Main.Controllers.World
 		private MapLoadFailDelegate onMapLoadFail;
 
 		private AssetHandle assetHandle;
+
+		private const WorldType worldType = WorldType.NPC;
 
 		private bool isPveBuffBase;
 

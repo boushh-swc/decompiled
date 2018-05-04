@@ -36,7 +36,7 @@ namespace StaRTS.Main.Controllers.SquadWar
 				return EatResponse.NotEaten;
 			}
 			case EventId.BattleRecordRetrieved:
-				IL_1A:
+				IL_18:
 				if (id == EventId.BattleLoadStart)
 				{
 					if (this.controller.WarManager.CurrentSquadWar != null)
@@ -50,12 +50,12 @@ namespace StaRTS.Main.Controllers.SquadWar
 				{
 					return EatResponse.NotEaten;
 				}
-				goto IL_94;
+				goto IL_92;
 			case EventId.BattleLeftBeforeStarting:
-				goto IL_94;
+				goto IL_92;
 			}
-			goto IL_1A;
-			IL_94:
+			goto IL_18;
+			IL_92:
 			Service.BuffController.ClearWarBuffs();
 			return EatResponse.NotEaten;
 		}

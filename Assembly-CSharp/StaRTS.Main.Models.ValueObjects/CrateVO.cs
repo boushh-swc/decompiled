@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace StaRTS.Main.Models.ValueObjects
 {
-	public class CrateVO : IGeometryVO, IValueObject
+	public class CrateVO : IValueObject, IGeometryVO
 	{
 		public static int COLUMN_assetName
 		{

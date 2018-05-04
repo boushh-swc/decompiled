@@ -25,7 +25,7 @@ namespace AhoCorasick
 	}
 	public class Trie<T, TValue>
 	{
-		private class Node<TNode, TNodeValue> : IEnumerable, IEnumerable<Trie<T, TValue>.Node<TNode, TNodeValue>>
+		private class Node<TNode, TNodeValue> : IEnumerable<Trie<T, TValue>.Node<TNode, TNodeValue>>, IEnumerable
 		{
 			private readonly TNode word;
 
@@ -87,14 +87,14 @@ namespace AhoCorasick
 				this.parent = parent;
 			}
 
-			IEnumerator IEnumerable.GetEnumerator()
-			{
-				return this.GetEnumerator();
-			}
-
 			public IEnumerator<Trie<T, TValue>.Node<TNode, TNodeValue>> GetEnumerator()
 			{
 				return this.children.Values.GetEnumerator();
+			}
+
+			IEnumerator IEnumerable.GetEnumerator()
+			{
+				return this.GetEnumerator();
 			}
 
 			public override string ToString()
@@ -180,6 +180,10 @@ namespace AhoCorasick
 						if (enumerator2.MoveNext())
 						{
 							TValue current2 = enumerator2.Current;
+							bool flag2;
+							if (!flag2)
+							{
+							}
 							flag = true;
 							return;
 						}

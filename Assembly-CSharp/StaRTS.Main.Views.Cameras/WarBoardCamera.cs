@@ -31,7 +31,7 @@ namespace StaRTS.Main.Views.Cameras
 			this.unityCamera.nearClipPlane = 20f;
 			this.unityCamera.farClipPlane = 1500f;
 			this.unityCamera.useOcclusionCulling = false;
-			this.unityCamera.hdr = false;
+			this.unityCamera.allowHDR = false;
 			base.GroundOffset = 0f;
 			this.distanceFromEyeToScreen = CameraUtils.CalculateDistanceFromEyeToScreen(this.unityCamera);
 			base.Disable();

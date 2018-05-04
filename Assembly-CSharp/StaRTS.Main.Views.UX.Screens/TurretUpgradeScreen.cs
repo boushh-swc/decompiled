@@ -1,6 +1,6 @@
-using Net.RichardLord.Ash.Core;
 using StaRTS.Main.Controllers;
 using StaRTS.Main.Models;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.Entities.Components;
 using StaRTS.Main.Models.Player;
 using StaRTS.Main.Models.Static;
@@ -80,7 +80,7 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		private bool showSwapPageOnly;
 
-		public TurretUpgradeScreen(Entity selectedBuilding, bool showSwapPageOnly) : base(selectedBuilding)
+		public TurretUpgradeScreen(SmartEntity selectedBuilding, bool showSwapPageOnly) : base(selectedBuilding)
 		{
 			this.useUpgradeGroup = true;
 			this.useTurretGroup = true;
@@ -188,17 +188,7 @@ namespace StaRTS.Main.Views.UX.Screens
 			this.swapLabel.Visible = showSwapPage;
 			this.swapTypeGroup.Visible = showSwapPage;
 			this.infoTurretGroup.Visible = !showSwapPage;
-			IGeometryVO arg_40_0;
-			if (showSwapPage)
-			{
-				IGeometryVO buildingInfo = this.buildingInfo;
-				arg_40_0 = buildingInfo;
-			}
-			else
-			{
-				arg_40_0 = this.GetImageGeometryConfig();
-			}
-			IGeometryVO geometryVO = arg_40_0;
+			IGeometryVO geometryVO = (!showSwapPage) ? this.GetImageGeometryConfig() : this.buildingInfo;
 			this.SetupProjectorWithUpdatedConfig(geometryVO);
 			if (showSwapPage)
 			{

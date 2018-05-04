@@ -354,13 +354,13 @@ namespace StaRTS.Main.Views.UX.Screens.Leaderboard
 
 		private void DisplayTop50Players()
 		{
-			TweenAlpha.Begin(this.scrollView.transform.gameObject, 0.5f, 0f);
+			TweenAlpha.Begin(this.scrollView.transform.gameObject, 0.5f, 0f, 0f);
 			Service.ViewTimerManager.CreateViewTimer(0.5f, false, new TimerDelegate(this.OnTimerCallbackTop50), null);
 		}
 
 		private void OnTimerCallbackTop50(uint id, object cookie)
 		{
-			TweenAlpha.Begin(this.scrollView.transform.gameObject, 0.5f, 1f);
+			TweenAlpha.Begin(this.scrollView.transform.gameObject, 0.5f, 1f, 0f);
 			this.top50Button.Enabled = false;
 			this.findMeButton.Enabled = this.EnableFindMeButton();
 			string selectedPlanetId = this.planetSelectionDropDown.GetSelectedPlanetId();
@@ -453,14 +453,14 @@ namespace StaRTS.Main.Views.UX.Screens.Leaderboard
 			}
 			else
 			{
-				TweenAlpha.Begin(this.scrollView.transform.gameObject, 0.5f, 0f);
+				TweenAlpha.Begin(this.scrollView.transform.gameObject, 0.5f, 0f, 0f);
 				Service.ViewTimerManager.CreateViewTimer(0.5f, false, new TimerDelegate(this.OnTimerCallbackFindMe), null);
 			}
 		}
 
 		private void OnTimerCallbackFindMe(uint id, object cookie)
 		{
-			TweenAlpha.Begin(this.scrollView.transform.gameObject, 0.5f, 1f);
+			TweenAlpha.Begin(this.scrollView.transform.gameObject, 0.5f, 1f, 0f);
 			this.top50Button.Enabled = true;
 			this.findMeButton.Enabled = false;
 			if (this.curTab == SocialTabs.Squads)

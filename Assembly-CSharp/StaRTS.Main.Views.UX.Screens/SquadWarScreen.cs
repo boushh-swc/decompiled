@@ -119,6 +119,10 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		private const string LABEL_ACTION_AND_COOLDOWN_TIMER = "LabelActionTimer";
 
+		private static readonly Color TEXT_ACTION_TIMER_COLOR = new Color(0.847058833f, 0f, 0f);
+
+		private static readonly Color TEXT_COOLDOWN_TIMER_COLOR = new Color(0.06666667f, 0.7058824f, 0.9254902f);
+
 		private const string GROUP_FILTER = "GroupFilter";
 
 		private const string DROPDOWN_PLAYER_GROUP = "DropdownPlayerGroup";
@@ -250,10 +254,6 @@ namespace StaRTS.Main.Views.UX.Screens
 		private const string CONTAINER_PLAYER_COLLAPSED = "ContainerPlayerCollapsed";
 
 		private const string CONTAINER_OPPONENT_COLLAPSED = "ContainerOpponentCollapsed";
-
-		private static readonly Color TEXT_ACTION_TIMER_COLOR = new Color(0.847058833f, 0f, 0f);
-
-		private static readonly Color TEXT_COOLDOWN_TIMER_COLOR = new Color(0.06666667f, 0.7058824f, 0.9254902f);
 
 		private UXGrid gridBuffPlayerPlanets;
 
@@ -398,90 +398,91 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		public override EatResponse OnEvent(EventId id, object cookie)
 		{
-			switch (id)
+			if (id != EventId.WarBuffBaseCaptured)
 			{
-			case EventId.WarBoardParticipantBuildingSelected:
-			case EventId.WarBoardFlyoutHidden:
-				this.DeselectAllBuffBases();
-				goto IL_1A9;
-			case EventId.WarBoardBuffBaseBuildingSelected:
-			case EventId.WarBoardBuildingDeselected:
-				IL_1E:
-				if (id == EventId.WarBuffBaseCaptured)
+				if (id != EventId.WarVictoryPointsUpdated)
 				{
-					this.UpdateBuffOwnership(true);
-					goto IL_1A9;
-				}
-				if (id == EventId.WarVictoryPointsUpdated)
-				{
-					this.UpdateWarElements();
-					goto IL_1A9;
-				}
-				if (id == EventId.SquadScreenOpenedOrClosed)
-				{
-					bool flag = (bool)cookie;
-					if (this.Visible && flag)
+					switch (id)
 					{
-						this.Visible = false;
-					}
-					else if (!this.Visible && !flag)
-					{
-						this.Visible = true;
-						if (this.gridBuffPlayerPlanets != null)
+					case EventId.WarBoardParticipantBuildingSelected:
+					case EventId.WarBoardFlyoutHidden:
+						this.DeselectAllBuffBases();
+						goto IL_1A7;
+					case EventId.WarBoardBuffBaseBuildingSelected:
+					case EventId.WarBoardBuildingDeselected:
+						IL_32:
+						if (id == EventId.SquadScreenOpenedOrClosed)
 						{
-							this.gridBuffPlayerPlanets.CenterElementsInPanel();
+							bool flag = (bool)cookie;
+							if (this.Visible && flag)
+							{
+								this.Visible = false;
+							}
+							else if (!this.Visible && !flag)
+							{
+								this.Visible = true;
+								if (this.gridBuffPlayerPlanets != null)
+								{
+									this.gridBuffPlayerPlanets.CenterElementsInPanel();
+								}
+								if (this.gridBuffNeutralPlanets != null)
+								{
+									this.gridBuffNeutralPlanets.CenterElementsInPanel();
+								}
+								if (this.gridBuffOpponentPlanets != null)
+								{
+									this.gridBuffOpponentPlanets.CenterElementsInPanel();
+								}
+							}
+							goto IL_1A7;
 						}
-						if (this.gridBuffNeutralPlanets != null)
+						if (id == EventId.CurrentPlayerMemberDataUpdated)
 						{
-							this.gridBuffNeutralPlanets.CenterElementsInPanel();
+							SquadWarStatusType currentStatus = Service.SquadController.WarManager.GetCurrentStatus();
+							if (currentStatus == SquadWarStatusType.PhasePrep || currentStatus == SquadWarStatusType.PhasePrepGrace)
+							{
+								this.UpdateRequestTroopsLabel();
+							}
+							else if (currentStatus == SquadWarStatusType.PhaseCooldown)
+							{
+								this.TryShowWarEndedScreen();
+							}
+							goto IL_1A7;
 						}
-						if (this.gridBuffOpponentPlanets != null)
+						if (id != EventId.WarPhaseChanged)
 						{
-							this.gridBuffOpponentPlanets.CenterElementsInPanel();
+							goto IL_1A7;
 						}
+						switch ((SquadWarStatusType)cookie)
+						{
+						case SquadWarStatusType.PhaseOpen:
+							this.Close(null);
+							HomeState.GoToHomeState(null, false);
+							break;
+						case SquadWarStatusType.PhasePrepGrace:
+							this.ShowPrepGracePhase();
+							break;
+						case SquadWarStatusType.PhaseAction:
+							this.ShowActionPhase();
+							break;
+						case SquadWarStatusType.PhaseActionGrace:
+							this.ShowActionGracePhase();
+							break;
+						case SquadWarStatusType.PhaseCooldown:
+							this.ShowCooldownPhase();
+							break;
+						}
+						goto IL_1A7;
 					}
-					goto IL_1A9;
+					goto IL_32;
 				}
-				if (id == EventId.CurrentPlayerMemberDataUpdated)
-				{
-					SquadWarStatusType currentStatus = Service.SquadController.WarManager.GetCurrentStatus();
-					if (currentStatus == SquadWarStatusType.PhasePrep || currentStatus == SquadWarStatusType.PhasePrepGrace)
-					{
-						this.UpdateRequestTroopsLabel();
-					}
-					else if (currentStatus == SquadWarStatusType.PhaseCooldown)
-					{
-						this.TryShowWarEndedScreen();
-					}
-					goto IL_1A9;
-				}
-				if (id != EventId.WarPhaseChanged)
-				{
-					goto IL_1A9;
-				}
-				switch ((int)cookie)
-				{
-				case 0:
-					this.Close(null);
-					HomeState.GoToHomeState(null, false);
-					break;
-				case 2:
-					this.ShowPrepGracePhase();
-					break;
-				case 3:
-					this.ShowActionPhase();
-					break;
-				case 4:
-					this.ShowActionGracePhase();
-					break;
-				case 5:
-					this.ShowCooldownPhase();
-					break;
-				}
-				goto IL_1A9;
+				this.UpdateWarElements();
 			}
-			goto IL_1E;
-			IL_1A9:
+			else
+			{
+				this.UpdateBuffOwnership(true);
+			}
+			IL_1A7:
 			return base.OnEvent(id, cookie);
 		}
 
@@ -1338,18 +1339,20 @@ namespace StaRTS.Main.Views.UX.Screens
 			string text = string.Empty;
 			string timerTextUID = string.Empty;
 			string messageUID = string.Empty;
-			switch (status)
+			if (status != SquadWarStatusType.PhasePrepGrace)
 			{
-			case SquadWarStatusType.PhasePrepGrace:
+				if (status == SquadWarStatusType.PhaseActionGrace)
+				{
+					text = "WAR_BOARD_ACTION_GRACE_PHASE";
+					timerTextUID = "WAR_BOARD_ACTION_PHASE_TIME_REMAINING";
+					messageUID = "WAR_BOARD_ACTION_GRACE_PHASE_DESC";
+				}
+			}
+			else
+			{
 				text = "WAR_BOARD_PREP_GRACE_PHASE";
 				timerTextUID = "WAR_BOARD_PREP_PHASE_TIME_REMAINING";
 				messageUID = "WAR_BOARD_PREP_GRACE_PHASE_DESC";
-				break;
-			case SquadWarStatusType.PhaseActionGrace:
-				text = "WAR_BOARD_ACTION_GRACE_PHASE";
-				timerTextUID = "WAR_BOARD_ACTION_PHASE_TIME_REMAINING";
-				messageUID = "WAR_BOARD_ACTION_GRACE_PHASE_DESC";
-				break;
 			}
 			if (string.IsNullOrEmpty(text))
 			{

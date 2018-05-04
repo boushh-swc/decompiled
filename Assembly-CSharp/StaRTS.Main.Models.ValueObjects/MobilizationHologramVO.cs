@@ -3,7 +3,7 @@ using System;
 
 namespace StaRTS.Main.Models.ValueObjects
 {
-	public class MobilizationHologramVO : IAssetVO, IValueObject
+	public class MobilizationHologramVO : IValueObject, IAssetVO
 	{
 		public static int COLUMN_assetName
 		{

@@ -582,9 +582,7 @@ namespace StaRTS.Main.Views.UX
 			if (this.duplicates.ContainsKey(name))
 			{
 				Dictionary<string, int> dictionary;
-				Dictionary<string, int> expr_17 = dictionary = this.duplicates;
-				int num = dictionary[name];
-				expr_17[name] = num + 1;
+				(dictionary = this.duplicates)[name] = dictionary[name] + 1;
 			}
 			else
 			{

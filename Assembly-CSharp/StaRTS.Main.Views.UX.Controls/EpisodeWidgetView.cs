@@ -21,7 +21,7 @@ using UnityEngine;
 
 namespace StaRTS.Main.Views.UX.Controls
 {
-	public class EpisodeWidgetView : IEventObserver, IViewClockTimeObserver, IViewFrameTimeObserver
+	public class EpisodeWidgetView : IEventObserver, IViewFrameTimeObserver, IViewClockTimeObserver
 	{
 		private const string BUTTON_EPISODE = "Episode";
 
@@ -748,7 +748,7 @@ namespace StaRTS.Main.Views.UX.Controls
 			case EventId.ScreenOverlayClosing:
 			case EventId.ScreenRefreshed:
 			case EventId.HUDVisibilityChanging:
-				IL_2A:
+				IL_28:
 				if (id == EventId.HUDFactionTooltipVisible)
 				{
 					this.UpdateParticleEffectVisibility();
@@ -767,7 +767,7 @@ namespace StaRTS.Main.Views.UX.Controls
 				}
 				return EatResponse.NotEaten;
 			}
-			goto IL_2A;
+			goto IL_28;
 		}
 
 		private void ForceHide()

@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace StaRTS.Main.Models.Squads
 {
-	public class SquadWarHistoryEntry : IComparable<SquadWarHistoryEntry>, ISerializable
+	public class SquadWarHistoryEntry : ISerializable, IComparable<SquadWarHistoryEntry>
 	{
 		public string WarId;
 

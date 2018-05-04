@@ -185,12 +185,12 @@ namespace StaRTS.Main.Controllers.Holonet
 			{
 			case EventId.SquadLeft:
 			case EventId.SquadJoinedByCurrentPlayer:
-				goto IL_53;
+				goto IL_51;
 			case EventId.SquadChatFilterUpdated:
-				IL_20:
+				IL_1E:
 				if (id == EventId.PlanetRelocate)
 				{
-					goto IL_53;
+					goto IL_51;
 				}
 				if (id != EventId.InventoryCrateCollectionClosed)
 				{
@@ -200,8 +200,8 @@ namespace StaRTS.Main.Controllers.Holonet
 				this.OpenHolonet(true);
 				return EatResponse.NotEaten;
 			}
-			goto IL_20;
-			IL_53:
+			goto IL_1E;
+			IL_51:
 			this.PrepareContent(null);
 			return EatResponse.NotEaten;
 		}

@@ -10,6 +10,8 @@ using UnityEngine;
 [ExecuteInEditMode]
 public class Kochava : MonoBehaviour
 {
+	public delegate void AttributionCallback(string callbackString);
+
 	public enum KochSessionTracking
 	{
 		full = 0,
@@ -47,38 +49,6 @@ public class Kochava : MonoBehaviour
 
 		public Dictionary<string, object> eventData;
 	}
-
-	public delegate void AttributionCallback(string callbackString);
-
-	private const string CURRENCY_DEFAULT = "USD";
-
-	public const string KOCHAVA_VERSION = "20160914";
-
-	public const string KOCHAVA_PROTOCOL_VERSION = "4";
-
-	private const int MAX_LOG_SIZE = 50;
-
-	private const int MAX_QUEUE_SIZE = 75;
-
-	private const int MAX_POST_TIME = 15;
-
-	private const int POST_FAIL_RETRY_DELAY = 30;
-
-	private const int QUEUE_KVINIT_WAIT_DELAY = 15;
-
-	private const string API_URL = "https://control.kochava.com";
-
-	private const string TRACKING_URL = "https://control.kochava.com/track/kvTracker?v4";
-
-	private const string INIT_URL = "https://control.kochava.com/track/kvinit";
-
-	private const string QUERY_URL = "https://control.kochava.com/track/kvquery";
-
-	private const string KOCHAVA_QUEUE_STORAGE_KEY = "kochava_queue_storage";
-
-	private const int KOCHAVA_ATTRIBUTION_INITIAL_TIMER = 7;
-
-	private const int KOCHAVA_ATTRIBUTION_DEFAULT_TIMER = 60;
 
 	public string kochavaAppId = string.Empty;
 
@@ -135,9 +105,39 @@ public class Kochava : MonoBehaviour
 
 	private List<string> eventNameBlacklist = new List<string>();
 
+	private const string CURRENCY_DEFAULT = "USD";
+
 	public string appCurrency = "USD";
 
 	public Kochava.KochSessionTracking sessionTracking;
+
+	public const string KOCHAVA_VERSION = "20160914";
+
+	public const string KOCHAVA_PROTOCOL_VERSION = "4";
+
+	private const int MAX_LOG_SIZE = 50;
+
+	private const int MAX_QUEUE_SIZE = 75;
+
+	private const int MAX_POST_TIME = 15;
+
+	private const int POST_FAIL_RETRY_DELAY = 30;
+
+	private const int QUEUE_KVINIT_WAIT_DELAY = 15;
+
+	private const string API_URL = "https://control.kochava.com";
+
+	private const string TRACKING_URL = "https://control.kochava.com/track/kvTracker?v4";
+
+	private const string INIT_URL = "https://control.kochava.com/track/kvinit";
+
+	private const string QUERY_URL = "https://control.kochava.com/track/kvquery";
+
+	private const string KOCHAVA_QUEUE_STORAGE_KEY = "kochava_queue_storage";
+
+	private const int KOCHAVA_ATTRIBUTION_INITIAL_TIMER = 7;
+
+	private const int KOCHAVA_ATTRIBUTION_DEFAULT_TIMER = 60;
 
 	private int KVTRACKER_WAIT = 60;
 
@@ -517,7 +517,7 @@ public class Kochava : MonoBehaviour
 				try
 				{
 					string string2 = PlayerPrefs.GetString("session_tracking");
-					this.sessionTracking = (Kochava.KochSessionTracking)((int)Enum.Parse(typeof(Kochava.KochSessionTracking), string2, true));
+					this.sessionTracking = (Kochava.KochSessionTracking)Enum.Parse(typeof(Kochava.KochSessionTracking), string2, true);
 					this.Log("Loaded session tracking mode from persistent storage: " + string2, Kochava.KochLogLevel.debug);
 				}
 				catch (Exception arg4)
@@ -726,7 +726,7 @@ public class Kochava : MonoBehaviour
 					{
 						dictionary = JsonReader.Deserialize<Dictionary<string, object>>(wWW.text);
 					}
-					catch (Exception var_2_209)
+					catch (Exception var_2_221)
 					{
 					}
 				}
@@ -763,11 +763,11 @@ public class Kochava : MonoBehaviour
 						{
 							try
 							{
-								this.sessionTracking = (Kochava.KochSessionTracking)((int)Enum.Parse(typeof(Kochava.KochSessionTracking), dictionary2["session_tracking"].ToString()));
+								this.sessionTracking = (Kochava.KochSessionTracking)Enum.Parse(typeof(Kochava.KochSessionTracking), dictionary2["session_tracking"].ToString());
 								PlayerPrefs.SetString("session_tracking", this.sessionTracking.ToString());
 								this.Log("Saved session_tracking mode to persistent storage: " + this.sessionTracking.ToString(), Kochava.KochLogLevel.debug);
 							}
-							catch (Exception var_4_497)
+							catch (Exception var_5_48F)
 							{
 							}
 						}
@@ -963,7 +963,7 @@ public class Kochava : MonoBehaviour
 									}
 								}
 							}
-							catch (Exception var_5_C96)
+							catch (Exception var_26_ADC)
 							{
 							}
 						}
@@ -979,7 +979,7 @@ public class Kochava : MonoBehaviour
 								text
 							}), Kochava.KochLogLevel.debug);
 						}
-						catch (Exception var_6_D34)
+						catch (Exception var_28_B62)
 						{
 						}
 					}
@@ -1005,7 +1005,7 @@ public class Kochava : MonoBehaviour
 								}
 							}
 						}
-						catch (Exception var_7_E70)
+						catch (Exception var_32_C4A)
 						{
 						}
 						text2 += "}";
@@ -1024,7 +1024,7 @@ public class Kochava : MonoBehaviour
 									this.eventNameBlacklist.Add(array3[k]);
 								}
 							}
-							catch (Exception var_8_F87)
+							catch (Exception var_35_D25)
 							{
 							}
 						}
@@ -1063,17 +1063,23 @@ public class Kochava : MonoBehaviour
 					}
 					AndroidJNIHelper.debug = true;
 					AndroidJavaClass androidJavaClass = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
-					AndroidJavaObject @static = androidJavaClass.GetStatic<AndroidJavaObject>("currentActivity");
-					AndroidJavaObject androidJavaObject = @static.Call<AndroidJavaObject>("getApplicationContext", new object[0]);
-					AndroidJavaClass androidJavaClass2 = new AndroidJavaClass("com.kochava.android.tracker.lite.KochavaSDKLite");
-					androidJavaClass2.CallStatic<string>("GetExternalKochavaInfo_Android", new object[]
+					try
 					{
-						androidJavaObject,
-						this.whitelist,
-						Kochava.device_id_delay,
-						PlayerPrefs.GetString("blacklist"),
-						Kochava.AdidSupressed
-					});
+						AndroidJavaObject @static = androidJavaClass.GetStatic<AndroidJavaObject>("currentActivity");
+						AndroidJavaObject androidJavaObject = @static.Call<AndroidJavaObject>("getApplicationContext", new object[0]);
+						AndroidJavaClass androidJavaClass2 = new AndroidJavaClass("com.kochava.android.tracker.lite.KochavaSDKLite");
+						androidJavaClass2.CallStatic<string>("GetExternalKochavaInfo_Android", new object[]
+						{
+							androidJavaObject,
+							this.whitelist,
+							Kochava.device_id_delay,
+							PlayerPrefs.GetString("blacklist"),
+							Kochava.AdidSupressed
+						});
+					}
+					finally
+					{
+					}
 					if (this.doReportLocation)
 					{
 						double num10 = Kochava.CurrentTime();
@@ -1081,16 +1087,22 @@ public class Kochava : MonoBehaviour
 						if (num10 - num11 > (double)(this.locationStaleness * 60))
 						{
 							AndroidJavaClass androidJavaClass3 = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
-							AndroidJavaObject static2 = androidJavaClass3.GetStatic<AndroidJavaObject>("currentActivity");
-							AndroidJavaObject androidJavaObject2 = static2.Call<AndroidJavaObject>("getApplicationContext", new object[0]);
-							AndroidJavaClass androidJavaClass4 = new AndroidJavaClass("com.kochava.android.tracker.lite.KochavaSDKLite");
-							androidJavaClass4.CallStatic<string>("GetExternalLocationReport_Android", new object[]
+							try
 							{
-								this.locationAccuracy,
-								this.locationTimeout,
-								this.locationStaleness
-							});
-							this.Log("Calling android location gather");
+								AndroidJavaObject static2 = androidJavaClass3.GetStatic<AndroidJavaObject>("currentActivity");
+								AndroidJavaObject androidJavaObject2 = static2.Call<AndroidJavaObject>("getApplicationContext", new object[0]);
+								AndroidJavaClass androidJavaClass4 = new AndroidJavaClass("com.kochava.android.tracker.lite.KochavaSDKLite");
+								androidJavaClass4.CallStatic<string>("GetExternalLocationReport_Android", new object[]
+								{
+									this.locationAccuracy,
+									this.locationTimeout,
+									this.locationStaleness
+								});
+								this.Log("Calling android location gather");
+							}
+							finally
+							{
+							}
 						}
 					}
 				}
@@ -1499,9 +1511,22 @@ public class Kochava : MonoBehaviour
 	public static void FireEvent(Hashtable propHash)
 	{
 		Dictionary<string, object> dictionary = new Dictionary<string, object>();
-		foreach (DictionaryEntry dictionaryEntry in propHash)
+		IDictionaryEnumerator enumerator = propHash.GetEnumerator();
+		try
 		{
-			dictionary.Add((string)dictionaryEntry.Key, dictionaryEntry.Value);
+			while (enumerator.MoveNext())
+			{
+				DictionaryEntry dictionaryEntry = (DictionaryEntry)enumerator.Current;
+				dictionary.Add((string)dictionaryEntry.Key, dictionaryEntry.Value);
+			}
+		}
+		finally
+		{
+			IDisposable disposable;
+			if ((disposable = (enumerator as IDisposable)) != null)
+			{
+				disposable.Dispose();
+			}
 		}
 		Kochava._S._fireEvent("event", dictionary);
 	}
@@ -1742,7 +1767,7 @@ public class Kochava : MonoBehaviour
 					list.Add(eventData);
 					this.eventQueue.Dequeue();
 				}
-				catch (Exception var_1_1AB)
+				catch (Exception var_5_170)
 				{
 				}
 			}
@@ -1794,7 +1819,7 @@ public class Kochava : MonoBehaviour
 						{
 							this.processQueueKickstartTime = Time.time + 30f;
 							this.queueIsProcessing = false;
-							goto IL_585;
+							goto IL_50E;
 						}
 						this.Log("Event posting failure, event dequeued: " + dictionary["error"], Kochava.KochLogLevel.warning);
 					}
@@ -1808,13 +1833,13 @@ public class Kochava : MonoBehaviour
 						}
 					}
 				}
-				catch (Exception var_3_549)
+				catch (Exception var_10_4DC)
 				{
 				}
 			}
 			this.queueIsProcessing = false;
 		}
-		IL_585:
+		IL_50E:
 		yield break;
 	}
 
@@ -1959,7 +1984,7 @@ public class Kochava : MonoBehaviour
 			Kochava._S.queueIsProcessing = false;
 			Kochava._S.eventQueue = new Queue<Kochava.QueuedEvent>();
 		}
-		catch (Exception var_2_B4)
+		catch (Exception var_2_B0)
 		{
 		}
 		yield break;
@@ -2155,7 +2180,7 @@ public class Kochava : MonoBehaviour
 				{
 					dictionary = JsonReader.Deserialize<Dictionary<string, object>>(wWW.text);
 				}
-				catch (Exception var_3_23E)
+				catch (Exception var_3_24E)
 				{
 				}
 			}
@@ -2177,7 +2202,7 @@ public class Kochava : MonoBehaviour
 				{
 					dictionary2 = (Dictionary<string, object>)dictionary["data"];
 				}
-				catch (Exception var_4_36E)
+				catch (Exception var_5_36A)
 				{
 				}
 				int num = 0;

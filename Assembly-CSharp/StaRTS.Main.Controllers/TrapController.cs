@@ -181,18 +181,24 @@ namespace StaRTS.Main.Controllers
 					smartEntity.BuildingComp.BuildingTO.CurrentStorage = ((state != TrapState.Armed) ? 0 : 1);
 				}
 				Service.TrapViewController.UpdateTrapVisibility((SmartEntity)comp.Entity);
-				switch (state)
+				if (state != TrapState.Active)
 				{
-				case TrapState.Spent:
-					Service.EventManager.SendEvent(EventId.TrapDisarmed, comp);
-					break;
-				case TrapState.Active:
+					if (state != TrapState.Spent)
+					{
+						if (state == TrapState.Destroyed)
+						{
+							comp.CurrentState = TrapState.Spent;
+							Service.EventManager.SendEvent(EventId.TrapDestroyed, comp);
+						}
+					}
+					else
+					{
+						Service.EventManager.SendEvent(EventId.TrapDisarmed, comp);
+					}
+				}
+				else
+				{
 					Service.EventManager.SendEvent(EventId.TrapTriggered, comp);
-					break;
-				case TrapState.Destroyed:
-					comp.CurrentState = TrapState.Spent;
-					Service.EventManager.SendEvent(EventId.TrapDestroyed, comp);
-					break;
 				}
 			}
 			Service.TrapViewController.SetTrapViewState(trapViewComp, state);

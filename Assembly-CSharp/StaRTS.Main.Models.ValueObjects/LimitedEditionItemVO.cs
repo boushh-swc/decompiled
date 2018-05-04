@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace StaRTS.Main.Models.ValueObjects
 {
-	public class LimitedEditionItemVO : IGeometryVO, ILimitedEditionItemVO, IValueObject
+	public class LimitedEditionItemVO : ILimitedEditionItemVO, IGeometryVO, IValueObject
 	{
 		public static int COLUMN_faction
 		{

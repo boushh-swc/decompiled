@@ -251,18 +251,13 @@ namespace StaRTS.Main.Controllers.Squads
 		public void OnPlayerActionFailure(SquadMsg actionMsg, uint status)
 		{
 			SquadAction type = actionMsg.ActionData.Type;
-			switch (type)
-			{
-			case SquadAction.RequestTroops:
-			case SquadAction.RequestWarTroops:
+			if (type == SquadAction.RequestTroops || type == SquadAction.RequestWarTroops)
 			{
 				SqmRequestData requestData = actionMsg.RequestData;
 				if (requestData.PayToSkip && requestData.ResendCrystalCost > 0)
 				{
 					Service.CurrentPlayer.Inventory.ModifyCrystals(requestData.ResendCrystalCost);
 				}
-				break;
-			}
 			}
 			string messageForServerActionFailure = SquadUtils.GetMessageForServerActionFailure(type, status);
 			AlertScreen.ShowModal(false, null, Service.Lang.Get(messageForServerActionFailure, new object[0]), null, null);

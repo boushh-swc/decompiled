@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace StaRTS.Main.Bot
 {
-	public class BotRunner : IBotNotifierParent, IViewFrameTimeObserver
+	public class BotRunner : IViewFrameTimeObserver, IBotNotifierParent
 	{
 		public Dictionary<string, object> BotProperties;
 

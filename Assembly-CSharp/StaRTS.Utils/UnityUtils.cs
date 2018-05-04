@@ -1,7 +1,9 @@
 using StaRTS.Assets;
 using StaRTS.Utils.Core;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -24,6 +26,12 @@ namespace StaRTS.Utils
 		private static List<Texture2D> textures;
 
 		private static Dictionary<string, UnityUtils.OnUnityLogCallback> unityLogCallbacks;
+
+		[CompilerGenerated]
+		private static Application.LogCallback <>f__mg$cache0;
+
+		[CompilerGenerated]
+		private static Application.LogCallback <>f__mg$cache1;
 
 		public static void StaticReset()
 		{
@@ -74,7 +82,11 @@ namespace StaRTS.Utils
 			}
 			if (UnityUtils.unityLogCallbacks != null)
 			{
-				Application.logMessageReceived -= new Application.LogCallback(UnityUtils.HandleUnityLog);
+				if (UnityUtils.<>f__mg$cache0 == null)
+				{
+					UnityUtils.<>f__mg$cache0 = new Application.LogCallback(UnityUtils.HandleUnityLog);
+				}
+				Application.logMessageReceived -= UnityUtils.<>f__mg$cache0;
 				UnityUtils.unityLogCallbacks = null;
 			}
 		}
@@ -93,7 +105,11 @@ namespace StaRTS.Utils
 				if (UnityUtils.unityLogCallbacks == null)
 				{
 					UnityUtils.unityLogCallbacks = new Dictionary<string, UnityUtils.OnUnityLogCallback>();
-					Application.logMessageReceived += new Application.LogCallback(UnityUtils.HandleUnityLog);
+					if (UnityUtils.<>f__mg$cache1 == null)
+					{
+						UnityUtils.<>f__mg$cache1 = new Application.LogCallback(UnityUtils.HandleUnityLog);
+					}
+					Application.logMessageReceived += UnityUtils.<>f__mg$cache1;
 				}
 				if (UnityUtils.unityLogCallbacks.ContainsKey(name))
 				{
@@ -161,10 +177,10 @@ namespace StaRTS.Utils
 			Vector3[] array = new Vector3[4];
 			Vector2[] array2 = new Vector2[4];
 			int[] array3 = new int[6];
-			array[0] = new Vector3(0f + border, 0f, 0f + border);
-			array[1] = new Vector3(1f - border, 0f, 0f + border);
+			array[0] = new Vector3(border, 0f, border);
+			array[1] = new Vector3(1f - border, 0f, border);
 			array[2] = new Vector3(1f - border, 0f, 1f - border);
-			array[3] = new Vector3(0f + border, 0f, 1f - border);
+			array[3] = new Vector3(border, 0f, 1f - border);
 			array2[0] = new Vector2(0f, 0f);
 			array2[1] = new Vector2(1f, 0f);
 			array2[2] = new Vector2(1f, 1f);
@@ -185,7 +201,6 @@ namespace StaRTS.Utils
 			mesh.uv = uv;
 			mesh.triangles = triangles;
 			mesh.RecalculateNormals();
-			mesh.Optimize();
 			return mesh;
 		}
 
@@ -501,7 +516,7 @@ namespace StaRTS.Utils
 		{
 			if (system != null)
 			{
-				system.startSize = originalSize * scale;
+				system.main.startSize.constant = originalSize * scale;
 			}
 		}
 
@@ -584,10 +599,23 @@ namespace StaRTS.Utils
 			Transform transform = gameObject.transform;
 			GameObject[] array = new GameObject[transform.childCount];
 			int num = 0;
-			foreach (Transform transform2 in transform)
+			IEnumerator enumerator = transform.GetEnumerator();
+			try
 			{
-				array[num] = transform2.gameObject;
-				num++;
+				while (enumerator.MoveNext())
+				{
+					Transform transform2 = (Transform)enumerator.Current;
+					array[num] = transform2.gameObject;
+					num++;
+				}
+			}
+			finally
+			{
+				IDisposable disposable;
+				if ((disposable = (enumerator as IDisposable)) != null)
+				{
+					disposable.Dispose();
+				}
 			}
 			return array;
 		}
@@ -620,7 +648,7 @@ namespace StaRTS.Utils
 
 		public static void PlayParticleEmitter(ParticleSystem particle)
 		{
-			if (particle.emissionRate > 0f)
+			if (particle.emission.enabled)
 			{
 				particle.Play(false);
 			}
@@ -633,7 +661,7 @@ namespace StaRTS.Utils
 		public static RenderTexture GetTemporaryRenderTexture(int width, int height)
 		{
 			RenderTexture temporary = RenderTexture.GetTemporary(width, height, 16);
-			temporary.generateMips = false;
+			temporary.autoGenerateMips = false;
 			temporary.filterMode = FilterMode.Point;
 			return temporary;
 		}

@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace StaRTS.Main.Models.ValueObjects
 {
-	public class BattleTypeVO : BattleDeploymentData, IAssetVO, IValueObject
+	public class BattleTypeVO : BattleDeploymentData, IValueObject, IAssetVO
 	{
 		public static int COLUMN_battleName
 		{

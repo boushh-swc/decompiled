@@ -1,10 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 [AddComponentMenu("NGUI/Interaction/Grid")]
 public class UIGrid : UIWidgetContainer
 {
+	public delegate void OnReposition();
+
 	public enum Arrangement
 	{
 		Horizontal = 0,
@@ -20,8 +23,6 @@ public class UIGrid : UIWidgetContainer
 		Vertical = 3,
 		Custom = 4
 	}
-
-	public delegate void OnReposition();
 
 	public UIGrid.Arrangement arrangement;
 
@@ -54,6 +55,15 @@ public class UIGrid : UIWidgetContainer
 
 	protected bool mInitDone;
 
+	[CompilerGenerated]
+	private static Comparison<Transform> <>f__mg$cache0;
+
+	[CompilerGenerated]
+	private static Comparison<Transform> <>f__mg$cache1;
+
+	[CompilerGenerated]
+	private static Comparison<Transform> <>f__mg$cache2;
+
 	public bool repositionNow
 	{
 		set
@@ -73,7 +83,7 @@ public class UIGrid : UIWidgetContainer
 		for (int i = 0; i < transform.childCount; i++)
 		{
 			Transform child = transform.GetChild(i);
-			if (!this.hideInactive || (child && NGUITools.GetActive(child.gameObject)))
+			if (!this.hideInactive || (child && child.gameObject.activeSelf))
 			{
 				list.Add(child);
 			}
@@ -82,15 +92,30 @@ public class UIGrid : UIWidgetContainer
 		{
 			if (this.sorting == UIGrid.Sorting.Alphabetic)
 			{
-				list.Sort(new Comparison<Transform>(UIGrid.SortByName));
+				List<Transform> arg_9A_0 = list;
+				if (UIGrid.<>f__mg$cache0 == null)
+				{
+					UIGrid.<>f__mg$cache0 = new Comparison<Transform>(UIGrid.SortByName);
+				}
+				arg_9A_0.Sort(UIGrid.<>f__mg$cache0);
 			}
 			else if (this.sorting == UIGrid.Sorting.Horizontal)
 			{
-				list.Sort(new Comparison<Transform>(UIGrid.SortHorizontal));
+				List<Transform> arg_CE_0 = list;
+				if (UIGrid.<>f__mg$cache1 == null)
+				{
+					UIGrid.<>f__mg$cache1 = new Comparison<Transform>(UIGrid.SortHorizontal);
+				}
+				arg_CE_0.Sort(UIGrid.<>f__mg$cache1);
 			}
 			else if (this.sorting == UIGrid.Sorting.Vertical)
 			{
-				list.Sort(new Comparison<Transform>(UIGrid.SortVertical));
+				List<Transform> arg_102_0 = list;
+				if (UIGrid.<>f__mg$cache2 == null)
+				{
+					UIGrid.<>f__mg$cache2 = new Comparison<Transform>(UIGrid.SortVertical);
+				}
+				arg_102_0.Sort(UIGrid.<>f__mg$cache2);
 			}
 			else if (this.onCustomSort != null)
 			{
@@ -115,11 +140,17 @@ public class UIGrid : UIWidgetContainer
 		return this.GetChildList().IndexOf(trans);
 	}
 
+	[Obsolete("Use gameObject.AddChild or transform.parent = gridTransform")]
 	public void AddChild(Transform trans)
 	{
-		this.AddChild(trans, true);
+		if (trans != null)
+		{
+			trans.parent = base.transform;
+			this.ResetPosition(this.GetChildList());
+		}
 	}
 
+	[Obsolete("Use gameObject.AddChild or transform.parent = gridTransform")]
 	public void AddChild(Transform trans, bool sort)
 	{
 		if (trans != null)
@@ -206,7 +237,7 @@ public class UIGrid : UIWidgetContainer
 			{
 				this.sorting = UIGrid.Sorting.Alphabetic;
 			}
-			NGUITools.SetDirty(this);
+			NGUITools.SetDirty(this, "last change");
 		}
 		List<Transform> childList = this.GetChildList();
 		this.ResetPosition(childList);
@@ -263,7 +294,7 @@ public class UIGrid : UIWidgetContainer
 			{
 				vector = ((this.arrangement != UIGrid.Arrangement.Horizontal) ? new Vector3(this.cellWidth * (float)num2, -this.cellHeight * (float)num, z) : new Vector3(this.cellWidth * (float)num, -this.cellHeight * (float)num2, z));
 			}
-			if (this.animateSmoothly && Application.isPlaying && Vector3.SqrMagnitude(transform2.localPosition - vector) >= 0.0001f)
+			if (this.animateSmoothly && Application.isPlaying && (this.pivot != UIWidget.Pivot.TopLeft || Vector3.SqrMagnitude(transform2.localPosition - vector) >= 0.0001f))
 			{
 				SpringPosition springPosition = SpringPosition.Begin(transform2.gameObject, vector, 15f);
 				springPosition.updateScrollView = true;
@@ -297,23 +328,24 @@ public class UIGrid : UIWidgetContainer
 				num5 = Mathf.Lerp(0f, (float)num4 * this.cellWidth, pivotOffset.x);
 				num6 = Mathf.Lerp((float)(-(float)num3) * this.cellHeight, 0f, pivotOffset.y);
 			}
-			for (int j = 0; j < transform.childCount; j++)
+			foreach (Transform current in list)
 			{
-				Transform child = transform.GetChild(j);
-				SpringPosition component = child.GetComponent<SpringPosition>();
+				SpringPosition component = current.GetComponent<SpringPosition>();
 				if (component != null)
 				{
-					SpringPosition expr_26C_cp_0 = component;
-					expr_26C_cp_0.target.x = expr_26C_cp_0.target.x - num5;
-					SpringPosition expr_281_cp_0 = component;
-					expr_281_cp_0.target.y = expr_281_cp_0.target.y - num6;
+					component.enabled = false;
+					SpringPosition expr_282_cp_0 = component;
+					expr_282_cp_0.target.x = expr_282_cp_0.target.x - num5;
+					SpringPosition expr_297_cp_0 = component;
+					expr_297_cp_0.target.y = expr_297_cp_0.target.y - num6;
+					component.enabled = true;
 				}
 				else
 				{
-					Vector3 localPosition = child.localPosition;
+					Vector3 localPosition = current.localPosition;
 					localPosition.x -= num5;
 					localPosition.y -= num6;
-					child.localPosition = localPosition;
+					current.localPosition = localPosition;
 				}
 			}
 		}

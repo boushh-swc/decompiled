@@ -48,7 +48,6 @@ namespace ExitGames.Client.Photon.Chat
 
 		public ChatPeer(IPhotonPeerListener listener, ConnectionProtocol protocol) : base(listener, protocol)
 		{
-			this.ConfigUnitySockets();
 		}
 
 		[Conditional("UNITY")]

@@ -38,10 +38,10 @@ namespace StaRTS.Utils
 
 		private static void ScreenToRay(Camera unityCamera, Vector2 screenPosition, float distanceFromEyeToScreen, out Vector3 outRayDirection)
 		{
-			Vector4 v = new Vector4(screenPosition.x - 0.5f * (float)Screen.width, screenPosition.y - 0.5f * (float)Screen.height, -distanceFromEyeToScreen, 0f);
+			Vector4 vector = new Vector4(screenPosition.x - 0.5f * (float)Screen.width, screenPosition.y - 0.5f * (float)Screen.height, -distanceFromEyeToScreen, 0f);
 			Matrix4x4 cameraToWorldMatrix = unityCamera.cameraToWorldMatrix;
-			v = cameraToWorldMatrix * v;
-			outRayDirection = new Vector3(v.x, v.y, v.z);
+			vector = cameraToWorldMatrix * vector;
+			outRayDirection = new Vector3(vector.x, vector.y, vector.z);
 			outRayDirection = outRayDirection.normalized;
 		}
 	}

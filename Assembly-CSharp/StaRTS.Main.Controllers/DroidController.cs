@@ -303,63 +303,65 @@ namespace StaRTS.Main.Controllers
 			case EventId.BuildingViewReady:
 			case EventId.BuildingViewFailed:
 			{
-				IL_20:
+				IL_1C:
 				switch (id)
 				{
-				case EventId.BuildingPurchaseSuccess:
-				case EventId.BuildingStartedUpgrading:
-					goto IL_137;
-				case EventId.BuildingPurchaseModeStarted:
-				case EventId.BuildingPurchaseModeEnded:
+				case EventId.BuildingLevelUpgraded:
+				case EventId.BuildingSwapped:
+				case EventId.BuildingConstructed:
+					break;
+				default:
 				{
-					IL_3A:
 					switch (id)
 					{
-					case EventId.BuildingLevelUpgraded:
-					case EventId.BuildingSwapped:
-					case EventId.BuildingConstructed:
-						break;
-					default:
-						if (id != EventId.ClearableCleared)
+					case EventId.BuildingPurchaseSuccess:
+					case EventId.BuildingStartedUpgrading:
+						goto IL_125;
+					case EventId.BuildingPurchaseModeStarted:
+					case EventId.BuildingPurchaseModeEnded:
+						IL_4A:
+						if (id == EventId.ClearableCleared)
 						{
-							if (id == EventId.ClearableStarted || id == EventId.ChampionStartedRepairing)
-							{
-								goto IL_137;
-							}
-							if (id != EventId.ChampionRepaired)
-							{
-								if (id == EventId.WorldLoadComplete)
-								{
-									this.InitializeDroids();
-									return EatResponse.NotEaten;
-								}
-								if (id == EventId.BattleLoadStart)
-								{
-									this.DestroyAllDroids();
-									return EatResponse.NotEaten;
-								}
-								if (id != EventId.InventoryResourceUpdated)
-								{
-									return EatResponse.NotEaten;
-								}
-								if (object.Equals(cookie, "droids"))
-								{
-									this.AssignWorkToDroid(this.GetDroidHut(), false, true, true);
-								}
-								return EatResponse.NotEaten;
-							}
+							goto IL_13D;
 						}
-						break;
+						if (id == EventId.ClearableStarted || id == EventId.ChampionStartedRepairing)
+						{
+							goto IL_125;
+						}
+						if (id == EventId.ChampionRepaired)
+						{
+							goto IL_13D;
+						}
+						if (id == EventId.WorldLoadComplete)
+						{
+							this.InitializeDroids();
+							return EatResponse.NotEaten;
+						}
+						if (id == EventId.BattleLoadStart)
+						{
+							this.DestroyAllDroids();
+							return EatResponse.NotEaten;
+						}
+						if (id != EventId.InventoryResourceUpdated)
+						{
+							return EatResponse.NotEaten;
+						}
+						if (object.Equals(cookie, "droids"))
+						{
+							this.AssignWorkToDroid(this.GetDroidHut(), false, true, true);
+						}
+						return EatResponse.NotEaten;
 					}
-					ContractEventData contractEventData = cookie as ContractEventData;
-					this.RemoveWorkFromDroid(contractEventData.Entity, id != EventId.ClearableCleared);
+					goto IL_4A;
+					IL_125:
+					Entity building = cookie as Entity;
+					this.AssignWorkToDroid(building, false, false, true);
 					return EatResponse.NotEaten;
 				}
 				}
-				goto IL_3A;
-				IL_137:
-				Entity building = cookie as Entity;
-				this.AssignWorkToDroid(building, false, false, true);
+				IL_13D:
+				ContractEventData contractEventData = cookie as ContractEventData;
+				this.RemoveWorkFromDroid(contractEventData.Entity, id != EventId.ClearableCleared);
 				return EatResponse.NotEaten;
 			}
 			case EventId.BuildingCancelled:
@@ -369,14 +371,14 @@ namespace StaRTS.Main.Controllers
 				ContractType contractType = ContractUtils.GetContractType(contractEventData2.Contract.DeliveryType);
 				if (ContractUtils.ContractTypeConsumesDroid(contractType))
 				{
-					SmartEntity smartEntity = (SmartEntity)contractEventData2.Entity;
-					BuildingComponent buildingComp = smartEntity.BuildingComp;
-					this.RemoveWorkFromDroid(smartEntity, buildingComp.BuildingType.Type != BuildingType.Clearable);
+					SmartEntity entity = contractEventData2.Entity;
+					BuildingComponent buildingComp = entity.BuildingComp;
+					this.RemoveWorkFromDroid(entity, buildingComp.BuildingType.Type != BuildingType.Clearable);
 				}
 				return EatResponse.NotEaten;
 			}
 			}
-			goto IL_20;
+			goto IL_1C;
 		}
 	}
 }

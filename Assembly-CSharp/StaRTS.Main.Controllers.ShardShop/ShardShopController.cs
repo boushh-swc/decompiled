@@ -197,23 +197,25 @@ namespace StaRTS.Main.Controllers.ShardShop
 		{
 			CostVO costVO = ShardShopController.CalculateCost(slotIndex, quantity, this.CurrentShopData);
 			MissingCurrencyTypes missingCurrencyTypes = CostUtils.CheckForMissingCurrency(Service.CurrentPlayer, costVO);
-			switch (missingCurrencyTypes)
+			if (missingCurrencyTypes != MissingCurrencyTypes.Hard)
 			{
-			case MissingCurrencyTypes.Soft:
-			{
-				ShardShopPurchaseCookie purchaseCookie = new ShardShopPurchaseCookie(slotIndex, quantity, deferredSuccess, serverCallback, this.ClientPredictionId, costVO);
-				PayMeScreen.ShowIfNotEnoughCurrency(costVO.Credits, costVO.Materials, costVO.Contraband, "shard", purchaseCookie, new OnScreenModalResult(this.OnPurchaseMissingSoftCurrency));
-				break;
+				if (missingCurrencyTypes != MissingCurrencyTypes.MultipleSoft)
+				{
+					if (missingCurrencyTypes == MissingCurrencyTypes.Soft)
+					{
+						ShardShopPurchaseCookie purchaseCookie = new ShardShopPurchaseCookie(slotIndex, quantity, deferredSuccess, serverCallback, this.ClientPredictionId, costVO);
+						PayMeScreen.ShowIfNotEnoughCurrency(costVO.Credits, costVO.Materials, costVO.Contraband, "shard", purchaseCookie, new OnScreenModalResult(this.OnPurchaseMissingSoftCurrency));
+					}
+				}
+				else
+				{
+					ShardShopPurchaseCookie purchaseCookie2 = new ShardShopPurchaseCookie(slotIndex, quantity, deferredSuccess, serverCallback, this.ClientPredictionId, costVO);
+					MultiResourcePayMeScreen.ShowIfNotEnoughMultipleCurrencies(costVO, "shard", purchaseCookie2, new OnScreenModalResult(this.OnPurchaseMissingSoftCurrency));
+				}
 			}
-			case MissingCurrencyTypes.Hard:
+			else
+			{
 				GameUtils.PromptToBuyCrystals();
-				break;
-			case MissingCurrencyTypes.MultipleSoft:
-			{
-				ShardShopPurchaseCookie purchaseCookie2 = new ShardShopPurchaseCookie(slotIndex, quantity, deferredSuccess, serverCallback, this.ClientPredictionId, costVO);
-				MultiResourcePayMeScreen.ShowIfNotEnoughMultipleCurrencies(costVO, "shard", purchaseCookie2, new OnScreenModalResult(this.OnPurchaseMissingSoftCurrency));
-				break;
-			}
 			}
 			if (missingCurrencyTypes != MissingCurrencyTypes.None)
 			{

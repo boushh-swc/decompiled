@@ -84,13 +84,17 @@ namespace StaRTS.Main.Controllers.VictoryConditions
 			}
 			if (troop.Lvl >= this.level)
 			{
-				switch (this.matchType)
+				ConditionMatchType conditionMatchType = this.matchType;
+				if (conditionMatchType == ConditionMatchType.Uid)
 				{
-				case ConditionMatchType.Uid:
 					return troop.Uid == this.unitMatch;
-				case ConditionMatchType.Id:
+				}
+				if (conditionMatchType == ConditionMatchType.Id)
+				{
 					return troop.TroopID == this.unitMatch;
-				case ConditionMatchType.Type:
+				}
+				if (conditionMatchType == ConditionMatchType.Type)
+				{
 					return troop.Type == StringUtils.ParseEnum<TroopType>(this.unitMatch);
 				}
 			}

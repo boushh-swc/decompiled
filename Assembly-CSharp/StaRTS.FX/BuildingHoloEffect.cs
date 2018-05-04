@@ -172,9 +172,13 @@ namespace StaRTS.FX
 				if (child != null)
 				{
 					ParticleSystem component = child.GetComponent<ParticleSystem>();
+					ParticleSystem.MainModule main = component.main;
 					if (component != null)
 					{
-						component.startSize = transform.localScale.x * 6.59f;
+						float constant = transform.localScale.x * 6.59f;
+						ParticleSystem.MinMaxCurve startSize = main.startSize;
+						startSize.constant = constant;
+						main.startSize = startSize;
 					}
 					if (child.childCount >= 2)
 					{
@@ -184,7 +188,11 @@ namespace StaRTS.FX
 							ParticleSystem component2 = child2.GetComponent<ParticleSystem>();
 							if (component2 != null)
 							{
-								component2.startSize = transform.localScale.x;
+								ParticleSystem.MainModule main2 = component2.main;
+								ParticleSystem.MinMaxCurve startSize2 = main2.startSize;
+								float x = transform.localScale.x;
+								startSize2.constant = x;
+								main2.startSize = startSize2;
 							}
 						}
 						Transform child3 = child.GetChild(1);
@@ -194,7 +202,11 @@ namespace StaRTS.FX
 							if (component3 != null)
 							{
 								Rand rand = Service.Rand;
-								component3.startSize = transform.localScale.x * rand.ViewRangeFloat(0.63f, 0.67f);
+								ParticleSystem.MainModule main3 = component3.main;
+								ParticleSystem.MinMaxCurve startSize3 = main3.startSize;
+								float constant2 = transform.localScale.x * rand.ViewRangeFloat(0.63f, 0.67f);
+								startSize3.constant = constant2;
+								main3.startSize = startSize3;
 							}
 						}
 					}
@@ -248,7 +260,7 @@ namespace StaRTS.FX
 				return;
 			}
 			this.WaitingForBuildingView = false;
-			Transform transform = gameObjectViewComponent.MainTransform.FindChild("locator_hologram");
+			Transform transform = gameObjectViewComponent.MainTransform.Find("locator_hologram");
 			if (!this.coneObj.activeSelf)
 			{
 				this.coneObj.SetActive(true);

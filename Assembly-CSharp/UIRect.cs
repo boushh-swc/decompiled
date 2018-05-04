@@ -110,9 +110,10 @@ public abstract class UIRect : MonoBehaviour
 				{
 					return this.rect.GetSides(relativeTo);
 				}
-				if (this.target.GetComponent<Camera>() != null)
+				Camera component = this.target.GetComponent<Camera>();
+				if (component != null)
 				{
-					return this.target.GetComponent<Camera>().GetSides(relativeTo);
+					return component.GetSides(relativeTo);
 				}
 			}
 			return null;
@@ -207,7 +208,7 @@ public abstract class UIRect : MonoBehaviour
 	{
 		get
 		{
-			if (!this.mAnchorsCached)
+			if (!this.mCam || !this.mAnchorsCached)
 			{
 				this.ResetAnchors();
 			}
@@ -362,6 +363,10 @@ public abstract class UIRect : MonoBehaviour
 
 	protected Vector3 GetLocalPos(UIRect.AnchorPoint ac, Transform trans)
 	{
+		if (ac.targetCam == null)
+		{
+			this.FindCameraFor(ac);
+		}
 		if (this.anchorCamera == null || ac.targetCam == null)
 		{
 			return this.cachedTransform.localPosition;
@@ -433,7 +438,11 @@ public abstract class UIRect : MonoBehaviour
 
 	public void Update()
 	{
-		if (!this.mAnchorsCached)
+		if (!this.mCam)
+		{
+			this.ResetAndUpdateAnchors();
+		}
+		else if (!this.mAnchorsCached)
 		{
 			this.ResetAnchors();
 		}
@@ -541,6 +550,68 @@ public abstract class UIRect : MonoBehaviour
 		this.topAnchor.absolute = top;
 		this.ResetAnchors();
 		this.UpdateAnchors();
+	}
+
+	public void SetAnchor(GameObject go, float left, float bottom, float right, float top)
+	{
+		Transform target = (!(go != null)) ? null : go.transform;
+		this.leftAnchor.target = target;
+		this.rightAnchor.target = target;
+		this.topAnchor.target = target;
+		this.bottomAnchor.target = target;
+		this.leftAnchor.relative = left;
+		this.rightAnchor.relative = right;
+		this.bottomAnchor.relative = bottom;
+		this.topAnchor.relative = top;
+		this.leftAnchor.absolute = 0;
+		this.rightAnchor.absolute = 0;
+		this.bottomAnchor.absolute = 0;
+		this.topAnchor.absolute = 0;
+		this.ResetAnchors();
+		this.UpdateAnchors();
+	}
+
+	public void SetAnchor(GameObject go, float left, int leftOffset, float bottom, int bottomOffset, float right, int rightOffset, float top, int topOffset)
+	{
+		Transform target = (!(go != null)) ? null : go.transform;
+		this.leftAnchor.target = target;
+		this.rightAnchor.target = target;
+		this.topAnchor.target = target;
+		this.bottomAnchor.target = target;
+		this.leftAnchor.relative = left;
+		this.rightAnchor.relative = right;
+		this.bottomAnchor.relative = bottom;
+		this.topAnchor.relative = top;
+		this.leftAnchor.absolute = leftOffset;
+		this.rightAnchor.absolute = rightOffset;
+		this.bottomAnchor.absolute = bottomOffset;
+		this.topAnchor.absolute = topOffset;
+		this.ResetAnchors();
+		this.UpdateAnchors();
+	}
+
+	public void SetAnchor(float left, int leftOffset, float bottom, int bottomOffset, float right, int rightOffset, float top, int topOffset)
+	{
+		Transform parent = this.cachedTransform.parent;
+		this.leftAnchor.target = parent;
+		this.rightAnchor.target = parent;
+		this.topAnchor.target = parent;
+		this.bottomAnchor.target = parent;
+		this.leftAnchor.relative = left;
+		this.rightAnchor.relative = right;
+		this.bottomAnchor.relative = bottom;
+		this.topAnchor.relative = top;
+		this.leftAnchor.absolute = leftOffset;
+		this.rightAnchor.absolute = rightOffset;
+		this.bottomAnchor.absolute = bottomOffset;
+		this.topAnchor.absolute = topOffset;
+		this.ResetAnchors();
+		this.UpdateAnchors();
+	}
+
+	public void SetScreenRect(int left, int top, int width, int height)
+	{
+		this.SetAnchor(0f, left, 1f, -top - height, 0f, left + width, 1f, -top);
 	}
 
 	public void ResetAnchors()

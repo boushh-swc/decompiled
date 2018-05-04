@@ -17,6 +17,7 @@ using StaRTS.Utils.Core;
 using StaRTS.Utils.Diagnostics;
 using StaRTS.Utils.Scheduling;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -403,9 +404,22 @@ namespace StaRTS.Main.Controllers
 			{
 				return;
 			}
-			foreach (AnimationState animationState in specialAttack.StarshipGameObject.GetComponent<Animation>())
+			IEnumerator enumerator = specialAttack.StarshipGameObject.GetComponent<Animation>().GetEnumerator();
+			try
 			{
-				animationState.speed = this.speed;
+				while (enumerator.MoveNext())
+				{
+					AnimationState animationState = (AnimationState)enumerator.Current;
+					animationState.speed = this.speed;
+				}
+			}
+			finally
+			{
+				IDisposable disposable;
+				if ((disposable = (enumerator as IDisposable)) != null)
+				{
+					disposable.Dispose();
+				}
 			}
 		}
 
@@ -609,7 +623,7 @@ namespace StaRTS.Main.Controllers
 		private void SpawnProjectile(uint id, object cookie)
 		{
 			SpecialAttack specialAttack = (SpecialAttack)cookie;
-			Logger logger = Service.Logger;
+			StaRTS.Utils.Diagnostics.Logger logger = Service.Logger;
 			if (specialAttack == null)
 			{
 				logger.Error("SpawnProjectile: specialAttack is null");
@@ -702,9 +716,7 @@ namespace StaRTS.Main.Controllers
 			else
 			{
 				Dictionary<ProjectileTypeVO, int> dictionary;
-				Dictionary<ProjectileTypeVO, int> expr_6B = dictionary = this.projectilesInFlight;
-				int num = dictionary[vo];
-				expr_6B[vo] = num + 1;
+				(dictionary = this.projectilesInFlight)[vo] = dictionary[vo] + 1;
 			}
 		}
 
@@ -715,9 +727,7 @@ namespace StaRTS.Main.Controllers
 				return;
 			}
 			Dictionary<ProjectileTypeVO, int> dictionary;
-			Dictionary<ProjectileTypeVO, int> expr_18 = dictionary = this.projectilesInFlight;
-			int num = dictionary[vo];
-			expr_18[vo] = num - 1;
+			(dictionary = this.projectilesInFlight)[vo] = dictionary[vo] - 1;
 			if (this.projectilesInFlight[vo] == 0)
 			{
 				this.projectilesInFlight.Remove(vo);
@@ -743,37 +753,34 @@ namespace StaRTS.Main.Controllers
 
 		public EatResponse OnEvent(EventId id, object cookie)
 		{
-			switch (id)
+			if (id != EventId.ProjectileViewPathComplete)
 			{
-			case EventId.ProjectileImpacted:
-			{
-				Bullet bullet = (Bullet)cookie;
-				this.RemoveProjectileInFlight(bullet.ProjectileType);
-				if (bullet.Cookie != null)
+				if (id != EventId.ProjectileImpacted)
 				{
-					SpecialAttack specialAttack = (SpecialAttack)bullet.Cookie;
-					if (specialAttack.VO.HasDropoff)
+					if (id == EventId.BattleEndProcessing)
 					{
-						this.numHoveringInbound--;
+						bool flag = (bool)cookie;
+						if (flag)
+						{
+							this.Reset();
+						}
 					}
 				}
-				return EatResponse.NotEaten;
-			}
-			case EventId.ProjectileViewImpacted:
-			{
-				IL_19:
-				if (id != EventId.BattleEndProcessing)
+				else
 				{
-					return EatResponse.NotEaten;
+					Bullet bullet = (Bullet)cookie;
+					this.RemoveProjectileInFlight(bullet.ProjectileType);
+					if (bullet.Cookie != null)
+					{
+						SpecialAttack specialAttack = (SpecialAttack)bullet.Cookie;
+						if (specialAttack.VO.HasDropoff)
+						{
+							this.numHoveringInbound--;
+						}
+					}
 				}
-				bool flag = (bool)cookie;
-				if (flag)
-				{
-					this.Reset();
-				}
-				return EatResponse.NotEaten;
 			}
-			case EventId.ProjectileViewPathComplete:
+			else
 			{
 				Bullet bullet2 = (Bullet)cookie;
 				if (bullet2.Cookie != null)
@@ -784,10 +791,8 @@ namespace StaRTS.Main.Controllers
 						this.OnDetachableGameObjectImpact(specialAttack2);
 					}
 				}
-				return EatResponse.NotEaten;
 			}
-			}
-			goto IL_19;
+			return EatResponse.NotEaten;
 		}
 
 		public bool HasUnexpendedSpecialAttacks()

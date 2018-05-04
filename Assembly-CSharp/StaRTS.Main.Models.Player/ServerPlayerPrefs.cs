@@ -9,8 +9,6 @@ namespace StaRTS.Main.Models.Player
 	{
 		private const char CLIENT_PREFS_DELIMITER = ',';
 
-		private const string PREF_SERVER_PLAYER_PREFS = "serverPlayerPrefs";
-
 		private string[] prefs;
 
 		private static readonly ServerPref[] PREFS_ACROSS_ALL_ACCOUNTS = new ServerPref[]
@@ -27,6 +25,8 @@ namespace StaRTS.Main.Models.Player
 			ServerPref.FactionFlipped,
 			ServerPref.LastChatViewTime
 		};
+
+		private const string PREF_SERVER_PLAYER_PREFS = "serverPlayerPrefs";
 
 		public ServerPlayerPrefs(string prefsString)
 		{

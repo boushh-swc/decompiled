@@ -43,7 +43,7 @@ namespace StaRTS.Main.Models.Entities.Components
 				Service.Logger.Error("TrackerName not set for an entity which has a TrackingGameObjectViewComponent.");
 				return;
 			}
-			Transform transform = gameObject.transform.FindChild(trackerVO.TrackerName);
+			Transform transform = gameObject.transform.Find(trackerVO.TrackerName);
 			if (transform != null && transform.gameObject != null)
 			{
 				this.trackingGameObject = transform.gameObject;

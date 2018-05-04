@@ -36,6 +36,9 @@ public class UIScrollView : MonoBehaviour
 
 	public bool restrictWithinPanel = true;
 
+	[Tooltip("Whether the scroll view will execute its constrain within bounds logic on every drag operation")]
+	public bool constrainOnDrag;
+
 	public bool disableDragIfFits;
 
 	public bool smoothDragStart = true;
@@ -196,22 +199,22 @@ public class UIScrollView : MonoBehaviour
 			float num2 = (finalClipRegion.w != 0f) ? (finalClipRegion.w * 0.5f) : ((float)Screen.height);
 			if (this.canMoveHorizontally)
 			{
-				if (bounds.min.x < finalClipRegion.x - num)
+				if (bounds.min.x + 0.001f < finalClipRegion.x - num)
 				{
 					return true;
 				}
-				if (bounds.max.x > finalClipRegion.x + num)
+				if (bounds.max.x - 0.001f > finalClipRegion.x + num)
 				{
 					return true;
 				}
 			}
 			if (this.canMoveVertically)
 			{
-				if (bounds.min.y < finalClipRegion.y - num2)
+				if (bounds.min.y + 0.001f < finalClipRegion.y - num2)
 				{
 					return true;
 				}
-				if (bounds.max.y > finalClipRegion.y + num2)
+				if (bounds.max.y - 0.001f > finalClipRegion.y + num2)
 				{
 					return true;
 				}
@@ -307,6 +310,7 @@ public class UIScrollView : MonoBehaviour
 	private void OnDisable()
 	{
 		UIScrollView.list.Remove(this);
+		this.mPressed = false;
 	}
 
 	public bool RestrictWithinBounds(bool instant)
@@ -337,7 +341,7 @@ public class UIScrollView : MonoBehaviour
 				Vector3 pos = this.mTrans.localPosition + vector;
 				pos.x = Mathf.Round(pos.x);
 				pos.y = Mathf.Round(pos.y);
-				SpringPanel.Begin(this.mPanel.gameObject, pos, 13f).strength = 8f;
+				SpringPanel.Begin(this.mPanel.gameObject, pos, 8f);
 			}
 			else
 			{
@@ -602,7 +606,7 @@ public class UIScrollView : MonoBehaviour
 
 	public void Press(bool pressed)
 	{
-		if (UICamera.currentScheme == UICamera.ControlScheme.Controller)
+		if (this.mPressed == pressed || UICamera.currentScheme == UICamera.ControlScheme.Controller)
 		{
 			return;
 		}
@@ -651,11 +655,15 @@ public class UIScrollView : MonoBehaviour
 			}
 			else if (this.centerOnChild)
 			{
+				if (this.mDragStarted && this.onDragFinished != null)
+				{
+					this.onDragFinished();
+				}
 				this.centerOnChild.Recenter();
 			}
 			else
 			{
-				if (this.restrictWithinPanel && this.mPanel.clipping != UIDrawCall.Clipping.None)
+				if (this.mDragStarted && this.restrictWithinPanel && this.mPanel.clipping != UIDrawCall.Clipping.None)
 				{
 					this.RestrictWithinBounds(this.dragEffect == UIScrollView.DragEffect.None, this.canMoveHorizontally, this.canMoveVertically);
 				}
@@ -673,7 +681,7 @@ public class UIScrollView : MonoBehaviour
 
 	public void Drag()
 	{
-		if (UICamera.currentScheme == UICamera.ControlScheme.Controller)
+		if (!this.mPressed || UICamera.currentScheme == UICamera.ControlScheme.Controller)
 		{
 			return;
 		}
@@ -735,16 +743,33 @@ public class UIScrollView : MonoBehaviour
 				{
 					this.MoveAbsolute(vector);
 				}
-				else if (this.mPanel.CalculateConstrainOffset(this.bounds.min, this.bounds.max).magnitude > 1f)
-				{
-					this.MoveAbsolute(vector * 0.5f);
-					this.mMomentum *= 0.5f;
-				}
 				else
 				{
-					this.MoveAbsolute(vector);
+					Vector3 vector2 = this.mPanel.CalculateConstrainOffset(this.bounds.min, this.bounds.max);
+					if (this.movement == UIScrollView.Movement.Horizontal)
+					{
+						vector2.y = 0f;
+					}
+					else if (this.movement == UIScrollView.Movement.Vertical)
+					{
+						vector2.x = 0f;
+					}
+					else if (this.movement == UIScrollView.Movement.Custom)
+					{
+						vector2.x *= this.customMovement.x;
+						vector2.y *= this.customMovement.y;
+					}
+					if (vector2.magnitude > 1f)
+					{
+						this.MoveAbsolute(vector * 0.5f);
+						this.mMomentum *= 0.5f;
+					}
+					else
+					{
+						this.MoveAbsolute(vector);
+					}
 				}
-				if (this.restrictWithinPanel && this.mPanel.clipping != UIDrawCall.Clipping.None && this.dragEffect != UIScrollView.DragEffect.MomentumAndSpring)
+				if (this.constrainOnDrag && this.restrictWithinPanel && this.mPanel.clipping != UIDrawCall.Clipping.None && this.dragEffect != UIScrollView.DragEffect.MomentumAndSpring)
 				{
 					this.RestrictWithinBounds(true, this.canMoveHorizontally, this.canMoveVertically);
 				}
@@ -809,7 +834,7 @@ public class UIScrollView : MonoBehaviour
 		}
 		if (!this.mPressed)
 		{
-			if (this.mMomentum.magnitude > 0.0001f || this.mScroll != 0f)
+			if (this.mMomentum.magnitude > 0.0001f || Mathf.Abs(this.mScroll) > 0.0001f)
 			{
 				if (this.movement == UIScrollView.Movement.Horizontal)
 				{
@@ -889,11 +914,11 @@ public class UIScrollView : MonoBehaviour
 		}
 		if (this.horizontalScrollBar == null && this.verticalScrollBar == null)
 		{
-			if (this.scale.x != 0f)
+			if (this.canMoveHorizontally)
 			{
 				this.Scroll(delta.x);
 			}
-			else if (this.scale.y != 0f)
+			else if (this.canMoveVertically)
 			{
 				this.Scroll(delta.y);
 			}

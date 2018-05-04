@@ -164,10 +164,6 @@ namespace SwrveUnity.Messaging
 				{
 					"Content-Type",
 					"application/json; charset=utf-8"
-				},
-				{
-					"Content-Length",
-					bytes.Length.ToString()
 				}
 			};
 			this.swrve.Container.StartCoroutine(this.restClient.Post(endpoint, bytes, headers, new Action<RESTResponse>(this.RestListener)));

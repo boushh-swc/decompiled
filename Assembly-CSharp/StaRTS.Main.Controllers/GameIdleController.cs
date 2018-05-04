@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace StaRTS.Main.Controllers
 {
-	public class GameIdleController : IEventObserver, IUserInputObserver, IViewClockTimeObserver
+	public class GameIdleController : IUserInputObserver, IEventObserver, IViewClockTimeObserver
 	{
 		public bool Enabled = true;
 

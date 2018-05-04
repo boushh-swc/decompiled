@@ -15,6 +15,7 @@ using StaRTS.Main.Views.UX.Elements;
 using StaRTS.Utils.Core;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace StaRTS.Main.Views.UX.Screens
@@ -88,6 +89,9 @@ namespace StaRTS.Main.Views.UX.Screens
 		private UXGrid empireGrid;
 
 		private UXGrid rebelGrid;
+
+		[CompilerGenerated]
+		private static Comparison<BuildingTypeVO> <>f__mg$cache0;
 
 		public ChooseFactionScreen() : base("gui_faction_choice")
 		{
@@ -335,7 +339,7 @@ namespace StaRTS.Main.Views.UX.Screens
 			}
 			Service.AudioManager.PlayAudio("sfx_button_startbattle");
 			CurrentPlayer currentPlayer = Service.CurrentPlayer;
-			FactionType faction = (FactionType)((int)cookie);
+			FactionType faction = (FactionType)cookie;
 			currentPlayer.Faction = faction;
 			Service.BILoggingController.TrackFaction();
 			SetFactionRequest request = new SetFactionRequest(currentPlayer.Faction);
@@ -361,7 +365,12 @@ namespace StaRTS.Main.Views.UX.Screens
 			{
 				list.Add(current);
 			}
-			list.Sort(new Comparison<BuildingTypeVO>(GameUtils.SortBuildingByUID));
+			List<BuildingTypeVO> arg_69_0 = list;
+			if (ChooseFactionScreen.<>f__mg$cache0 == null)
+			{
+				ChooseFactionScreen.<>f__mg$cache0 = new Comparison<BuildingTypeVO>(GameUtils.SortBuildingByUID);
+			}
+			arg_69_0.Sort(ChooseFactionScreen.<>f__mg$cache0);
 			List<Building> buildings = Service.CurrentPlayer.Map.Buildings;
 			for (int i = 0; i < buildings.Count; i++)
 			{

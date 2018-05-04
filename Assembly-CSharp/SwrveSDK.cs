@@ -48,6 +48,24 @@ public class SwrveSDK
 
 	private const string UnityCurrentActivityName = "currentActivity";
 
+	private string gcmDeviceToken;
+
+	private static AndroidJavaObject androidPlugin;
+
+	private static bool androidPluginInitialized;
+
+	private static bool androidPluginInitializedSuccessfully;
+
+	private string admDeviceToken;
+
+	private static AndroidJavaObject androidADMPlugin;
+
+	private static bool androidADMPluginInitialized;
+
+	private static bool androidADMPluginInitializedSuccessfully;
+
+	private string googlePlayAdvertisingId;
+
 	private const int GooglePlayPushPluginVersion = 4;
 
 	private const int AdmPushPluginVersion = 1;
@@ -68,7 +86,47 @@ public class SwrveSDK
 
 	private const string ADMIdentKey = "adm_message_md5";
 
+	private static string LastOpenedNotification;
+
+	private string _androidId;
+
+	private AndroidJavaObject _androidBridge;
+
 	public const string SdkVersion = "4.10.1";
+
+	protected int appId;
+
+	protected string apiKey;
+
+	protected string userId;
+
+	protected SwrveConfig config;
+
+	public string Language;
+
+	public SwrveResourceManager ResourceManager;
+
+	protected ISwrveAssetsManager SwrveAssetsManager;
+
+	public MonoBehaviour Container;
+
+	public ISwrveInstallButtonListener GlobalInstallButtonListener;
+
+	public ISwrveCustomButtonListener GlobalCustomButtonListener;
+
+	public ISwrveMessageListener GlobalMessageListener;
+
+	public ISwrveConversationListener GlobalConversationListener;
+
+	public ISwrvePushNotificationListener PushNotificationListener;
+
+	public ISwrveTriggeredMessageListener TriggeredMessageListener;
+
+	public Action ResourcesUpdatedCallback;
+
+	public bool Initialised;
+
+	public bool Destroyed;
 
 	private const string Platform = "Unity ";
 
@@ -117,70 +175,6 @@ public class SwrveSDK
 	private const string SilentPushTrackingKey = "_sp";
 
 	private const string PushDeeplinkKey = "_sd";
-
-	private const int DefaultDelayFirstMessage = 150;
-
-	private const long DefaultMaxShows = 99999L;
-
-	private const int DefaultMinDelay = 55;
-
-	private string gcmDeviceToken;
-
-	private static AndroidJavaObject androidPlugin;
-
-	private static bool androidPluginInitialized;
-
-	private static bool androidPluginInitializedSuccessfully;
-
-	private string admDeviceToken;
-
-	private static AndroidJavaObject androidADMPlugin;
-
-	private static bool androidADMPluginInitialized;
-
-	private static bool androidADMPluginInitializedSuccessfully;
-
-	private string googlePlayAdvertisingId;
-
-	private static string LastOpenedNotification;
-
-	private string _androidId;
-
-	private AndroidJavaObject _androidBridge;
-
-	protected int appId;
-
-	protected string apiKey;
-
-	protected string userId;
-
-	protected SwrveConfig config;
-
-	public string Language;
-
-	public SwrveResourceManager ResourceManager;
-
-	protected ISwrveAssetsManager SwrveAssetsManager;
-
-	public MonoBehaviour Container;
-
-	public ISwrveInstallButtonListener GlobalInstallButtonListener;
-
-	public ISwrveCustomButtonListener GlobalCustomButtonListener;
-
-	public ISwrveMessageListener GlobalMessageListener;
-
-	public ISwrveConversationListener GlobalConversationListener;
-
-	public ISwrvePushNotificationListener PushNotificationListener;
-
-	public ISwrveTriggeredMessageListener TriggeredMessageListener;
-
-	public Action ResourcesUpdatedCallback;
-
-	public bool Initialised;
-
-	public bool Destroyed;
 
 	private string escapedUserId;
 
@@ -271,6 +265,12 @@ public class SwrveSDK
 	protected IInputManager inputManager = NativeInputManager.Instance;
 
 	protected string prefabName;
+
+	private const int DefaultDelayFirstMessage = 150;
+
+	private const long DefaultMaxShows = 99999L;
+
+	private const int DefaultMinDelay = 55;
 
 	private DateTime initialisedTime;
 
@@ -1259,10 +1259,6 @@ public class SwrveSDK
 						{
 							"Content-Type",
 							"application/json; charset=utf-8"
-						},
-						{
-							"Content-Length",
-							array.Length.ToString()
 						}
 					};
 					result = true;
@@ -2101,63 +2097,63 @@ public class SwrveSDK
 	[DebuggerHidden]
 	private IEnumerator GetUserResourcesDiff_Coroutine(string getRequest, Action<Dictionary<string, Dictionary<string, string>>, Dictionary<string, Dictionary<string, string>>, string> onResult, Action<Exception> onError, string saveCategory)
 	{
-		Exception ex = null;
-		string text = null;
+		Exception wwwException = null;
+		string abTestCandidate = null;
 		yield return this.Container.StartCoroutine(this.restClient.Get(getRequest, delegate(RESTResponse response)
 		{
 			if (response.Error == WwwDeducedError.NoError)
 			{
-				this.<abTestCandidate>__1 = response.Body;
-				SwrveLog.Log("AB Test result: " + this.<abTestCandidate>__1);
-				this.<>f__this.storage.SaveSecure(this.saveCategory, this.<abTestCandidate>__1, this.<>f__this.userId);
-				this.<>f__this.TaskFinished("GetUserResourcesDiff_Coroutine");
+				abTestCandidate = response.Body;
+				SwrveLog.Log("AB Test result: " + abTestCandidate);
+				this.$this.storage.SaveSecure(saveCategory, abTestCandidate, this.$this.userId);
+				this.$this.TaskFinished("GetUserResourcesDiff_Coroutine");
 			}
 			else
 			{
-				this.<wwwException>__0 = new Exception(response.Error.ToString());
+				wwwException = new Exception(response.Error.ToString());
 				SwrveLog.LogError("AB Test request failed: " + response.Error.ToString());
-				this.<>f__this.TaskFinished("GetUserResourcesDiff_Coroutine");
+				this.$this.TaskFinished("GetUserResourcesDiff_Coroutine");
 			}
 		}));
 		this.abTestUserResourcesDiffConnecting = false;
-		if (ex == null)
+		if (wwwException == null)
 		{
-			if (!string.IsNullOrEmpty(text))
+			if (!string.IsNullOrEmpty(abTestCandidate))
 			{
-				if (!string.IsNullOrEmpty(text))
+				if (!string.IsNullOrEmpty(abTestCandidate))
 				{
 					Dictionary<string, Dictionary<string, string>> dictionary = new Dictionary<string, Dictionary<string, string>>();
 					Dictionary<string, Dictionary<string, string>> dictionary2 = new Dictionary<string, Dictionary<string, string>>();
-					this.ProcessUserResourcesDiff(text, dictionary, dictionary2);
-					onResult(dictionary, dictionary2, text);
-					goto IL_20A;
+					this.ProcessUserResourcesDiff(abTestCandidate, dictionary, dictionary2);
+					onResult(dictionary, dictionary2, abTestCandidate);
+					goto IL_236;
 				}
-				goto IL_20A;
+				goto IL_236;
 			}
 		}
 		try
 		{
-			string text2 = this.storage.LoadSecure(saveCategory, this.userId);
-			if (string.IsNullOrEmpty(text2))
+			string text = this.storage.LoadSecure(saveCategory, this.userId);
+			if (string.IsNullOrEmpty(text))
 			{
-				onError(ex);
+				onError(wwwException);
 			}
-			else if (ResponseBodyTester.TestUTF8(text2, out text))
+			else if (ResponseBodyTester.TestUTF8(text, out abTestCandidate))
 			{
 				Dictionary<string, Dictionary<string, string>> dictionary3 = new Dictionary<string, Dictionary<string, string>>();
 				Dictionary<string, Dictionary<string, string>> dictionary4 = new Dictionary<string, Dictionary<string, string>>();
-				this.ProcessUserResourcesDiff(text, dictionary3, dictionary4);
-				onResult(dictionary3, dictionary4, text);
+				this.ProcessUserResourcesDiff(abTestCandidate, dictionary3, dictionary4);
+				onResult(dictionary3, dictionary4, abTestCandidate);
 			}
 			else
 			{
-				onError(ex);
+				onError(wwwException);
 			}
 		}
-		catch (Exception var_1_168)
+		catch (Exception var_4_1A2)
 		{
 		}
-		IL_20A:
+		IL_236:
 		yield break;
 	}
 
@@ -2219,18 +2215,18 @@ public class SwrveSDK
 	{
 		string text = this.storage.Load("Swrve_SeqNum", this.userId);
 		int num;
-		string arg_3B_0;
+		string arg_41_0;
 		if (int.TryParse(text, out num))
 		{
 			int num2;
 			num = (num2 = num + 1);
-			arg_3B_0 = num2.ToString();
+			arg_41_0 = num2.ToString();
 		}
 		else
 		{
-			arg_3B_0 = "1";
+			arg_41_0 = "1";
 		}
-		text = arg_3B_0;
+		text = arg_41_0;
 		this.storage.Save("Swrve_SeqNum", text, this.userId);
 		return text;
 	}
@@ -2419,11 +2415,11 @@ public class SwrveSDK
 		{
 			if (response.Error != WwwDeducedError.NetworkError)
 			{
-				this.<>f__this.ClearEventBuffer();
-				this.eventsPostEncodedData = null;
+				this.$this.ClearEventBuffer();
+				eventsPostEncodedData = null;
 			}
-			this.<>f__this.eventsConnecting = false;
-			this.<>f__this.TaskFinished("PostEvents_Coroutine");
+			this.$this.eventsConnecting = false;
+			this.$this.TaskFinished("PostEvents_Coroutine");
 		}));
 		yield break;
 	}
@@ -3339,8 +3335,8 @@ public class SwrveSDK
 					response.Headers.TryGetValue("ETAG", out text);
 					if (!string.IsNullOrEmpty(text))
 					{
-						this.<>f__this.lastETag = text;
-						this.<>f__this.storage.Save("cmpg_etag", text, this.<>f__this.userId);
+						this.$this.lastETag = text;
+						this.$this.storage.Save("cmpg_etag", text, this.$this.userId);
 					}
 				}
 				if (!string.IsNullOrEmpty(response.Body))
@@ -3351,46 +3347,46 @@ public class SwrveSDK
 						if (dictionary.ContainsKey("flush_frequency"))
 						{
 							string @string = MiniJsonHelper.GetString(dictionary, "flush_frequency");
-							if (!string.IsNullOrEmpty(@string) && float.TryParse(@string, out this.<>f__this.campaignsAndResourcesFlushFrequency))
+							if (!string.IsNullOrEmpty(@string) && float.TryParse(@string, out this.$this.campaignsAndResourcesFlushFrequency))
 							{
-								this.<>f__this.campaignsAndResourcesFlushFrequency /= 1000f;
-								this.<>f__this.storage.Save("swrve_cr_flush_frequency", @string, this.<>f__this.userId);
+								this.$this.campaignsAndResourcesFlushFrequency /= 1000f;
+								this.$this.storage.Save("swrve_cr_flush_frequency", @string, this.$this.userId);
 							}
 						}
 						if (dictionary.ContainsKey("flush_refresh_delay"))
 						{
 							string string2 = MiniJsonHelper.GetString(dictionary, "flush_refresh_delay");
-							if (!string.IsNullOrEmpty(string2) && float.TryParse(string2, out this.<>f__this.campaignsAndResourcesFlushRefreshDelay))
+							if (!string.IsNullOrEmpty(string2) && float.TryParse(string2, out this.$this.campaignsAndResourcesFlushRefreshDelay))
 							{
-								this.<>f__this.campaignsAndResourcesFlushRefreshDelay /= 1000f;
-								this.<>f__this.storage.Save("swrve_cr_flush_delay", string2, this.<>f__this.userId);
+								this.$this.campaignsAndResourcesFlushRefreshDelay /= 1000f;
+								this.$this.storage.Save("swrve_cr_flush_delay", string2, this.$this.userId);
 							}
 						}
 						if (dictionary.ContainsKey("user_resources"))
 						{
 							IList<object> obj = (IList<object>)dictionary["user_resources"];
 							string data = Json.Serialize(obj);
-							this.<>f__this.storage.SaveSecure("srcngt2", data, this.<>f__this.userId);
-							this.<>f__this.userResources = this.<>f__this.ProcessUserResources(obj);
-							this.<>f__this.userResourcesRaw = data;
-							if (this.<>f__this.campaignsAndResourcesInitialized)
+							this.$this.storage.SaveSecure("srcngt2", data, this.$this.userId);
+							this.$this.userResources = this.$this.ProcessUserResources(obj);
+							this.$this.userResourcesRaw = data;
+							if (this.$this.campaignsAndResourcesInitialized)
 							{
-								this.<>f__this.NotifyUpdateUserResources();
+								this.$this.NotifyUpdateUserResources();
 							}
 						}
-						if (this.<>f__this.config.TalkEnabled && dictionary.ContainsKey("campaigns"))
+						if (this.$this.config.TalkEnabled && dictionary.ContainsKey("campaigns"))
 						{
 							Dictionary<string, object> dictionary2 = (Dictionary<string, object>)dictionary["campaigns"];
 							string cacheContent = Json.Serialize(dictionary2);
-							this.<>f__this.SaveCampaignsCache(cacheContent);
-							this.<>f__this.AutoShowMessages();
-							this.<>f__this.ProcessCampaigns(dictionary2);
+							this.$this.SaveCampaignsCache(cacheContent);
+							this.$this.AutoShowMessages();
+							this.$this.ProcessCampaigns(dictionary2);
 							StringBuilder stringBuilder = new StringBuilder();
 							int i = 0;
-							int count = this.<>f__this.campaigns.Count;
+							int count = this.$this.campaigns.Count;
 							while (i < count)
 							{
-								SwrveBaseCampaign swrveBaseCampaign = this.<>f__this.campaigns[i];
+								SwrveBaseCampaign swrveBaseCampaign = this.$this.campaigns[i];
 								if (i != 0)
 								{
 									stringBuilder.Append(',');
@@ -3400,14 +3396,14 @@ public class SwrveSDK
 							}
 							Dictionary<string, string> dictionary3 = new Dictionary<string, string>();
 							dictionary3.Add("ids", stringBuilder.ToString());
-							dictionary3.Add("count", (this.<>f__this.campaigns != null) ? this.<>f__this.campaigns.Count.ToString() : "0");
-							this.<>f__this.NamedEventInternal("Swrve.Messages.campaigns_downloaded", dictionary3, false);
+							dictionary3.Add("count", (this.$this.campaigns != null) ? this.$this.campaigns.Count.ToString() : "0");
+							this.$this.NamedEventInternal("Swrve.Messages.campaigns_downloaded", dictionary3, false);
 						}
-						if (this.<>f__this.config.LocationEnabled && dictionary.ContainsKey("location_campaigns"))
+						if (this.$this.config.LocationEnabled && dictionary.ContainsKey("location_campaigns"))
 						{
 							Dictionary<string, object> obj2 = (Dictionary<string, object>)dictionary["location_campaigns"];
 							string cacheContent2 = Json.Serialize(obj2);
-							this.<>f__this.SaveLocationCache(cacheContent2);
+							this.$this.SaveLocationCache(cacheContent2);
 						}
 					}
 				}
@@ -3416,14 +3412,14 @@ public class SwrveSDK
 			{
 				SwrveLog.LogError("Resources and campaigns request error: " + response.Error.ToString() + ":" + response.Body);
 			}
-			if (!this.<>f__this.campaignsAndResourcesInitialized)
+			if (!this.$this.campaignsAndResourcesInitialized)
 			{
-				this.<>f__this.campaignsAndResourcesInitialized = true;
-				this.<>f__this.AutoShowMessages();
-				this.<>f__this.NotifyUpdateUserResources();
+				this.$this.campaignsAndResourcesInitialized = true;
+				this.$this.AutoShowMessages();
+				this.$this.NotifyUpdateUserResources();
 			}
-			this.<>f__this.campaignsConnecting = false;
-			this.<>f__this.TaskFinished("GetCampaignsAndResources_Coroutine");
+			this.$this.campaignsConnecting = false;
+			this.$this.TaskFinished("GetCampaignsAndResources_Coroutine");
 		}));
 		yield break;
 	}

@@ -229,16 +229,18 @@ namespace StaRTS.Main.Controllers.GameStates
 
 		public EatResponse OnEvent(EventId id, object cookie)
 		{
-			switch (id)
+			if (id != EventId.MapDataProcessingStart)
 			{
-			case EventId.MapDataProcessingStart:
+				if (id == EventId.WorldLoadComplete)
+				{
+					this.OnWorldLoadComplete();
+					Service.EventManager.UnregisterObserver(this, EventId.WorldLoadComplete);
+				}
+			}
+			else
+			{
 				this.OnMapProcessingStart();
 				Service.EventManager.UnregisterObserver(this, EventId.MapDataProcessingStart);
-				break;
-			case EventId.WorldLoadComplete:
-				this.OnWorldLoadComplete();
-				Service.EventManager.UnregisterObserver(this, EventId.WorldLoadComplete);
-				break;
 			}
 			return EatResponse.NotEaten;
 		}

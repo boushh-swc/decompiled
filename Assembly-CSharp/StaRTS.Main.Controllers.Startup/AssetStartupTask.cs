@@ -22,7 +22,7 @@ namespace StaRTS.Main.Controllers.Startup
 				int @int = PlayerPrefs.GetInt("cacheCleanVersion", 0);
 				if (@int < GameConstants.ASSET_BUNDLE_CACHE_CLEAN_VERSION)
 				{
-					bool isSuccess = Caching.CleanCache();
+					bool isSuccess = Caching.ClearCache();
 					Service.BILoggingController.TrackAssetBundleCacheClean(GameConstants.ASSET_BUNDLE_CACHE_CLEAN_VERSION, isSuccess);
 					PlayerPrefs.SetInt("cacheCleanVersion", GameConstants.ASSET_BUNDLE_CACHE_CLEAN_VERSION);
 				}

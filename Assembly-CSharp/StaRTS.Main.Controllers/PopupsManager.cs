@@ -13,11 +13,11 @@ namespace StaRTS.Main.Controllers
 {
 	public class PopupsManager : IEventObserver
 	{
-		private const float LOGIN_NOTIFICATION_TIME_DELAY = 2f;
-
 		private EventManager eventManager;
 
 		private bool haveShownLoginNotification;
+
+		private const float LOGIN_NOTIFICATION_TIME_DELAY = 2f;
 
 		private List<string> seenMessages;
 

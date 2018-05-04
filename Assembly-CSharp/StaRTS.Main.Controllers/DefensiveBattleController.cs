@@ -290,7 +290,7 @@ namespace StaRTS.Main.Controllers
 			}
 			case EventId.PostBuildingEntityKilled:
 			case EventId.EntityDestroyed:
-				IL_21:
+				IL_1D:
 				if (id == EventId.CameraFinishedMoving)
 				{
 					this.MoveCameraToAction();
@@ -317,11 +317,8 @@ namespace StaRTS.Main.Controllers
 					if (this.numTimesEntityHit.ContainsKey(iD))
 					{
 						Dictionary<uint, int> dictionary;
-						Dictionary<uint, int> expr_191 = dictionary = this.numTimesEntityHit;
 						uint key;
-						uint expr_196 = key = iD;
-						int num = dictionary[key];
-						expr_191[expr_196] = num + 1;
+						(dictionary = this.numTimesEntityHit)[key = iD] = dictionary[key] + 1;
 					}
 					else
 					{
@@ -336,7 +333,7 @@ namespace StaRTS.Main.Controllers
 				return EatResponse.NotEaten;
 			}
 			}
-			goto IL_21;
+			goto IL_1D;
 		}
 
 		private void AddCameraEvent(float x, float z, DefensiveCameraEventType type)

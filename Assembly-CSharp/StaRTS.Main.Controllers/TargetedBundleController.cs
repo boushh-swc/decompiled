@@ -134,26 +134,26 @@ namespace StaRTS.Main.Controllers
 				return EatResponse.NotEaten;
 			}
 			case EventId.BuildingSwapped:
-				IL_24:
+				IL_22:
 				switch (id)
 				{
 				case EventId.SquadLeft:
 				case EventId.SquadJoinedByCurrentPlayer:
-					goto IL_AA;
+					goto IL_A8;
 				case EventId.SquadChatFilterUpdated:
-					IL_3C:
+					IL_3A:
 					if (id != EventId.DroidPurchaseCompleted && id != EventId.PlanetRelocate && id != EventId.TargetedBundleRewardRedeemed && id != EventId.InAppPurchaseMade)
 					{
 						return EatResponse.NotEaten;
 					}
-					goto IL_AA;
+					goto IL_A8;
 				}
-				goto IL_3C;
-				IL_AA:
+				goto IL_3A;
+				IL_A8:
 				this.GetNewOffer(id);
 				return EatResponse.NotEaten;
 			}
-			goto IL_24;
+			goto IL_22;
 		}
 
 		public bool IsCurrencyCostOffer(TargetedBundleVO offerVO)

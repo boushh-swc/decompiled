@@ -3,6 +3,7 @@ using StaRTS.Main.Controllers;
 using StaRTS.Main.Models;
 using StaRTS.Main.Models.Commands.Player.Building.Contracts;
 using StaRTS.Main.Models.Commands.Player.Building.Upgrade;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.Entities.Components;
 using StaRTS.Main.Models.Entities.Nodes;
 using StaRTS.Main.Utils;
@@ -20,24 +21,24 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		private const string UPGRADE_ALL_WALLS_BUTTON_COST_LABEL = "SecondaryCostLabel";
 
-		private List<Entity> wallsOfSameLevel;
+		private List<SmartEntity> wallsOfSameLevel;
 
 		private int currentWallLevel;
 
 		private int allWallSameLevelCount;
 
-		public WallUpgradeScreen(Entity selectedBuilding) : base(selectedBuilding)
+		public WallUpgradeScreen(SmartEntity selectedBuilding) : base(selectedBuilding)
 		{
 			this.useUpgradeGroup = true;
 			this.currentWallLevel = this.buildingInfo.Lvl;
-			this.wallsOfSameLevel = new List<Entity>();
+			this.wallsOfSameLevel = new List<SmartEntity>();
 			string key = selectedBuilding.Get<BuildingComponent>().BuildingTO.Key;
 			NodeList<WallNode> wallNodeList = Service.BuildingLookupController.WallNodeList;
 			for (WallNode wallNode = wallNodeList.Head; wallNode != null; wallNode = wallNode.Next)
 			{
 				if (wallNode.BuildingComp.BuildingTO.Key != key && wallNode.BuildingComp.BuildingType.Lvl == this.currentWallLevel)
 				{
-					this.wallsOfSameLevel.Add(wallNode.Entity);
+					this.wallsOfSameLevel.Add((SmartEntity)wallNode.Entity);
 				}
 			}
 			this.allWallSameLevelCount = this.wallsOfSameLevel.Count + 1;

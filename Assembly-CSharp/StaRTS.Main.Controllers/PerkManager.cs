@@ -259,9 +259,9 @@ namespace StaRTS.Main.Controllers
 			return type == perkEffectVO.PerkBuilding && (perkEffectVO.PerkBuilding != BuildingType.Resource || (perkEffectVO.PerkBuilding == BuildingType.Resource && perkEffectVO.Currency == vo.Currency));
 		}
 
-		public List<Entity> GetBuildingsForPerk(PerkVO perkVO)
+		public List<SmartEntity> GetBuildingsForPerk(PerkVO perkVO)
 		{
-			List<Entity> list = new List<Entity>();
+			List<SmartEntity> list = new List<SmartEntity>();
 			string[] perkEffects = perkVO.PerkEffects;
 			if (perkEffects != null)
 			{
@@ -272,7 +272,7 @@ namespace StaRTS.Main.Controllers
 				{
 					PerkEffectVO perkEffectVO = staticDataController.Get<PerkEffectVO>(perkEffects[i]);
 					BuildingType perkBuilding = perkEffectVO.PerkBuilding;
-					List<Entity> buildingListByType = Service.BuildingLookupController.GetBuildingListByType(perkBuilding);
+					List<SmartEntity> buildingListByType = Service.BuildingLookupController.GetBuildingListByType(perkBuilding);
 					list.AddRange(buildingListByType);
 					i++;
 				}
@@ -301,10 +301,10 @@ namespace StaRTS.Main.Controllers
 			return num;
 		}
 
-		public List<Entity> GetBuildingsForActivePerks()
+		public List<SmartEntity> GetBuildingsForActivePerks()
 		{
 			List<ActivatedPerkData> playerActivePerks = this.GetPlayerActivePerks();
-			List<Entity> list = new List<Entity>();
+			List<SmartEntity> list = new List<SmartEntity>();
 			int i = 0;
 			int count = playerActivePerks.Count;
 			while (i < count)

@@ -7,6 +7,7 @@ using StaRTS.Utils.MetaData;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace StaRTS.Utils
@@ -60,6 +61,9 @@ namespace StaRTS.Utils
 		private static Lang staticLang;
 
 		private static StringComparer staticComp;
+
+		[CompilerGenerated]
+		private static Comparison<string> <>f__mg$cache0;
 
 		public bool Initialized
 		{
@@ -369,7 +373,12 @@ namespace StaRTS.Utils
 				Lang.staticComp = StringComparer.Create(cultureInfo, true);
 				try
 				{
-					list.Sort(new Comparison<string>(Lang.CompareLocaleDisplayLanguage));
+					List<string> arg_92_0 = list;
+					if (Lang.<>f__mg$cache0 == null)
+					{
+						Lang.<>f__mg$cache0 = new Comparison<string>(Lang.CompareLocaleDisplayLanguage);
+					}
+					arg_92_0.Sort(Lang.<>f__mg$cache0);
 				}
 				finally
 				{

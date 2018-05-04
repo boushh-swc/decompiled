@@ -1,4 +1,4 @@
-using Net.RichardLord.Ash.Core;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.Static;
 using StaRTS.Main.Utils;
 using StaRTS.Utils.Core;
@@ -8,7 +8,7 @@ namespace StaRTS.Main.Views.UX.Screens
 {
 	public class StorageUpgradeScreen : StorageInfoScreen
 	{
-		public StorageUpgradeScreen(Entity selectedBuilding) : base(selectedBuilding)
+		public StorageUpgradeScreen(SmartEntity selectedBuilding) : base(selectedBuilding)
 		{
 			this.useUpgradeGroup = true;
 		}

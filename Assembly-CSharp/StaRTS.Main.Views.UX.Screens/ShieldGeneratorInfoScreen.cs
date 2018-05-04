@@ -1,5 +1,5 @@
-using Net.RichardLord.Ash.Core;
 using StaRTS.Main.Controllers;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.Static;
 using StaRTS.Main.Models.ValueObjects;
 using StaRTS.Utils.Core;
@@ -17,7 +17,7 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		private const int GENERATOR_SLIDER_COUNT = 3;
 
-		public ShieldGeneratorInfoScreen(Entity generatorBuilding) : base(generatorBuilding)
+		public ShieldGeneratorInfoScreen(SmartEntity generatorBuilding) : base(generatorBuilding)
 		{
 		}
 

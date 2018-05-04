@@ -1,6 +1,6 @@
-using Net.RichardLord.Ash.Core;
 using StaRTS.Externals.Manimal;
 using StaRTS.Main.Controllers;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.Perks;
 using StaRTS.Main.Models.Squads;
 using StaRTS.Main.Models.ValueObjects;
@@ -20,6 +20,17 @@ namespace StaRTS.Main.Views.UX.Screens.Squads
 	{
 		private const string SHOW_ACT = "ShowActivation";
 
+		private static readonly string[] singleCostElementNames = new string[]
+		{
+			"CostModalOnePerks"
+		};
+
+		private static readonly string[] dualCostElementNames = new string[]
+		{
+			"CostModalTwoTopPerks",
+			"CostModalTwoBotPerks"
+		};
+
 		private const string LANG_PERK_ACTIVATE_POPUP_TITLE = "PERK_ACTIVATE_POPUP_TITLE";
 
 		private const string LANG_PERK_ACTIVATE_POPUP_TIMER = "PERK_ACTIVATE_POPUP_TIMER";
@@ -33,17 +44,6 @@ namespace StaRTS.Main.Views.UX.Screens.Squads
 		private const string LANG_PERK_ACTIVATE_POPUP_LVL_REQ = "PERK_UPGRADE_POPUP_LVL_REQ2";
 
 		private const string LANG_PERK_ACTIVATE_POPUP_REP_REQ = "PERK_ACTIVATE_POPUP_REP_REQ";
-
-		private static readonly string[] singleCostElementNames = new string[]
-		{
-			"CostModalOnePerks"
-		};
-
-		private static readonly string[] dualCostElementNames = new string[]
-		{
-			"CostModalTwoTopPerks",
-			"CostModalTwoBotPerks"
-		};
 
 		private UXLabel activationTimerLabel;
 
@@ -197,7 +197,7 @@ namespace StaRTS.Main.Views.UX.Screens.Squads
 			bool flag = perkManager.ActivatePlayerPerk(uid, available, squadLevelUIDFromSquad);
 			if (flag)
 			{
-				List<Entity> buildingsForPerk = perkManager.GetBuildingsForPerk(this.targetPerkVO);
+				List<SmartEntity> buildingsForPerk = perkManager.GetBuildingsForPerk(this.targetPerkVO);
 				int i = 0;
 				int count = buildingsForPerk.Count;
 				while (i < count)

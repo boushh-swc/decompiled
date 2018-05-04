@@ -16,6 +16,8 @@ public class UIToggle : UIWidgetContainer
 
 	public UIWidget activeSprite;
 
+	public bool invertSpriteState;
+
 	public Animation activeAnimation;
 
 	public Animator animator;
@@ -65,7 +67,7 @@ public class UIToggle : UIWidgetContainer
 			}
 			else if (this.group == 0 || value || this.optionCanBeNone || !this.mStarted)
 			{
-				this.Set(value);
+				this.Set(value, true);
 			}
 		}
 	}
@@ -120,8 +122,12 @@ public class UIToggle : UIWidgetContainer
 		UIToggle.list.Remove(this);
 	}
 
-	private void Start()
+	public void Start()
 	{
+		if (this.mStarted)
+		{
+			return;
+		}
 		if (this.startsChecked)
 		{
 			this.startsChecked = false;
@@ -141,7 +147,7 @@ public class UIToggle : UIWidgetContainer
 			}
 			if (Application.isPlaying && this.activeSprite != null)
 			{
-				this.activeSprite.alpha = ((!this.startsActive) ? 0f : 1f);
+				this.activeSprite.alpha = ((!this.invertSpriteState) ? ((!this.startsActive) ? 0f : 1f) : ((!this.startsActive) ? 1f : 0f));
 			}
 			if (EventDelegate.IsValid(this.onChange))
 			{
@@ -155,7 +161,7 @@ public class UIToggle : UIWidgetContainer
 			this.mStarted = true;
 			bool flag = this.instantTween;
 			this.instantTween = true;
-			this.Set(this.startsActive);
+			this.Set(this.startsActive, true);
 			this.instantTween = flag;
 		}
 	}
@@ -168,7 +174,7 @@ public class UIToggle : UIWidgetContainer
 		}
 	}
 
-	public void Set(bool state)
+	public void Set(bool state, bool notify = true)
 	{
 		if (this.validator != null && !this.validator(state))
 		{
@@ -180,7 +186,7 @@ public class UIToggle : UIWidgetContainer
 			this.startsActive = state;
 			if (this.activeSprite != null)
 			{
-				this.activeSprite.alpha = ((!state) ? 0f : 1f);
+				this.activeSprite.alpha = ((!this.invertSpriteState) ? ((!state) ? 0f : 1f) : ((!state) ? 1f : 0f));
 			}
 		}
 		else if (this.mIsActive != state)
@@ -194,7 +200,7 @@ public class UIToggle : UIWidgetContainer
 					UIToggle uIToggle = UIToggle.list[i];
 					if (uIToggle != this && uIToggle.group == this.group)
 					{
-						uIToggle.Set(false);
+						uIToggle.Set(false, true);
 					}
 					if (UIToggle.list.size != size)
 					{
@@ -212,14 +218,14 @@ public class UIToggle : UIWidgetContainer
 			{
 				if (this.instantTween || !NGUITools.GetActive(this))
 				{
-					this.activeSprite.alpha = ((!this.mIsActive) ? 0f : 1f);
+					this.activeSprite.alpha = ((!this.invertSpriteState) ? ((!this.mIsActive) ? 0f : 1f) : ((!this.mIsActive) ? 1f : 0f));
 				}
 				else
 				{
-					TweenAlpha.Begin(this.activeSprite.gameObject, 0.15f, (!this.mIsActive) ? 0f : 1f);
+					TweenAlpha.Begin(this.activeSprite.gameObject, 0.15f, (!this.invertSpriteState) ? ((!this.mIsActive) ? 0f : 1f) : ((!this.mIsActive) ? 1f : 0f), 0f);
 				}
 			}
-			if (UIToggle.current == null)
+			if (notify && UIToggle.current == null)
 			{
 				UIToggle uIToggle2 = UIToggle.current;
 				UIToggle.current = this;
@@ -254,7 +260,7 @@ public class UIToggle : UIWidgetContainer
 				bool active = NGUITools.GetActive(this);
 				if (this.tween.tweenGroup != 0)
 				{
-					UITweener[] componentsInChildren = this.tween.GetComponentsInChildren<UITweener>();
+					UITweener[] componentsInChildren = this.tween.GetComponentsInChildren<UITweener>(true);
 					int j = 0;
 					int num = componentsInChildren.Length;
 					while (j < num)

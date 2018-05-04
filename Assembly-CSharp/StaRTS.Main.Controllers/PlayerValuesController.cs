@@ -1,6 +1,7 @@
 using Net.RichardLord.Ash.Core;
 using StaRTS.Main.Controllers.GameStates;
 using StaRTS.Main.Models;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.Entities.Components;
 using StaRTS.Main.Models.Entities.Nodes;
 using StaRTS.Main.Models.Player;
@@ -40,7 +41,7 @@ namespace StaRTS.Main.Controllers
 				return EatResponse.NotEaten;
 			case EventId.StarshipLevelUpgraded:
 			case EventId.BuildingSwapped:
-				IL_2A:
+				IL_28:
 				if (id != EventId.WorldLoadComplete)
 				{
 					return EatResponse.NotEaten;
@@ -55,7 +56,7 @@ namespace StaRTS.Main.Controllers
 				this.RecalculateAll();
 				return EatResponse.NotEaten;
 			}
-			goto IL_2A;
+			goto IL_28;
 		}
 
 		public void RecalculateAll()
@@ -82,19 +83,26 @@ namespace StaRTS.Main.Controllers
 			for (StorageNode storageNode = storageNodeList.Head; storageNode != null; storageNode = storageNode.Next)
 			{
 				BuildingTypeVO buildingType = storageNode.BuildingComp.BuildingType;
-				if (!ContractUtils.IsBuildingConstructing(storageNode.Entity))
+				if (!ContractUtils.IsBuildingConstructing((SmartEntity)storageNode.Entity))
 				{
-					switch (buildingType.Currency)
+					CurrencyType currency = buildingType.Currency;
+					if (currency != CurrencyType.Credits)
 					{
-					case CurrencyType.Credits:
+						if (currency != CurrencyType.Materials)
+						{
+							if (currency == CurrencyType.Contraband)
+							{
+								num3 += buildingType.Storage;
+							}
+						}
+						else
+						{
+							num2 += buildingType.Storage;
+						}
+					}
+					else
+					{
 						num += buildingType.Storage;
-						break;
-					case CurrencyType.Materials:
-						num2 += buildingType.Storage;
-						break;
-					case CurrencyType.Contraband:
-						num3 += buildingType.Storage;
-						break;
 					}
 				}
 			}
@@ -138,7 +146,7 @@ namespace StaRTS.Main.Controllers
 			for (StarportNode starportNode = starportNodeList.Head; starportNode != null; starportNode = starportNode.Next)
 			{
 				BuildingTypeVO buildingType = starportNode.BuildingComp.BuildingType;
-				if (!ContractUtils.IsBuildingConstructing(starportNode.Entity))
+				if (!ContractUtils.IsBuildingConstructing((SmartEntity)starportNode.Entity))
 				{
 					num += buildingType.Storage;
 				}
@@ -158,7 +166,7 @@ namespace StaRTS.Main.Controllers
 			for (TacticalCommandNode tacticalCommandNode = tacticalCommandNodeList.Head; tacticalCommandNode != null; tacticalCommandNode = tacticalCommandNode.Next)
 			{
 				BuildingTypeVO buildingType = tacticalCommandNode.BuildingComp.BuildingType;
-				if (!ContractUtils.IsBuildingConstructing(tacticalCommandNode.Entity))
+				if (!ContractUtils.IsBuildingConstructing((SmartEntity)tacticalCommandNode.Entity))
 				{
 					num += buildingType.Storage;
 				}
@@ -178,7 +186,7 @@ namespace StaRTS.Main.Controllers
 			for (ChampionPlatformNode championPlatformNode = championPlatformNodeList.Head; championPlatformNode != null; championPlatformNode = championPlatformNode.Next)
 			{
 				BuildingTypeVO buildingType = championPlatformNode.BuildingComp.BuildingType;
-				if (!ContractUtils.IsBuildingConstructing(championPlatformNode.Entity))
+				if (!ContractUtils.IsBuildingConstructing((SmartEntity)championPlatformNode.Entity))
 				{
 					num += buildingType.Storage;
 				}
@@ -198,7 +206,7 @@ namespace StaRTS.Main.Controllers
 			for (FleetCommandNode fleetCommandNode = fleetCommandNodeList.Head; fleetCommandNode != null; fleetCommandNode = fleetCommandNode.Next)
 			{
 				BuildingTypeVO buildingType = fleetCommandNode.BuildingComp.BuildingType;
-				if (!ContractUtils.IsBuildingConstructing(fleetCommandNode.Entity))
+				if (!ContractUtils.IsBuildingConstructing((SmartEntity)fleetCommandNode.Entity))
 				{
 					num += buildingType.Storage;
 				}
@@ -220,7 +228,7 @@ namespace StaRTS.Main.Controllers
 			for (BuildingNode buildingNode = nodeList.Head; buildingNode != null; buildingNode = buildingNode.Next)
 			{
 				BuildingTypeVO buildingType = buildingNode.BuildingComp.BuildingType;
-				if (!ContractUtils.IsBuildingConstructing(buildingNode.Entity))
+				if (!ContractUtils.IsBuildingConstructing((SmartEntity)buildingNode.Entity))
 				{
 					num += buildingType.Xp;
 				}
@@ -268,7 +276,7 @@ namespace StaRTS.Main.Controllers
 			for (ArmoryNode armoryNode = armoryNodeList.Head; armoryNode != null; armoryNode = armoryNode.Next)
 			{
 				BuildingTypeVO buildingType = armoryNode.BuildingComp.BuildingType;
-				if (!ContractUtils.IsBuildingConstructing(armoryNode.Entity))
+				if (!ContractUtils.IsBuildingConstructing((SmartEntity)armoryNode.Entity))
 				{
 					num += buildingType.Storage;
 				}

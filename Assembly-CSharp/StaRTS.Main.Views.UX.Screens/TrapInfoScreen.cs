@@ -1,5 +1,5 @@
-using Net.RichardLord.Ash.Core;
 using StaRTS.Main.Controllers;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.ValueObjects;
 using StaRTS.Main.Utils;
 using StaRTS.Main.Views.UX.Controls;
@@ -22,7 +22,7 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		private TrapTypeVO maxTrapVO;
 
-		public TrapInfoScreen(Entity trap, bool upgradeGroup) : base(trap, upgradeGroup)
+		public TrapInfoScreen(SmartEntity trap, bool upgradeGroup) : base(trap, upgradeGroup)
 		{
 		}
 

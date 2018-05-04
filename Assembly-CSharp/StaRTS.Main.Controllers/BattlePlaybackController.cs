@@ -20,10 +20,6 @@ namespace StaRTS.Main.Controllers
 {
 	public class BattlePlaybackController : IEventObserver
 	{
-		private const int DEFAULT_PLAYBACK_SCALE = 1;
-
-		private const int MAX_PLAYBACK_SCALE = 4;
-
 		private Dictionary<string, TimerDelegate> actionCallbacks;
 
 		private SimTimerManager timerManager;
@@ -31,6 +27,10 @@ namespace StaRTS.Main.Controllers
 		private EventManager eventManager;
 
 		private BattleController battleController;
+
+		private const int DEFAULT_PLAYBACK_SCALE = 1;
+
+		private const int MAX_PLAYBACK_SCALE = 4;
 
 		private uint currentPlaybackScale;
 
@@ -315,9 +315,9 @@ namespace StaRTS.Main.Controllers
 		public EatResponse OnEvent(EventId id, object cookie)
 		{
 			CurrentBattle currentBattle = this.battleController.GetCurrentBattle();
-			if (id != EventId.EntityKilled)
+			if (id != EventId.BattleEndProcessing)
 			{
-				if (id != EventId.BattleEndProcessing)
+				if (id != EventId.EntityKilled)
 				{
 					if (id == EventId.BattleReplayRequested)
 					{
@@ -333,18 +333,18 @@ namespace StaRTS.Main.Controllers
 				}
 				else
 				{
-					this.playbackBattleAttr.BattleEndedAt = this.battleController.Now;
-					this.playbackBattleAttr.TimeLeft = currentBattle.TimeLeft;
-					this.playbackBattleAttr.DamagePercentage = currentBattle.DamagePercent;
-					this.playbackBattleAttr.LootCreditsEarned = currentBattle.LootCreditsEarned;
-					this.playbackBattleAttr.LootMaterialsEarned = currentBattle.LootMaterialsEarned;
-					this.playbackBattleAttr.LootContrabandEarned = currentBattle.LootContrabandEarned;
-					this.playbackBattleAttr.AddDeviceInfo();
+					this.playbackBattleAttr.AddToDeathLog(cookie as SmartEntity, this.battleController.Now);
 				}
 			}
 			else
 			{
-				this.playbackBattleAttr.AddToDeathLog(cookie as SmartEntity, this.battleController.Now);
+				this.playbackBattleAttr.BattleEndedAt = this.battleController.Now;
+				this.playbackBattleAttr.TimeLeft = currentBattle.TimeLeft;
+				this.playbackBattleAttr.DamagePercentage = currentBattle.DamagePercent;
+				this.playbackBattleAttr.LootCreditsEarned = currentBattle.LootCreditsEarned;
+				this.playbackBattleAttr.LootMaterialsEarned = currentBattle.LootMaterialsEarned;
+				this.playbackBattleAttr.LootContrabandEarned = currentBattle.LootContrabandEarned;
+				this.playbackBattleAttr.AddDeviceInfo();
 			}
 			return EatResponse.NotEaten;
 		}

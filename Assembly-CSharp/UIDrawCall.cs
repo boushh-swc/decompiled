@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.SceneManagement;
 
 [AddComponentMenu("NGUI/Internal/Draw Call"), ExecuteInEditMode]
 public class UIDrawCall : MonoBehaviour
@@ -15,7 +17,14 @@ public class UIDrawCall : MonoBehaviour
 
 	public delegate void OnRenderCallback(Material mat);
 
-	private const int maxIndexBufferCache = 10;
+	public delegate void OnCreateDrawCall(UIDrawCall dc, MeshFilter filter, MeshRenderer ren);
+
+	public enum ShadowMode
+	{
+		None = 0,
+		Receive = 1,
+		CastAndReceive = 2
+	}
 
 	private static BetterList<UIDrawCall> mActiveList = new BetterList<UIDrawCall>();
 
@@ -51,50 +60,71 @@ public class UIDrawCall : MonoBehaviour
 
 	[HideInInspector]
 	[NonSerialized]
-	public BetterList<Vector3> verts = new BetterList<Vector3>();
+	public List<Vector3> verts = new List<Vector3>();
 
 	[HideInInspector]
 	[NonSerialized]
-	public BetterList<Vector3> norms = new BetterList<Vector3>();
+	public List<Vector3> norms = new List<Vector3>();
 
 	[HideInInspector]
 	[NonSerialized]
-	public BetterList<Vector4> tans = new BetterList<Vector4>();
+	public List<Vector4> tans = new List<Vector4>();
 
 	[HideInInspector]
 	[NonSerialized]
-	public BetterList<Vector2> uvs = new BetterList<Vector2>();
+	public List<Vector2> uvs = new List<Vector2>();
 
 	[HideInInspector]
 	[NonSerialized]
-	public BetterList<Color32> cols = new BetterList<Color32>();
+	public List<Vector4> uv2 = new List<Vector4>();
 
+	[HideInInspector]
+	[NonSerialized]
+	public List<Color> cols = new List<Color>();
+
+	[NonSerialized]
 	private Material mMaterial;
 
+	[NonSerialized]
 	private Texture mTexture;
 
+	[NonSerialized]
 	private Shader mShader;
 
+	[NonSerialized]
 	private int mClipCount;
 
+	[NonSerialized]
 	private Transform mTrans;
 
+	[NonSerialized]
 	private Mesh mMesh;
 
+	[NonSerialized]
 	private MeshFilter mFilter;
 
+	[NonSerialized]
 	private MeshRenderer mRenderer;
 
+	[NonSerialized]
 	private Material mDynamicMat;
 
+	[NonSerialized]
 	private int[] mIndices;
 
+	[NonSerialized]
+	private UIDrawCall.ShadowMode mShadowMode;
+
+	[NonSerialized]
 	private bool mRebuildMat = true;
 
+	[NonSerialized]
 	private bool mLegacyShader;
 
+	[NonSerialized]
 	private int mRenderQueue = 3000;
 
+	[NonSerialized]
 	private int mTriangles;
 
 	[NonSerialized]
@@ -103,13 +133,32 @@ public class UIDrawCall : MonoBehaviour
 	[NonSerialized]
 	private bool mTextureClip;
 
+	[NonSerialized]
+	private bool mIsNew = true;
+
 	public UIDrawCall.OnRenderCallback onRender;
 
+	public UIDrawCall.OnCreateDrawCall onCreateDrawCall;
+
+	[NonSerialized]
+	private string mSortingLayerName;
+
+	[NonSerialized]
+	private int mSortingOrder;
+
+	private static ColorSpace mColorSpace = ColorSpace.Uninitialized;
+
+	private const int maxIndexBufferCache = 10;
+
 	private static List<int[]> mCache = new List<int[]>(10);
+
+	protected MaterialPropertyBlock mBlock;
 
 	private static int[] ClipRange = null;
 
 	private static int[] ClipArgs = null;
+
+	private static int dx9BugWorkaround = -1;
 
 	[Obsolete("Use UIDrawCall.activeList")]
 	public static BetterList<UIDrawCall> list
@@ -159,13 +208,42 @@ public class UIDrawCall : MonoBehaviour
 	{
 		get
 		{
-			return (!(this.mRenderer != null)) ? 0 : this.mRenderer.sortingOrder;
+			return this.mSortingOrder;
 		}
 		set
 		{
-			if (this.mRenderer != null && this.mRenderer.sortingOrder != value)
+			if (this.mSortingOrder != value)
 			{
-				this.mRenderer.sortingOrder = value;
+				this.mSortingOrder = value;
+				if (this.mRenderer != null)
+				{
+					this.mRenderer.sortingOrder = value;
+				}
+			}
+		}
+	}
+
+	public string sortingLayerName
+	{
+		get
+		{
+			if (!string.IsNullOrEmpty(this.mSortingLayerName))
+			{
+				return this.mSortingLayerName;
+			}
+			if (this.mRenderer == null)
+			{
+				return null;
+			}
+			this.mSortingLayerName = this.mRenderer.sortingLayerName;
+			return this.mSortingLayerName;
+		}
+		set
+		{
+			if (this.mRenderer != null && this.mSortingLayerName != value)
+			{
+				this.mSortingLayerName = value;
+				this.mRenderer.sortingLayerName = value;
 			}
 		}
 	}
@@ -223,10 +301,11 @@ public class UIDrawCall : MonoBehaviour
 		set
 		{
 			this.mTexture = value;
-			if (this.mDynamicMat != null)
+			if (this.mBlock == null)
 			{
-				this.mDynamicMat.mainTexture = value;
+				this.mBlock = new MaterialPropertyBlock();
 			}
+			this.mBlock.SetTexture("_MainTex", value ?? Texture2D.whiteTexture);
 		}
 	}
 
@@ -242,6 +321,39 @@ public class UIDrawCall : MonoBehaviour
 			{
 				this.mShader = value;
 				this.mRebuildMat = true;
+			}
+		}
+	}
+
+	public UIDrawCall.ShadowMode shadowMode
+	{
+		get
+		{
+			return this.mShadowMode;
+		}
+		set
+		{
+			if (this.mShadowMode != value)
+			{
+				this.mShadowMode = value;
+				if (this.mRenderer != null)
+				{
+					if (this.mShadowMode == UIDrawCall.ShadowMode.None)
+					{
+						this.mRenderer.shadowCastingMode = ShadowCastingMode.Off;
+						this.mRenderer.receiveShadows = false;
+					}
+					else if (this.mShadowMode == UIDrawCall.ShadowMode.Receive)
+					{
+						this.mRenderer.shadowCastingMode = ShadowCastingMode.Off;
+						this.mRenderer.receiveShadows = true;
+					}
+					else
+					{
+						this.mRenderer.shadowCastingMode = ShadowCastingMode.On;
+						this.mRenderer.receiveShadows = true;
+					}
+				}
 			}
 		}
 	}
@@ -266,7 +378,7 @@ public class UIDrawCall : MonoBehaviour
 	{
 		this.mTextureClip = false;
 		this.mLegacyShader = false;
-		this.mClipCount = ((!(this.panel != null)) ? 0 : this.panel.clipCount);
+		this.mClipCount = this.panel.clipCount;
 		string text = (!(this.mShader != null)) ? ((!(this.mMaterial != null)) ? "Unlit/Transparent Colored" : this.mMaterial.shader.name) : this.mShader.name;
 		text = text.Replace("GUI/Text Shader", "Unlit/Text");
 		if (text.Length > 2 && text[text.Length - 2] == ' ')
@@ -319,7 +431,7 @@ public class UIDrawCall : MonoBehaviour
 		{
 			this.mDynamicMat = new Material(this.mMaterial);
 			this.mDynamicMat.name = "[NGUI] " + this.mMaterial.name;
-			this.mDynamicMat.hideFlags = (HideFlags.DontSaveInEditor | HideFlags.NotEditable | HideFlags.DontUnloadUnusedAsset | HideFlags.DontSaveInBuild);
+			this.mDynamicMat.hideFlags = (HideFlags.DontSaveInEditor | HideFlags.NotEditable | HideFlags.DontSaveInBuild | HideFlags.DontUnloadUnusedAsset);
 			this.mDynamicMat.CopyPropertiesFromMaterial(this.mMaterial);
 			string[] shaderKeywords = this.mMaterial.shaderKeywords;
 			for (int i = 0; i < shaderKeywords.Length; i++)
@@ -345,7 +457,7 @@ public class UIDrawCall : MonoBehaviour
 		{
 			this.mDynamicMat = new Material(this.shader);
 			this.mDynamicMat.name = "[NGUI] " + this.shader.name;
-			this.mDynamicMat.hideFlags = (HideFlags.DontSaveInEditor | HideFlags.NotEditable | HideFlags.DontUnloadUnusedAsset | HideFlags.DontSaveInBuild);
+			this.mDynamicMat.hideFlags = (HideFlags.DontSaveInEditor | HideFlags.NotEditable | HideFlags.DontSaveInBuild | HideFlags.DontUnloadUnusedAsset);
 		}
 	}
 
@@ -354,16 +466,14 @@ public class UIDrawCall : MonoBehaviour
 		NGUITools.DestroyImmediate(this.mDynamicMat);
 		this.CreateMaterial();
 		this.mDynamicMat.renderQueue = this.mRenderQueue;
-		if (this.mTexture != null)
-		{
-			this.mDynamicMat.mainTexture = this.mTexture;
-		}
 		if (this.mRenderer != null)
 		{
 			this.mRenderer.sharedMaterials = new Material[]
 			{
 				this.mDynamicMat
 			};
+			this.mRenderer.sortingLayerName = this.mSortingLayerName;
+			this.mRenderer.sortingOrder = this.mSortingOrder;
 		}
 		return this.mDynamicMat;
 	}
@@ -379,21 +489,30 @@ public class UIDrawCall : MonoBehaviour
 			this.RebuildMaterial();
 			this.mRebuildMat = false;
 		}
-		else if (this.mRenderer.sharedMaterial != this.mDynamicMat)
-		{
-			this.mRenderer.sharedMaterials = new Material[]
-			{
-				this.mDynamicMat
-			};
-		}
 	}
 
 	public void UpdateGeometry(int widgetCount)
 	{
 		this.widgetCount = widgetCount;
-		int size = this.verts.size;
-		if (size > 0 && size == this.uvs.size && size == this.cols.size && size % 4 == 0)
+		int count = this.verts.Count;
+		if (count > 0 && count == this.uvs.Count && count == this.cols.Count && count % 4 == 0)
 		{
+			if (UIDrawCall.mColorSpace == ColorSpace.Uninitialized)
+			{
+				UIDrawCall.mColorSpace = QualitySettings.activeColorSpace;
+			}
+			if (UIDrawCall.mColorSpace == ColorSpace.Linear)
+			{
+				for (int i = 0; i < count; i++)
+				{
+					Color value = this.cols[i];
+					value.r = Mathf.GammaToLinearSpace(value.r);
+					value.g = Mathf.GammaToLinearSpace(value.g);
+					value.b = Mathf.GammaToLinearSpace(value.b);
+					value.a = Mathf.GammaToLinearSpace(value.a);
+					this.cols[i] = value;
+				}
+			}
 			if (this.mFilter == null)
 			{
 				this.mFilter = base.gameObject.GetComponent<MeshFilter>();
@@ -402,65 +521,41 @@ public class UIDrawCall : MonoBehaviour
 			{
 				this.mFilter = base.gameObject.AddComponent<MeshFilter>();
 			}
-			if (this.verts.size < 65000)
+			if (count < 65000)
 			{
-				int num = (size >> 1) * 3;
+				int num = (count >> 1) * 3;
 				bool flag = this.mIndices == null || this.mIndices.Length != num;
 				if (this.mMesh == null)
 				{
 					this.mMesh = new Mesh();
 					this.mMesh.hideFlags = HideFlags.DontSave;
 					this.mMesh.name = ((!(this.mMaterial != null)) ? "[NGUI] Mesh" : ("[NGUI] " + this.mMaterial.name));
-					this.mMesh.MarkDynamic();
+					if (UIDrawCall.dx9BugWorkaround == 0)
+					{
+						this.mMesh.MarkDynamic();
+					}
 					flag = true;
 				}
-				bool flag2 = this.uvs.buffer.Length != this.verts.buffer.Length || this.cols.buffer.Length != this.verts.buffer.Length || (this.norms.buffer != null && this.norms.buffer.Length != this.verts.buffer.Length) || (this.tans.buffer != null && this.tans.buffer.Length != this.verts.buffer.Length);
+				bool flag2 = this.uvs.Count != count || this.cols.Count != count || this.uv2.Count != count || this.norms.Count != count || this.tans.Count != count;
 				if (!flag2 && this.panel != null && this.panel.renderQueue != UIPanel.RenderQueue.Automatic)
 				{
-					flag2 = (this.mMesh == null || this.mMesh.vertexCount != this.verts.buffer.Length);
+					flag2 = (this.mMesh == null || this.mMesh.vertexCount != this.verts.Count);
 				}
-				this.mTriangles = this.verts.size >> 1;
-				if (flag2 || this.verts.buffer.Length > 65000)
+				this.mTriangles = count >> 1;
+				if (this.mMesh.vertexCount != count)
 				{
-					if (flag2 || this.mMesh.vertexCount != this.verts.size)
-					{
-						this.mMesh.Clear();
-						flag = true;
-					}
-					this.mMesh.vertices = this.verts.ToArray();
-					this.mMesh.uv = this.uvs.ToArray();
-					this.mMesh.colors32 = this.cols.ToArray();
-					if (this.norms != null)
-					{
-						this.mMesh.normals = this.norms.ToArray();
-					}
-					if (this.tans != null)
-					{
-						this.mMesh.tangents = this.tans.ToArray();
-					}
+					this.mMesh.Clear();
+					flag = true;
 				}
-				else
-				{
-					if (this.mMesh.vertexCount != this.verts.buffer.Length)
-					{
-						this.mMesh.Clear();
-						flag = true;
-					}
-					this.mMesh.vertices = this.verts.buffer;
-					this.mMesh.uv = this.uvs.buffer;
-					this.mMesh.colors32 = this.cols.buffer;
-					if (this.norms != null)
-					{
-						this.mMesh.normals = this.norms.buffer;
-					}
-					if (this.tans != null)
-					{
-						this.mMesh.tangents = this.tans.buffer;
-					}
-				}
+				this.mMesh.SetVertices(this.verts);
+				this.mMesh.SetUVs(0, this.uvs);
+				this.mMesh.SetColors(this.cols);
+				this.mMesh.SetUVs(1, (this.uv2.Count != count) ? null : this.uv2);
+				this.mMesh.SetNormals((this.norms.Count != count) ? null : this.norms);
+				this.mMesh.SetTangents((this.tans.Count != count) ? null : this.tans);
 				if (flag)
 				{
-					this.mIndices = this.GenerateCachedIndexBuffer(size, num);
+					this.mIndices = this.GenerateCachedIndexBuffer(count, num);
 					this.mMesh.triangles = this.mIndices;
 				}
 				if (flag2 || !this.alwaysOnScreen)
@@ -472,11 +567,11 @@ public class UIDrawCall : MonoBehaviour
 			else
 			{
 				this.mTriangles = 0;
-				if (this.mFilter.mesh != null)
+				if (this.mMesh != null)
 				{
-					this.mFilter.mesh.Clear();
+					this.mMesh.Clear();
 				}
-				Debug.LogError("Too many vertices on one panel: " + this.verts.size);
+				Debug.LogError("Too many vertices on one panel: " + count);
 			}
 			if (this.mRenderer == null)
 			{
@@ -485,6 +580,29 @@ public class UIDrawCall : MonoBehaviour
 			if (this.mRenderer == null)
 			{
 				this.mRenderer = base.gameObject.AddComponent<MeshRenderer>();
+				if (this.mShadowMode == UIDrawCall.ShadowMode.None)
+				{
+					this.mRenderer.shadowCastingMode = ShadowCastingMode.Off;
+					this.mRenderer.receiveShadows = false;
+				}
+				else if (this.mShadowMode == UIDrawCall.ShadowMode.Receive)
+				{
+					this.mRenderer.shadowCastingMode = ShadowCastingMode.Off;
+					this.mRenderer.receiveShadows = true;
+				}
+				else
+				{
+					this.mRenderer.shadowCastingMode = ShadowCastingMode.On;
+					this.mRenderer.receiveShadows = true;
+				}
+			}
+			if (this.mIsNew)
+			{
+				this.mIsNew = false;
+				if (this.onCreateDrawCall != null)
+				{
+					this.onCreateDrawCall(this, this.mFilter, this.mRenderer);
+				}
 			}
 			this.UpdateMaterials();
 		}
@@ -494,10 +612,11 @@ public class UIDrawCall : MonoBehaviour
 			{
 				this.mFilter.mesh.Clear();
 			}
-			Debug.LogError("UIWidgets must fill the buffer with 4 vertices per quad. Found " + size);
+			Debug.LogError("UIWidgets must fill the buffer with 4 vertices per quad. Found " + count);
 		}
 		this.verts.Clear();
 		this.uvs.Clear();
+		this.uv2.Clear();
 		this.cols.Clear();
 		this.norms.Clear();
 		this.tans.Clear();
@@ -538,6 +657,10 @@ public class UIDrawCall : MonoBehaviour
 	private void OnWillRenderObject()
 	{
 		this.UpdateMaterials();
+		if (this.mBlock != null)
+		{
+			this.mRenderer.SetPropertyBlock(this.mBlock);
+		}
 		if (this.onRender != null)
 		{
 			this.onRender(this.mDynamicMat ?? this.mMaterial);
@@ -636,6 +759,11 @@ public class UIDrawCall : MonoBehaviour
 
 	private void Awake()
 	{
+		if (UIDrawCall.dx9BugWorkaround == -1)
+		{
+			RuntimePlatform platform = Application.platform;
+			UIDrawCall.dx9BugWorkaround = ((platform != RuntimePlatform.WindowsPlayer || SystemInfo.graphicsShaderLevel >= 40 || !SystemInfo.graphicsDeviceVersion.Contains("Direct3D")) ? 0 : 1);
+		}
 		if (UIDrawCall.ClipRange == null)
 		{
 			UIDrawCall.ClipRange = new int[]
@@ -706,16 +834,19 @@ public class UIDrawCall : MonoBehaviour
 
 	private static UIDrawCall Create(string name)
 	{
-		if (UIDrawCall.mInactiveList.size > 0)
+		while (UIDrawCall.mInactiveList.size > 0)
 		{
 			UIDrawCall uIDrawCall = UIDrawCall.mInactiveList.Pop();
-			UIDrawCall.mActiveList.Add(uIDrawCall);
-			if (name != null)
+			if (uIDrawCall != null)
 			{
-				uIDrawCall.name = name;
+				UIDrawCall.mActiveList.Add(uIDrawCall);
+				if (name != null)
+				{
+					uIDrawCall.name = name;
+				}
+				NGUITools.SetActive(uIDrawCall.gameObject, true);
+				return uIDrawCall;
 			}
-			NGUITools.SetActive(uIDrawCall.gameObject, true);
-			return uIDrawCall;
 		}
 		GameObject gameObject = new GameObject(name);
 		UnityEngine.Object.DontDestroyOnLoad(gameObject);
@@ -783,6 +914,11 @@ public class UIDrawCall : MonoBehaviour
 	{
 		if (dc)
 		{
+			if (dc.onCreateDrawCall != null)
+			{
+				NGUITools.Destroy(dc.gameObject);
+				return;
+			}
 			dc.onRender = null;
 			if (Application.isPlaying)
 			{
@@ -790,6 +926,7 @@ public class UIDrawCall : MonoBehaviour
 				{
 					NGUITools.SetActive(dc.gameObject, false);
 					UIDrawCall.mInactiveList.Add(dc);
+					dc.mIsNew = true;
 				}
 			}
 			else
@@ -797,6 +934,18 @@ public class UIDrawCall : MonoBehaviour
 				UIDrawCall.mActiveList.Remove(dc);
 				NGUITools.DestroyImmediate(dc.gameObject);
 			}
+		}
+	}
+
+	public static void MoveToScene(Scene scene)
+	{
+		foreach (UIDrawCall current in UIDrawCall.activeList)
+		{
+			SceneManager.MoveGameObjectToScene(current.gameObject, scene);
+		}
+		foreach (UIDrawCall current2 in UIDrawCall.inactiveList)
+		{
+			SceneManager.MoveGameObjectToScene(current2.gameObject, scene);
 		}
 	}
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 [AddComponentMenu("NGUI/UI/NGUI Texture"), ExecuteInEditMode]
@@ -9,9 +10,6 @@ public class UITexture : UIBasicSprite
 
 	[HideInInspector, SerializeField]
 	private Texture mTexture;
-
-	[HideInInspector, SerializeField]
-	private Material mMat;
 
 	[HideInInspector, SerializeField]
 	private Shader mShader;
@@ -308,7 +306,7 @@ public class UITexture : UIBasicSprite
 		}
 	}
 
-	public override void OnFill(BetterList<Vector3> verts, BetterList<Vector2> uvs, BetterList<Color32> cols)
+	public override void OnFill(List<Vector3> verts, List<Vector2> uvs, List<Color> cols)
 	{
 		Texture mainTexture = this.mainTexture;
 		if (mainTexture == null)
@@ -332,11 +330,11 @@ public class UITexture : UIBasicSprite
 		inner.xMax *= num;
 		inner.yMin *= num2;
 		inner.yMax *= num2;
-		int size = verts.size;
+		int count = verts.Count;
 		base.Fill(verts, uvs, cols, rect, inner);
 		if (this.onPostFill != null)
 		{
-			this.onPostFill(this, size, verts, uvs, cols);
+			this.onPostFill(this, count, verts, uvs, cols);
 		}
 	}
 }

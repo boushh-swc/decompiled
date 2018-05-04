@@ -368,16 +368,16 @@ namespace StaRTS.Main.Controllers
 		{
 			string uid = string.Empty;
 			FactionType faction = this.player.Faction;
-			if (faction != FactionType.Empire)
+			if (faction != FactionType.Rebel)
 			{
-				if (faction == FactionType.Rebel)
+				if (faction == FactionType.Empire)
 				{
-					uid = GameConstants.NEW_PLAYER_INITIAL_MISSION_REBEL;
+					uid = GameConstants.NEW_PLAYER_INITIAL_MISSION_EMPIRE;
 				}
 			}
 			else
 			{
-				uid = GameConstants.NEW_PLAYER_INITIAL_MISSION_EMPIRE;
+				uid = GameConstants.NEW_PLAYER_INITIAL_MISSION_REBEL;
 			}
 			CampaignMissionVO missionType = Service.StaticDataController.Get<CampaignMissionVO>(uid);
 			this.UnlockMission(missionType);

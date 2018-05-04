@@ -83,7 +83,7 @@ namespace StaRTS.Main.Views.UX.Screens
 			this.useFaction = forFactionChoice;
 			if (this.useFaction)
 			{
-				this.faction = (FactionType)((int)modalResultCookie);
+				this.faction = (FactionType)modalResultCookie;
 			}
 			base.AllowFUEBackButton = true;
 			base.OnModalResult = onModalResult;

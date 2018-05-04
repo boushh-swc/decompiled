@@ -174,9 +174,9 @@ namespace StaRTS.Main.Controllers
 
 		public EatResponse OnEvent(EventId id, object cookie)
 		{
-			if (id != EventId.EntityKilled)
+			if (id != EventId.ProcBuff)
 			{
-				if (id != EventId.ProcBuff)
+				if (id != EventId.EntityKilled)
 				{
 					if (id == EventId.GameStateChanged)
 					{
@@ -189,29 +189,29 @@ namespace StaRTS.Main.Controllers
 				}
 				else
 				{
-					BuffEventData buffEventData = (BuffEventData)cookie;
-					if (buffEventData.BuffObj.BuffType.Modify != BuffModify.Summon)
+					SmartEntity key = cookie as SmartEntity;
+					if (this.visitorExecution.ContainsKey(key))
 					{
-						return EatResponse.NotEaten;
+						List<SmartEntity> list = this.visitorExecution[key];
+						if (list != null)
+						{
+							for (int i = 0; i < list.Count; i++)
+							{
+								Service.HealthController.KillEntity(list[i]);
+							}
+						}
+						this.visitorExecution.Remove(key);
 					}
-					this.HandleSummon(buffEventData);
 				}
 			}
 			else
 			{
-				SmartEntity key = cookie as SmartEntity;
-				if (this.visitorExecution.ContainsKey(key))
+				BuffEventData buffEventData = (BuffEventData)cookie;
+				if (buffEventData.BuffObj.BuffType.Modify != BuffModify.Summon)
 				{
-					List<SmartEntity> list = this.visitorExecution[key];
-					if (list != null)
-					{
-						for (int i = 0; i < list.Count; i++)
-						{
-							Service.HealthController.KillEntity(list[i]);
-						}
-					}
-					this.visitorExecution.Remove(key);
+					return EatResponse.NotEaten;
 				}
+				this.HandleSummon(buffEventData);
 			}
 			return EatResponse.NotEaten;
 		}

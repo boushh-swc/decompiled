@@ -75,18 +75,8 @@ namespace StaRTS.Main.Models.Player.Misc
 			int num = 0;
 			foreach (string current in internalStorage.Keys)
 			{
-				IUpgradeableVO arg_46_0;
-				if (isStarship)
-				{
-					IUpgradeableVO upgradeableVO = staticDataController.Get<SpecialAttackTypeVO>(current);
-					arg_46_0 = upgradeableVO;
-				}
-				else
-				{
-					arg_46_0 = staticDataController.Get<TroopTypeVO>(current);
-				}
-				IUpgradeableVO upgradeableVO2 = arg_46_0;
-				if (upgradeableVO2.UpgradeGroup == productUpgradeGroup)
+				IUpgradeableVO upgradeableVO = (!isStarship) ? staticDataController.Get<TroopTypeVO>(current) : staticDataController.Get<SpecialAttackTypeVO>(current);
+				if (upgradeableVO.UpgradeGroup == productUpgradeGroup)
 				{
 					num += internalStorage[current].Amount;
 					storage.ClearItemAmount(current);

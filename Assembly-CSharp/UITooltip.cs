@@ -138,7 +138,6 @@ public class UITooltip : MonoBehaviour
 				this.mPos = this.mTrans.localPosition;
 				this.mPos.x = Mathf.Round(this.mPos.x);
 				this.mPos.y = Mathf.Round(this.mPos.y);
-				this.mTrans.localPosition = this.mPos;
 			}
 			else
 			{
@@ -153,6 +152,7 @@ public class UITooltip : MonoBehaviour
 				this.mPos.x = this.mPos.x - (float)Screen.width * 0.5f;
 				this.mPos.y = this.mPos.y - (float)Screen.height * 0.5f;
 			}
+			this.mTrans.localPosition = this.mPos;
 			if (this.tooltipRoot != null)
 			{
 				this.tooltipRoot.BroadcastMessage("UpdateAnchors");

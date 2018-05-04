@@ -16,6 +16,7 @@ using StaRTS.Utils.Scheduling;
 using StaRTS.Utils.State;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace StaRTS.Main.Controllers
 {
@@ -26,6 +27,9 @@ namespace StaRTS.Main.Controllers
 		private DateTime nextScheduledRefreshDate;
 
 		private uint scheduleTimerId;
+
+		[CompilerGenerated]
+		private static Comparison<EpisodePointScheduleVO> <>f__mg$cache0;
 
 		public EpisodeDataVO CurrentEpisodeData
 		{
@@ -107,7 +111,12 @@ namespace StaRTS.Main.Controllers
 			}
 			if (list.Count > 0)
 			{
-				list.Sort(new Comparison<EpisodePointScheduleVO>(EpisodeController.CompareSchedules));
+				List<EpisodePointScheduleVO> arg_C9_0 = list;
+				if (EpisodeController.<>f__mg$cache0 == null)
+				{
+					EpisodeController.<>f__mg$cache0 = new Comparison<EpisodePointScheduleVO>(EpisodeController.CompareSchedules);
+				}
+				arg_C9_0.Sort(EpisodeController.<>f__mg$cache0);
 				EpisodePointScaleVO optional = staticDataController.GetOptional<EpisodePointScaleVO>(list[0].ScaleId);
 				if (optional != null)
 				{
@@ -525,11 +534,11 @@ namespace StaRTS.Main.Controllers
 			{
 				list.Add(current);
 			}
-			list.Sort(new Comparison<T>(this.SortIEpisodeTimeVOs));
+			list.Sort(new Comparison<T>(this.SortIEpisodeTimeVOs<T>));
 			return list;
 		}
 
-		private int SortIEpisodeTimeVOs(IEpisodeTimeVO a, IEpisodeTimeVO b)
+		private int SortIEpisodeTimeVOs<T>(T a, T b) where T : IEpisodeTimeVO, IValueObject
 		{
 			if (a.Priority < b.Priority)
 			{

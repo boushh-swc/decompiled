@@ -10,12 +10,6 @@ namespace StaRTS.Main.Views.UX
 {
 	public class HUDResourceView
 	{
-		private const string ANIM_TRIGGER_START = "SpinStart";
-
-		private const string ANIM_TRIGGER_STOP = "SpinStop";
-
-		private const float ANIM_OFF_DELAY = 0.5f;
-
 		private UXSlider slider;
 
 		private UXLabel label;
@@ -43,6 +37,12 @@ namespace StaRTS.Main.Views.UX
 		private uint animOffTimerId;
 
 		private int animOffNameHash;
+
+		private const string ANIM_TRIGGER_START = "SpinStart";
+
+		private const string ANIM_TRIGGER_STOP = "SpinStop";
+
+		private const float ANIM_OFF_DELAY = 0.5f;
 
 		public bool NeedsUpdate
 		{

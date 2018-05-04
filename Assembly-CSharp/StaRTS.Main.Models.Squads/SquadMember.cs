@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace StaRTS.Main.Models.Squads
 {
-	public class SquadMember : IComparable<SquadMember>, ISerializable
+	public class SquadMember : ISerializable, IComparable<SquadMember>
 	{
 		public string MemberName
 		{

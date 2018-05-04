@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace StaRTS.Main.Story.Trigger
 {
-	public class AbstractStoryTrigger : IStoryReactor, IStoryTrigger, ISerializable
+	public class AbstractStoryTrigger : IStoryTrigger, ISerializable, IStoryReactor
 	{
 		public const string UID_KEY = "uid";
 

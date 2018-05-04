@@ -9,10 +9,6 @@ namespace SwrveUnity
 	[Serializable]
 	public class SwrveConfig
 	{
-		public const string DefaultEventsServer = "https://api.swrve.com";
-
-		public const string DefaultContentServer = "https://content.swrve.com";
-
 		public string UserId;
 
 		public string AppVersion;
@@ -37,9 +33,13 @@ namespace SwrveUnity
 
 		public string EventsServer = "https://api.swrve.com";
 
+		public const string DefaultEventsServer = "https://api.swrve.com";
+
 		public bool UseHttpsForEventsServer = true;
 
 		public string ContentServer = "https://content.swrve.com";
+
+		public const string DefaultContentServer = "https://content.swrve.com";
 
 		public bool UseHttpsForContentServer = true;
 

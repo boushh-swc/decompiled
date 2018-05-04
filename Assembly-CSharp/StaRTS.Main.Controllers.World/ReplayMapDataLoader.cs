@@ -16,8 +16,6 @@ namespace StaRTS.Main.Controllers.World
 {
 	public class ReplayMapDataLoader : IMapDataLoader
 	{
-		private const WorldType worldType = WorldType.Replay;
-
 		private MapLoadedDelegate OnMapLoaded;
 
 		private BattleParticipant defender;
@@ -25,6 +23,8 @@ namespace StaRTS.Main.Controllers.World
 		private string replayOwnerPlayerId;
 
 		private GetReplayResponse replayResponseData;
+
+		private const WorldType worldType = WorldType.Replay;
 
 		public ReplayMapDataLoader()
 		{

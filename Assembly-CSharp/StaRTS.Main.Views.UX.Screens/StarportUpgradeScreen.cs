@@ -1,4 +1,4 @@
-using Net.RichardLord.Ash.Core;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.Static;
 using StaRTS.Utils.Core;
 using System;
@@ -7,7 +7,7 @@ namespace StaRTS.Main.Views.UX.Screens
 {
 	public class StarportUpgradeScreen : StarportInfoScreen
 	{
-		public StarportUpgradeScreen(Entity selectedBuilding) : base(selectedBuilding)
+		public StarportUpgradeScreen(SmartEntity selectedBuilding) : base(selectedBuilding)
 		{
 			this.useUpgradeGroup = true;
 		}

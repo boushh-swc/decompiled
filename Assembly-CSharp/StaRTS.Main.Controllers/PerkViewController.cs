@@ -72,7 +72,7 @@ namespace StaRTS.Main.Controllers
 				Service.ViewTimerManager.KillViewTimer(this.perkBuildingHighlightTimerID);
 			}
 			PerkManager perkManager = Service.PerkManager;
-			List<Entity> buildingsForActivePerks = perkManager.GetBuildingsForActivePerks();
+			List<SmartEntity> buildingsForActivePerks = perkManager.GetBuildingsForActivePerks();
 			uint num = 4294967295u;
 			Entity entity = null;
 			int i = 0;
@@ -98,7 +98,7 @@ namespace StaRTS.Main.Controllers
 		{
 			if (cookie != null)
 			{
-				Entity building = cookie as Entity;
+				SmartEntity building = cookie as SmartEntity;
 				Service.BuildingController.UpdateBuildingHighlightForPerks(building);
 				this.RefreshPerkBuildingHighlightTimer();
 			}
@@ -112,8 +112,8 @@ namespace StaRTS.Main.Controllers
 			case EventId.BuildingConstructed:
 			{
 				ContractEventData contractEventData = cookie as ContractEventData;
-				Entity entity = (cookie as ContractEventData).Entity;
-				BuildingComponent buildingComp = ((SmartEntity)entity).BuildingComp;
+				SmartEntity entity = (cookie as ContractEventData).Entity;
+				BuildingComponent buildingComp = entity.BuildingComp;
 				if (entity != null && buildingComp != null && contractEventData.BuildingVO != null && Service.PerkManager.IsPerkAppliedToBuilding(contractEventData.BuildingVO))
 				{
 					Service.BuildingController.UpdateBuildingHighlightForPerks(entity);
@@ -121,7 +121,7 @@ namespace StaRTS.Main.Controllers
 				return EatResponse.NotEaten;
 			}
 			case EventId.BuildingSwapped:
-				IL_19:
+				IL_15:
 				if (id == EventId.WorldLoadComplete)
 				{
 					this.HighlightActivePerkBuildings();
@@ -145,12 +145,12 @@ namespace StaRTS.Main.Controllers
 				this.RefreshPerkBuildingHighlightTimer();
 				return EatResponse.NotEaten;
 			}
-			goto IL_19;
+			goto IL_15;
 		}
 
 		private void HighlightActivePerkBuildings()
 		{
-			List<Entity> buildingsForActivePerks = Service.PerkManager.GetBuildingsForActivePerks();
+			List<SmartEntity> buildingsForActivePerks = Service.PerkManager.GetBuildingsForActivePerks();
 			int i = 0;
 			int count = buildingsForActivePerks.Count;
 			while (i < count)
@@ -512,7 +512,7 @@ namespace StaRTS.Main.Controllers
 			if (flag)
 			{
 				PerkVO perkVO = Service.StaticDataController.Get<PerkVO>(text);
-				List<Entity> buildingsForPerk = perkManager.GetBuildingsForPerk(perkVO);
+				List<SmartEntity> buildingsForPerk = perkManager.GetBuildingsForPerk(perkVO);
 				int i = 0;
 				int count = buildingsForPerk.Count;
 				while (i < count)

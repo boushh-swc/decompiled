@@ -19,23 +19,20 @@ namespace StaRTS.Main.Bot
 
 		public EatResponse OnEvent(EventId id, object cookie)
 		{
-			if (id != EventId.WorldInTransitionComplete)
+			if (id != EventId.ScreenLoaded)
 			{
-				if (id == EventId.ScreenLoaded)
+				if (id == EventId.WorldInTransitionComplete)
 				{
-					if (cookie is BattleEndScreen)
-					{
-						Service.EventManager.UnregisterObserver(this, EventId.ScreenLoaded);
-						Service.EventManager.RegisterObserver(this, EventId.WorldInTransitionComplete);
-						HomeState.GoToHomeStateAndReloadMap();
-					}
+					Service.EventManager.UnregisterObserver(this, EventId.WorldInTransitionComplete);
+					Service.BotRunner.Performing = false;
+					base.Perform();
 				}
 			}
-			else
+			else if (cookie is BattleEndScreen)
 			{
-				Service.EventManager.UnregisterObserver(this, EventId.WorldInTransitionComplete);
-				Service.BotRunner.Performing = false;
-				base.Perform();
+				Service.EventManager.UnregisterObserver(this, EventId.ScreenLoaded);
+				Service.EventManager.RegisterObserver(this, EventId.WorldInTransitionComplete);
+				HomeState.GoToHomeStateAndReloadMap();
 			}
 			return EatResponse.NotEaten;
 		}

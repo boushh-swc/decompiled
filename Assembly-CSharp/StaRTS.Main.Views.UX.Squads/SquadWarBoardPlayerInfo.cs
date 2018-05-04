@@ -10,6 +10,8 @@ namespace StaRTS.Main.Views.UX.Squads
 {
 	public class SquadWarBoardPlayerInfo : AbstractSquadWarBoardInfoElement
 	{
+		public SquadWarParticipantState participantState;
+
 		private const string WAR_BOARD_HQ_LABEL = "WAR_BOARD_HQ_LABEL";
 
 		private const string LABEL_TROOP_TOOLTIP = "LabelTroopTooltip";
@@ -25,8 +27,6 @@ namespace StaRTS.Main.Views.UX.Squads
 		private const string STAR_BG = "SpriteTroopTooltip";
 
 		private const string PLAYER_HIGHLIGHT = "SpritePlayerHighlight";
-
-		public SquadWarParticipantState participantState;
 
 		private UXLabel labelTroopTooltip;
 

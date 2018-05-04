@@ -71,7 +71,7 @@ public class UIKeyNavigation : MonoBehaviour
 		UIKeyNavigation.list.Add(this);
 		if (this.mStarted)
 		{
-			this.Start();
+			base.Invoke("Start", 0.001f);
 		}
 	}
 
@@ -80,7 +80,7 @@ public class UIKeyNavigation : MonoBehaviour
 		this.mStarted = true;
 		if (this.startsSelected && this.isColliderEnabled)
 		{
-			UICamera.hoveredObject = base.gameObject;
+			UICamera.selectedObject = base.gameObject;
 		}
 	}
 

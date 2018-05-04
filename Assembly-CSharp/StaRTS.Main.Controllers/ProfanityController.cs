@@ -7,10 +7,6 @@ namespace StaRTS.Main.Controllers
 {
 	public class ProfanityController
 	{
-		private const string META_RESERVED_UID = "reserved";
-
-		private const string META_EN_UID = "en";
-
 		private List<string> profaneWordsLoose;
 
 		private List<string> profaneWordsStrict;
@@ -26,6 +22,10 @@ namespace StaRTS.Main.Controllers
 			':',
 			','
 		};
+
+		private const string META_RESERVED_UID = "reserved";
+
+		private const string META_EN_UID = "en";
 
 		public ProfanityController()
 		{

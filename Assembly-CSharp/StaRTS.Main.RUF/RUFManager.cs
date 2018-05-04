@@ -10,6 +10,7 @@ using StaRTS.Utils;
 using StaRTS.Utils.Core;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace StaRTS.Main.RUF
 {
@@ -24,6 +25,12 @@ namespace StaRTS.Main.RUF
 		private List<AbstractRUFTask> loadStateQueue;
 
 		private bool processingLoadState;
+
+		[CompilerGenerated]
+		private static Comparison<AbstractRUFTask> <>f__mg$cache0;
+
+		[CompilerGenerated]
+		private static Comparison<AbstractRUFTask> <>f__mg$cache1;
 
 		public List<int> OmitRateAppLevels
 		{
@@ -71,8 +78,18 @@ namespace StaRTS.Main.RUF
 
 		private void SortTaskQueues()
 		{
-			this.loadStateQueue.Sort(new Comparison<AbstractRUFTask>(RUFManager.CompareRUFTasks));
-			this.queue.Sort(new Comparison<AbstractRUFTask>(RUFManager.CompareRUFTasks));
+			List<AbstractRUFTask> arg_23_0 = this.loadStateQueue;
+			if (RUFManager.<>f__mg$cache0 == null)
+			{
+				RUFManager.<>f__mg$cache0 = new Comparison<AbstractRUFTask>(RUFManager.CompareRUFTasks);
+			}
+			arg_23_0.Sort(RUFManager.<>f__mg$cache0);
+			List<AbstractRUFTask> arg_4B_0 = this.queue;
+			if (RUFManager.<>f__mg$cache1 == null)
+			{
+				RUFManager.<>f__mg$cache1 = new Comparison<AbstractRUFTask>(RUFManager.CompareRUFTasks);
+			}
+			arg_4B_0.Sort(RUFManager.<>f__mg$cache1);
 		}
 
 		private void AddOfflineContractTasksToQueue()

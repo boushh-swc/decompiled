@@ -1,6 +1,6 @@
-using Net.RichardLord.Ash.Core;
 using StaRTS.Main.Controllers;
 using StaRTS.Main.Models;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.Static;
 using StaRTS.Main.Models.ValueObjects;
 using StaRTS.Main.Utils;
@@ -24,7 +24,7 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		private UXGrid unlockGrid;
 
-		public TrainingUpgradeScreen(Entity selectedBuilding) : base(selectedBuilding)
+		public TrainingUpgradeScreen(SmartEntity selectedBuilding) : base(selectedBuilding)
 		{
 			this.useUpgradeGroup = true;
 		}
@@ -220,7 +220,7 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		private void OnUnlockCardClicked(UXButton button)
 		{
-			Entity availableTroopResearchLab = Service.BuildingLookupController.GetAvailableTroopResearchLab();
+			SmartEntity availableTroopResearchLab = Service.BuildingLookupController.GetAvailableTroopResearchLab();
 			TroopUpgradeTag troopUpgradeTag = button.Tag as TroopUpgradeTag;
 			bool showUpgradeControls = !string.IsNullOrEmpty(troopUpgradeTag.Troop.UpgradeShardUid);
 			Service.ScreenController.AddScreen(new DeployableInfoScreen(troopUpgradeTag, this.troopListForInfoScreen, showUpgradeControls, availableTroopResearchLab));

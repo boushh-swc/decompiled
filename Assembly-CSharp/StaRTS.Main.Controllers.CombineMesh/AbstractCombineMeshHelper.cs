@@ -16,7 +16,7 @@ namespace StaRTS.Main.Controllers.CombineMesh
 
 		public abstract HashSet<BuildingType> GetEligibleBuildingTypes();
 
-		protected abstract List<Entity> GetBuildingEntityListByType(BuildingType buidlingType);
+		protected abstract List<SmartEntity> GetBuildingEntityListByType(BuildingType buidlingType);
 
 		private bool IsEntityEligible(SmartEntity smartEntity)
 		{
@@ -138,12 +138,12 @@ namespace StaRTS.Main.Controllers.CombineMesh
 		private HashSet<Renderer> GetRenderersToCombine(BuildingType buildingType)
 		{
 			HashSet<Renderer> hashSet = new HashSet<Renderer>();
-			List<Entity> buildingEntityListByType = this.GetBuildingEntityListByType(buildingType);
+			List<SmartEntity> buildingEntityListByType = this.GetBuildingEntityListByType(buildingType);
 			int i = 0;
 			int count = buildingEntityListByType.Count;
 			while (i < count)
 			{
-				SmartEntity smartEntity = (SmartEntity)buildingEntityListByType[i];
+				SmartEntity smartEntity = buildingEntityListByType[i];
 				if (this.IsEntityEligibleForEligibleBuildingType(smartEntity))
 				{
 					this.AddRenderersFromEntity(hashSet, smartEntity);

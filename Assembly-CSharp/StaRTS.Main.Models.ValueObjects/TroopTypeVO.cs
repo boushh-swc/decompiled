@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace StaRTS.Main.Models.ValueObjects
 {
-	public class TroopTypeVO : IAssetVO, IAudioVO, IDeployableVO, IGeometryVO, IHealthVO, IShooterVO, ISpeedVO, ITroopDeployableVO, ITroopShooterVO, IUnlockableVO, IUpgradeableVO, IValueObject
+	public class TroopTypeVO : IHealthVO, IAudioVO, ITroopShooterVO, ISpeedVO, ITroopDeployableVO, IShooterVO, IDeployableVO, IUpgradeableVO, IValueObject, IAssetVO, IGeometryVO, IUnlockableVO
 	{
 		public const int MELEE_RANGE = 4;
 

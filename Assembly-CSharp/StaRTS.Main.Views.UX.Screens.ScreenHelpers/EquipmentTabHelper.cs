@@ -45,44 +45,44 @@ namespace StaRTS.Main.Views.UX.Screens.ScreenHelpers
 					Service.Logger.Error("CMS Error: EffectUids is empty for EquipmentEffectVO " + optional.Uid);
 					return false;
 				}
-				switch (selectedTab)
+				if (selectedTab != EquipmentTab.Structures)
 				{
-				case EquipmentTab.Troops:
-					if (optional.AffectedTroopIds != null && optional.AffectedTroopIds.Length > 0)
+					if (selectedTab != EquipmentTab.Troops)
 					{
-						int j = 0;
-						int num2 = optional.AffectedTroopIds.Length;
-						while (j < num2)
+						if (selectedTab == EquipmentTab.Heroes)
 						{
-							if (troopUpgradeCatalog.GetMinLevel(optional.AffectedTroopIds[j]).Type != TroopType.Hero)
+							if (optional.AffectedTroopIds != null && optional.AffectedTroopIds.Length > 0)
 							{
-								return true;
+								int j = 0;
+								int num2 = optional.AffectedTroopIds.Length;
+								while (j < num2)
+								{
+									if (troopUpgradeCatalog.GetMinLevel(optional.AffectedTroopIds[j]).Type == TroopType.Hero)
+									{
+										return true;
+									}
+									j++;
+								}
 							}
-							j++;
 						}
 					}
-					break;
-				case EquipmentTab.Heroes:
-					if (optional.AffectedTroopIds != null && optional.AffectedTroopIds.Length > 0)
+					else if (optional.AffectedTroopIds != null && optional.AffectedTroopIds.Length > 0)
 					{
 						int k = 0;
 						int num3 = optional.AffectedTroopIds.Length;
 						while (k < num3)
 						{
-							if (troopUpgradeCatalog.GetMinLevel(optional.AffectedTroopIds[k]).Type == TroopType.Hero)
+							if (troopUpgradeCatalog.GetMinLevel(optional.AffectedTroopIds[k]).Type != TroopType.Hero)
 							{
 								return true;
 							}
 							k++;
 						}
 					}
-					break;
-				case EquipmentTab.Structures:
-					if (optional.AffectedBuildingIds != null && optional.AffectedBuildingIds.Length > 0)
-					{
-						return true;
-					}
-					break;
+				}
+				else if (optional.AffectedBuildingIds != null && optional.AffectedBuildingIds.Length > 0)
+				{
+					return true;
 				}
 				i++;
 			}

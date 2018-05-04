@@ -16,7 +16,7 @@ using UnityEngine;
 
 namespace StaRTS.Main.Views.Animations
 {
-	public class TextCrawlAnimation : UXFactory, IBackButtonHandler, IUserInputObserver, IViewFrameTimeObserver
+	public class TextCrawlAnimation : UXFactory, IViewFrameTimeObserver, IUserInputObserver, IBackButtonHandler
 	{
 		public delegate void TextCrawlAnimationCompleteDelegate();
 

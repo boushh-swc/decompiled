@@ -13,14 +13,6 @@ namespace StaRTS.Main.Models.Entities.Components
 {
 	public class GeneratorViewComponent : ComponentBase
 	{
-		private const string TOOLTIP_NAME = "GeneratorCollectLabel";
-
-		private const float TOOLTIP_SHOW_DURATION = 2f;
-
-		private const float TIMER_INTERVAL_SEC = 0.01f;
-
-		private const float HEIGHT_RISE = 1.5f;
-
 		private GameObjectViewComponent viewComp;
 
 		private CollectButton collectButton;
@@ -32,6 +24,14 @@ namespace StaRTS.Main.Models.Entities.Components
 		private float timerDt;
 
 		private TooltipHelper tooltipHelper;
+
+		private const string TOOLTIP_NAME = "GeneratorCollectLabel";
+
+		private const float TOOLTIP_SHOW_DURATION = 2f;
+
+		private const float TIMER_INTERVAL_SEC = 0.01f;
+
+		private const float HEIGHT_RISE = 1.5f;
 
 		private static readonly Color CREDITS_COLOR = new Color(0.9372549f, 0.9843137f, 0f);
 
@@ -75,17 +75,23 @@ namespace StaRTS.Main.Models.Entities.Components
 			{
 				amount
 			});
-			switch (currencyType)
+			if (currencyType != CurrencyType.Credits)
 			{
-			case CurrencyType.Credits:
+				if (currencyType != CurrencyType.Materials)
+				{
+					if (currencyType == CurrencyType.Contraband)
+					{
+						this.textLabel.TextColor = GeneratorViewComponent.CONTRABAND_COLOR;
+					}
+				}
+				else
+				{
+					this.textLabel.TextColor = GeneratorViewComponent.MATERIALS_COLOR;
+				}
+			}
+			else
+			{
 				this.textLabel.TextColor = GeneratorViewComponent.CREDITS_COLOR;
-				break;
-			case CurrencyType.Materials:
-				this.textLabel.TextColor = GeneratorViewComponent.MATERIALS_COLOR;
-				break;
-			case CurrencyType.Contraband:
-				this.textLabel.TextColor = GeneratorViewComponent.CONTRABAND_COLOR;
-				break;
 			}
 			this.KillTextTimer();
 			if (this.tooltipHelper == null)

@@ -54,7 +54,7 @@ namespace StaRTS.Main.Controllers
 			set;
 		}
 
-		public Entity SelectedBuilding
+		public SmartEntity SelectedBuilding
 		{
 			get
 			{
@@ -97,7 +97,7 @@ namespace StaRTS.Main.Controllers
 			}
 		}
 
-		public Entity PurchasingBuilding
+		public SmartEntity PurchasingBuilding
 		{
 			get
 			{
@@ -165,7 +165,7 @@ namespace StaRTS.Main.Controllers
 			}
 		}
 
-		public void SelectAdjacentWalls(Entity building)
+		public void SelectAdjacentWalls(SmartEntity building)
 		{
 			this.buildingSelector.SelectAdjacentWalls(building);
 		}
@@ -192,7 +192,7 @@ namespace StaRTS.Main.Controllers
 			this.buildingSelector.CancelEditModeTimer();
 		}
 
-		public void UpdateBuildingHighlightForPerks(Entity building)
+		public void UpdateBuildingHighlightForPerks(SmartEntity building)
 		{
 			if (building == null)
 			{
@@ -205,7 +205,7 @@ namespace StaRTS.Main.Controllers
 			}
 			PerkManager perkManager = Service.PerkManager;
 			IState currentState = Service.GameStateMachine.CurrentState;
-			BuildingComponent buildingComp = ((SmartEntity)building).BuildingComp;
+			BuildingComponent buildingComp = building.BuildingComp;
 			if ((currentState is ApplicationLoadState || currentState is HomeState || currentState is EditBaseState || currentState is BaseLayoutToolState) && buildingComp != null)
 			{
 				BuildingTypeVO buildingType = buildingComp.BuildingType;
@@ -234,7 +234,7 @@ namespace StaRTS.Main.Controllers
 			this.entityShaderSwapper.ResetToOriginal(building);
 		}
 
-		public List<Entity> GetAdditionalSelectedBuildings()
+		public List<SmartEntity> GetAdditionalSelectedBuildings()
 		{
 			return this.buildingSelector.AdditionalSelectedBuildings;
 		}
@@ -257,7 +257,7 @@ namespace StaRTS.Main.Controllers
 			this.buildingMover.EnsureLoweredLiftedBuilding();
 		}
 
-		public bool IsLifted(Entity building)
+		public bool IsLifted(SmartEntity building)
 		{
 			return this.buildingMover.Lifted && this.buildingSelector.IsPartOfSelection(building);
 		}
@@ -269,7 +269,7 @@ namespace StaRTS.Main.Controllers
 			case EventId.BuildingLevelUpgraded:
 			case EventId.BuildingSwapped:
 			{
-				Entity entity = (cookie as ContractEventData).Entity;
+				SmartEntity entity = (cookie as ContractEventData).Entity;
 				if (entity != null)
 				{
 					bool flag = this.buildingSelector.IsPartOfSelection(entity);
@@ -277,13 +277,13 @@ namespace StaRTS.Main.Controllers
 					{
 						this.buildingSelector.DeselectSelectedBuilding();
 					}
-					Entity entity2 = this.ReplaceBuildingAfterTOChange(entity);
-					if (flag && entity2 != null)
+					SmartEntity smartEntity = this.ReplaceBuildingAfterTOChange(entity);
+					if (flag && smartEntity != null)
 					{
-						this.buildingSelector.SelectBuilding(entity2, Vector3.zero);
+						this.buildingSelector.SelectBuilding(smartEntity, Vector3.zero);
 					}
-					Service.AchievementController.TryUnlockAchievementById(AchievementType.BuildingLevel, entity2.Get<BuildingComponent>().BuildingType.Uid);
-					this.CheckStarportFullness(entity2);
+					Service.AchievementController.TryUnlockAchievementById(AchievementType.BuildingLevel, smartEntity.Get<BuildingComponent>().BuildingType.Uid);
+					this.CheckStarportFullness(smartEntity);
 				}
 				break;
 			}
@@ -297,12 +297,12 @@ namespace StaRTS.Main.Controllers
 					{
 						if (id == EventId.ClearableCleared)
 						{
-							Entity entity3 = (cookie as ContractEventData).Entity;
-							if (entity3 != null && this.buildingSelector.SelectedBuilding == entity3)
+							Entity entity2 = (cookie as ContractEventData).Entity;
+							if (entity2 != null && this.buildingSelector.SelectedBuilding == entity2)
 							{
 								this.buildingSelector.DeselectSelectedBuilding();
 							}
-							Service.EntityFactory.DestroyEntity(entity3, true, true);
+							Service.EntityFactory.DestroyEntity(entity2, true, true);
 						}
 					}
 					else
@@ -348,12 +348,12 @@ namespace StaRTS.Main.Controllers
 			}
 		}
 
-		public Entity ReplaceBuildingAfterTOChange(Entity building)
+		public SmartEntity ReplaceBuildingAfterTOChange(SmartEntity building)
 		{
-			BuildingComponent buildingComponent = building.Get<BuildingComponent>();
-			Building buildingTO = buildingComponent.BuildingTO;
-			BoardItemComponent boardItemComponent = building.Get<BoardItemComponent>();
-			BoardItem boardItem = boardItemComponent.BoardItem;
+			BuildingComponent buildingComp = building.BuildingComp;
+			Building buildingTO = buildingComp.BuildingTO;
+			BoardItemComponent boardItemComp = building.BoardItemComp;
+			BoardItem boardItem = boardItemComp.BoardItem;
 			BoardCell currentCell = boardItem.CurrentCell;
 			int x = currentCell.X;
 			int z = currentCell.Z;
@@ -363,16 +363,16 @@ namespace StaRTS.Main.Controllers
 			{
 				postBattleRepairController.RemoveExistingRepair(building);
 			}
-			Entity entity = entityFactory.CreateBuildingEntity(buildingTO, true, true, true);
-			Service.CurrencyEffects.TransferEffects(building, entity);
-			Service.MobilizationEffectsManager.TransferEffects(building, entity);
+			SmartEntity smartEntity = entityFactory.CreateBuildingEntity(buildingTO, true, true, true);
+			Service.CurrencyEffects.TransferEffects(building, smartEntity);
+			Service.MobilizationEffectsManager.TransferEffects(building, smartEntity);
 			string uid = buildingTO.Uid;
-			buildingTO.Uid = buildingComponent.BuildingType.Uid;
+			buildingTO.Uid = buildingComp.BuildingType.Uid;
 			entityFactory.DestroyEntity(building, true, true);
 			buildingTO.Uid = uid;
-			Service.WorldController.AddBuildingHelper(entity, x, z, true);
-			Service.EventManager.SendEvent(EventId.BuildingReplaced, entity);
-			return entity;
+			Service.WorldController.AddBuildingHelper(smartEntity, x, z, true);
+			Service.EventManager.SendEvent(EventId.BuildingReplaced, smartEntity);
+			return smartEntity;
 		}
 
 		public void ResetStampLocations()
@@ -403,11 +403,11 @@ namespace StaRTS.Main.Controllers
 			int num4 = (num2 < 0) ? -1 : 1;
 			if (num3 * num >= num4 * num2)
 			{
-				cx += num3 * 1;
+				cx += num3;
 			}
 			else
 			{
-				cz += num4 * 1;
+				cz += num4;
 			}
 		}
 
@@ -434,18 +434,18 @@ namespace StaRTS.Main.Controllers
 		public void StartPurchaseBuilding(BuildingTypeVO buildingType, int stampableQuantity)
 		{
 			Service.EventManager.SendEvent(EventId.BuildingPurchaseModeStarted, null);
-			Entity entity = Service.EntityFactory.CreateBuildingEntity(buildingType, true, true, true);
+			SmartEntity smartEntity = Service.EntityFactory.CreateBuildingEntity(buildingType, true, true, true);
 			Service.Logger.DebugFormat("Purchasing building type {0}, ID {1}, W/H {2}x{3}", new object[]
 			{
 				buildingType.Uid,
-				entity.ID.ToString(),
+				smartEntity.ID.ToString(),
 				buildingType.SizeX.ToString(),
 				buildingType.SizeY.ToString()
 			});
 			bool stampable = stampableQuantity != 0;
-			this.buildingMover.OnStartPurchaseBuilding(entity, stampable);
+			this.buildingMover.OnStartPurchaseBuilding(smartEntity, stampable);
 			this.purchasingBuilding = true;
-			Service.UXController.HUD.ShowContextButtons(entity);
+			Service.UXController.HUD.ShowContextButtons(smartEntity);
 			if (stampableQuantity >= 0)
 			{
 				this.purchasingStampable = stampableQuantity;
@@ -453,7 +453,7 @@ namespace StaRTS.Main.Controllers
 			this.purchasingBuildingType = buildingType;
 		}
 
-		public bool PositionUnstashedBuilding(Entity buildingEntity, Position pos, bool stampingEnabled, bool panToBuilding, bool playLoweredSound)
+		public bool PositionUnstashedBuilding(SmartEntity buildingEntity, Position pos, bool stampingEnabled, bool panToBuilding, bool playLoweredSound)
 		{
 			this.UnstashStampingEnabled = stampingEnabled;
 			return this.buildingMover.UnstashBuilding(buildingEntity, pos, this.UnstashStampingEnabled, panToBuilding, playLoweredSound);
@@ -498,8 +498,8 @@ namespace StaRTS.Main.Controllers
 				Rand rand = Service.Rand;
 				if (!stampable)
 				{
-					cx += rand.ViewRangeInt(-2, 3) * 1;
-					cz += rand.ViewRangeInt(-2, 3) * 1;
+					cx += rand.ViewRangeInt(-2, 3);
+					cz += rand.ViewRangeInt(-2, 3);
 				}
 				for (int i = 1; i < 42; i++)
 				{
@@ -531,8 +531,8 @@ namespace StaRTS.Main.Controllers
 		{
 			int num = 42;
 			int num2 = 42;
-			int num3 = 0 - num / 2;
-			int num4 = 0 - num2 / 2;
+			int num3 = -(num / 2);
+			int num4 = -(num2 / 2);
 			int num5 = num / 2;
 			int num6 = num2 / 2;
 			int sizeX = buildingData.SizeX;
@@ -594,7 +594,7 @@ namespace StaRTS.Main.Controllers
 
 		public void StartClearingSelectedBuilding()
 		{
-			Entity selectedBuilding = this.buildingSelector.SelectedBuilding;
+			SmartEntity selectedBuilding = this.buildingSelector.SelectedBuilding;
 			BuildingTypeVO buildingType = selectedBuilding.Get<BuildingComponent>().BuildingType;
 			if (buildingType.Type == BuildingType.Clearable)
 			{
@@ -620,7 +620,7 @@ namespace StaRTS.Main.Controllers
 			}
 		}
 
-		private void ConfirmClearingBuilding(Entity building)
+		private void ConfirmClearingBuilding(SmartEntity building)
 		{
 			Service.ISupportController.StartClearingBuilding(building);
 			Service.UXController.HUD.ShowContextButtons(building);
@@ -628,7 +628,7 @@ namespace StaRTS.Main.Controllers
 
 		private void OnPayMeForCurrencyResult(object result, object cookie)
 		{
-			Entity selectedBuilding = this.buildingSelector.SelectedBuilding;
+			SmartEntity selectedBuilding = this.buildingSelector.SelectedBuilding;
 			if (GameUtils.HandleSoftCurrencyFlow(result, cookie) && !PayMeScreen.ShowIfNoFreeDroids(new OnScreenModalResult(this.OnPayMeForDroidResult), selectedBuilding))
 			{
 				this.ConfirmClearingBuilding(selectedBuilding);
@@ -639,11 +639,11 @@ namespace StaRTS.Main.Controllers
 		{
 			if (result != null)
 			{
-				this.ConfirmClearingBuilding(cookie as Entity);
+				this.ConfirmClearingBuilding(cookie as SmartEntity);
 			}
 		}
 
-		public BoardCell OnLowerLiftedBuilding(Entity building, int x, int z, bool confirmPurchase, ref BuildingTypeVO stampBuilding, string tag)
+		public BoardCell OnLowerLiftedBuilding(SmartEntity building, int x, int z, bool confirmPurchase, ref BuildingTypeVO stampBuilding, string tag)
 		{
 			BoardCell boardCell;
 			if (this.purchasingBuilding)

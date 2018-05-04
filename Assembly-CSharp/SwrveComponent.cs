@@ -194,12 +194,12 @@ public class SwrveComponent : MonoBehaviour
 			Dictionary<string, object>.Enumerator enumerator = dictionary.GetEnumerator();
 			while (enumerator.MoveNext())
 			{
-				Dictionary<string, string> arg_49_0 = dictionary2;
+				Dictionary<string, string> arg_48_0 = dictionary2;
 				KeyValuePair<string, object> current = enumerator.Current;
-				string arg_49_1 = current.Key;
-				string arg_44_0 = "{0}";
+				string arg_48_1 = current.Key;
+				string arg_43_0 = "{0}";
 				KeyValuePair<string, object> current2 = enumerator.Current;
-				arg_49_0[arg_49_1] = string.Format(arg_44_0, current2.Value);
+				arg_48_0[arg_48_1] = string.Format(arg_43_0, current2.Value);
 			}
 			this.SDK.UserUpdate(dictionary2);
 		}

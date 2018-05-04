@@ -11,6 +11,7 @@ using StaRTS.Utils;
 using StaRTS.Utils.Core;
 using StaRTS.Utils.Scheduling;
 using System;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace StaRTS.Main.Views.UX.Screens.Squads
@@ -133,6 +134,15 @@ namespace StaRTS.Main.Views.UX.Screens.Squads
 
 		private uint shareButtonTimer;
 
+		[CompilerGenerated]
+		private static UIInput.OnValidate <>f__mg$cache0;
+
+		[CompilerGenerated]
+		private static UIInput.OnValidate <>f__mg$cache1;
+
+		[CompilerGenerated]
+		private static UIInput.OnValidate <>f__mg$cache2;
+
 		public SquadScreenChatInputView(SquadSlidingScreen screen) : base(screen)
 		{
 		}
@@ -143,18 +153,33 @@ namespace StaRTS.Main.Views.UX.Screens.Squads
 			this.chatInputBox = this.screen.GetElement<UXInput>("LabelChatInput");
 			this.chatInputBox.InitText(initText);
 			this.chatInputScript = this.chatInputBox.GetUIInputComponent();
-			this.chatInputScript.onValidate = new UIInput.OnValidate(LangUtils.OnValidateWNewLines);
+			UIInput arg_77_0 = this.chatInputScript;
+			if (SquadScreenChatInputView.<>f__mg$cache0 == null)
+			{
+				SquadScreenChatInputView.<>f__mg$cache0 = new UIInput.OnValidate(LangUtils.OnValidateWNewLines);
+			}
+			arg_77_0.onValidate = SquadScreenChatInputView.<>f__mg$cache0;
 			this.chatInputScript.label.maxLineCount = 1;
 			this.requestInputBox = this.screen.GetElement<UXInput>("LabelRequestInput");
 			this.requestInputBox.InitText(this.lang.Get("REQUEST_TROOPS_DEFAULT", new object[0]));
 			this.requestInputScript = this.requestInputBox.GetUIInputComponent();
-			this.requestInputScript.onValidate = new UIInput.OnValidate(LangUtils.OnValidateWNewLines);
+			UIInput arg_F8_0 = this.requestInputScript;
+			if (SquadScreenChatInputView.<>f__mg$cache1 == null)
+			{
+				SquadScreenChatInputView.<>f__mg$cache1 = new UIInput.OnValidate(LangUtils.OnValidateWNewLines);
+			}
+			arg_F8_0.onValidate = SquadScreenChatInputView.<>f__mg$cache1;
 			this.requestInputScript.label.maxLineCount = 1;
 			this.defaultShareText = this.lang.Get("BATTLE_REPLAY_SHARE_DEFAULT", new object[0]);
 			this.shareInputBox = this.screen.GetElement<UXInput>("LabeShareReplayInput");
 			this.shareInputBox.InitText(this.defaultShareText);
 			this.shareInputScript = this.shareInputBox.GetUIInputComponent();
-			this.shareInputScript.onValidate = new UIInput.OnValidate(LangUtils.OnValidateWNewLines);
+			UIInput arg_185_0 = this.shareInputScript;
+			if (SquadScreenChatInputView.<>f__mg$cache2 == null)
+			{
+				SquadScreenChatInputView.<>f__mg$cache2 = new UIInput.OnValidate(LangUtils.OnValidateWNewLines);
+			}
+			arg_185_0.onValidate = SquadScreenChatInputView.<>f__mg$cache2;
 			this.shareInputScript.label.maxLineCount = 1;
 			this.shareOppNameLabel = this.screen.GetElement<UXLabel>("LabelOpponentNameShare");
 			this.shareTypeLabel = this.screen.GetElement<UXLabel>("LabelReplayTypeShare");

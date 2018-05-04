@@ -10,7 +10,7 @@ using System.Collections.Generic;
 
 namespace StaRTS.Main.Views.Entities
 {
-	public class EntityFlasher : IEventObserver, IViewFrameTimeObserver
+	public class EntityFlasher : IViewFrameTimeObserver, IEventObserver
 	{
 		private List<FlashingEntity> flashingEntities;
 

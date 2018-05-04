@@ -13,6 +13,7 @@ using StaRTS.Utils.Animation.Anims;
 using StaRTS.Utils.Core;
 using StaRTS.Utils.State;
 using System;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace StaRTS.Main.Views.World
@@ -56,6 +57,12 @@ namespace StaRTS.Main.Views.World
 		private BoardCellDynamicArray meshCells;
 
 		private EventManager events;
+
+		[CompilerGenerated]
+		private static Easing.EasingDelegate <>f__mg$cache0;
+
+		[CompilerGenerated]
+		private static Easing.EasingDelegate <>f__mg$cache1;
 
 		public SpawnProtectionView()
 		{
@@ -172,81 +179,81 @@ namespace StaRTS.Main.Views.World
 		{
 			switch (id)
 			{
-			case EventId.MapDataProcessingStart:
-				if (!Service.WorldTransitioner.IsCurrentWorldHome())
-				{
-					this.IgnoreBoardChanges();
-				}
-				return EatResponse.NotEaten;
-			case EventId.MapDataProcessingEnd:
-				IL_1B:
+			case EventId.BuildingPlacedOnBoard:
+			case EventId.BuildingMovedOnBoard:
+			case EventId.BuildingRemovedFromBoard:
+				break;
+			default:
 				switch (id)
 				{
-				case EventId.BuildingPlacedOnBoard:
-				case EventId.BuildingMovedOnBoard:
-				case EventId.BuildingRemovedFromBoard:
-					break;
-				default:
-					switch (id)
+				case EventId.MapDataProcessingStart:
+					if (!Service.WorldTransitioner.IsCurrentWorldHome())
 					{
-					case EventId.ShieldBorderDestroyed:
-					case EventId.ShieldDisabled:
-						goto IL_10A;
-					case EventId.ShieldStarted:
-						IL_47:
-						if (id == EventId.EnterEditMode)
-						{
-							this.ObserveBoardChanges();
-							this.Initialize();
-							this.DisplaySpawnProtection();
-							return EatResponse.NotEaten;
-						}
-						if (id == EventId.ExitEditMode)
-						{
-							this.IgnoreBoardChanges();
-							return EatResponse.NotEaten;
-						}
-						if (id == EventId.TroopNotPlacedInvalidArea)
-						{
-							this.DisplaySpawnProtection();
-							return EatResponse.NotEaten;
-						}
-						if (id == EventId.MissionStarted)
-						{
-							this.DisplaySpawnProtection();
-							return EatResponse.NotEaten;
-						}
-						if (id != EventId.UserLiftedBuilding)
-						{
-							return EatResponse.NotEaten;
-						}
-						this.CleanUp();
+						this.IgnoreBoardChanges();
+					}
+					return EatResponse.NotEaten;
+				case EventId.MapDataProcessingEnd:
+					IL_2D:
+					if (id == EventId.EnterEditMode)
+					{
+						this.ObserveBoardChanges();
+						this.Initialize();
+						this.DisplaySpawnProtection();
 						return EatResponse.NotEaten;
 					}
-					goto IL_47;
-				}
-				IL_10A:
-				this.Initialize();
-				this.DisplaySpawnProtection();
-				return EatResponse.NotEaten;
-			case EventId.WorldLoadComplete:
-				if (!Service.WorldTransitioner.IsCurrentWorldHome())
-				{
-					this.Initialize();
-				}
-				return EatResponse.NotEaten;
-			case EventId.WorldInTransitionComplete:
-				if (!Service.WorldTransitioner.IsCurrentWorldHome() && Service.BattleController.GetCurrentBattle() != null)
-				{
-					CurrentBattle currentBattle = Service.BattleController.GetCurrentBattle();
-					if (currentBattle.IsPvP() || currentBattle.Type == BattleType.PvpAttackSquadWar)
+					if (id != EventId.ExitEditMode)
 					{
-						this.DisplaySpawnProtection();
+						switch (id)
+						{
+						case EventId.ShieldBorderDestroyed:
+						case EventId.ShieldDisabled:
+							goto IL_108;
+						case EventId.ShieldStarted:
+							IL_5B:
+							if (id == EventId.TroopNotPlacedInvalidArea)
+							{
+								this.DisplaySpawnProtection();
+								return EatResponse.NotEaten;
+							}
+							if (id == EventId.MissionStarted)
+							{
+								this.DisplaySpawnProtection();
+								return EatResponse.NotEaten;
+							}
+							if (id != EventId.UserLiftedBuilding)
+							{
+								return EatResponse.NotEaten;
+							}
+							this.CleanUp();
+							return EatResponse.NotEaten;
+						}
+						goto IL_5B;
 					}
+					this.IgnoreBoardChanges();
+					return EatResponse.NotEaten;
+				case EventId.WorldLoadComplete:
+					if (!Service.WorldTransitioner.IsCurrentWorldHome())
+					{
+						this.Initialize();
+					}
+					return EatResponse.NotEaten;
+				case EventId.WorldInTransitionComplete:
+					if (!Service.WorldTransitioner.IsCurrentWorldHome() && Service.BattleController.GetCurrentBattle() != null)
+					{
+						CurrentBattle currentBattle = Service.BattleController.GetCurrentBattle();
+						if (currentBattle.IsPvP() || currentBattle.Type == BattleType.PvpAttackSquadWar)
+						{
+							this.DisplaySpawnProtection();
+						}
+					}
+					return EatResponse.NotEaten;
 				}
-				return EatResponse.NotEaten;
+				goto IL_2D;
 			}
-			goto IL_1B;
+			IL_108:
+			this.Initialize();
+			this.DisplaySpawnProtection();
+			return EatResponse.NotEaten;
 		}
 
 		private void CreateSpawnMesh()
@@ -359,10 +366,20 @@ namespace StaRTS.Main.Views.World
 			this.material.SetFloat("_Speed", 0.4f);
 			this.material.color = Color.black;
 			this.animAlphaIn = new AnimColor(this.material, 1f, Color.black, Color.white);
-			this.animAlphaIn.EaseFunction = new Easing.EasingDelegate(Easing.QuintEaseOut);
+			Anim arg_1C2_0 = this.animAlphaIn;
+			if (SpawnProtectionView.<>f__mg$cache0 == null)
+			{
+				SpawnProtectionView.<>f__mg$cache0 = new Easing.EasingDelegate(Easing.QuintEaseOut);
+			}
+			arg_1C2_0.EaseFunction = SpawnProtectionView.<>f__mg$cache0;
 			this.animAlphaOut = new AnimColor(this.material, 1f, Color.white, Color.black);
 			this.animAlphaOut.Delay = 3f;
-			this.animAlphaOut.EaseFunction = new Easing.EasingDelegate(Easing.QuintEaseIn);
+			Anim arg_21A_0 = this.animAlphaOut;
+			if (SpawnProtectionView.<>f__mg$cache1 == null)
+			{
+				SpawnProtectionView.<>f__mg$cache1 = new Easing.EasingDelegate(Easing.QuintEaseIn);
+			}
+			arg_21A_0.EaseFunction = SpawnProtectionView.<>f__mg$cache1;
 			this.animAlphaOut.OnCompleteCallback = new Action<Anim>(this.OnAlphaOutComplete);
 		}
 

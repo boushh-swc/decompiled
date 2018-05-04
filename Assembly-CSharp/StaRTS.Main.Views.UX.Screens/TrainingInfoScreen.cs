@@ -1,5 +1,5 @@
-using Net.RichardLord.Ash.Core;
 using StaRTS.Main.Models;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Utils;
 using StaRTS.Main.Utils.Events;
 using StaRTS.Main.Views.UX.Elements;
@@ -19,11 +19,11 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		protected DeliveryType deliveryType;
 
-		public TrainingInfoScreen(Entity trainingBuilding) : base(trainingBuilding)
+		public TrainingInfoScreen(SmartEntity trainingBuilding) : base(trainingBuilding)
 		{
 		}
 
-		protected override void SetSelectedBuilding(Entity newSelectedBuilding)
+		protected override void SetSelectedBuilding(SmartEntity newSelectedBuilding)
 		{
 			base.SetSelectedBuilding(newSelectedBuilding);
 			this.deliveryType = ContractUtils.GetTroopContractTypeByBuilding(this.buildingInfo);

@@ -91,7 +91,7 @@ namespace StaRTS.Main.Configs
 
 		public const string CURRENT_ASSET_BUNDLE_CACHE_CLEAN_VERSION = "cacheCleanVersion";
 
-		public const int LOCAL_BUNDLE_VERSION = 28;
+		public const int LOCAL_BUNDLE_VERSION = 29;
 
 		public const string TIMED_EVENT_DATE_FORMAT = "HH:mm,dd-MM-yyyy";
 

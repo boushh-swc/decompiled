@@ -9,6 +9,8 @@ namespace StaRTS.Main.Views.UX.Screens.Squads
 {
 	public class SquadScreenBasePerkInfoView
 	{
+		public static readonly string PERK_ACTIVATION_INFO_VIEW = "PanelContainerModalPerks";
+
 		protected const string BUTTON_CLOSE = "BtnClose";
 
 		protected const string LABEL_MODAL_TITLE = "LabelModalTitlePerks";
@@ -56,8 +58,6 @@ namespace StaRTS.Main.Views.UX.Screens.Squads
 		protected const string LABEL_CONTINUE_UPGRADE_CELEB = "LabelContinuePerkUpgradeCeleb";
 
 		protected const string HIDE = "Hide";
-
-		public static readonly string PERK_ACTIVATION_INFO_VIEW = "PanelContainerModalPerks";
 
 		protected SquadSlidingScreen squadScreen;
 

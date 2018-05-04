@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace StaRTS.Main.Models.Squads
 {
-	public class Squad : IComparable<Squad>, ISerializable
+	public class Squad : ISerializable, IComparable<Squad>
 	{
 		public const string DEFAULT_SQUAD_SYMBOL = "SquadSymbols_01";
 

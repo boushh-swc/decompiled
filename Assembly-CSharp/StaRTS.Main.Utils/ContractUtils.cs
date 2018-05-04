@@ -1,6 +1,7 @@
 using Net.RichardLord.Ash.Core;
 using StaRTS.Main.Controllers;
 using StaRTS.Main.Models;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.Entities.Components;
 using StaRTS.Main.Models.Entities.Nodes;
 using StaRTS.Main.Models.Player;
@@ -312,7 +313,7 @@ namespace StaRTS.Main.Utils
 				credits = troopTypeVO.Credits;
 				materials = troopTypeVO.Materials;
 				contraband = troopTypeVO.Contraband;
-				goto IL_1B5;
+				goto IL_1B1;
 			}
 			case DeliveryType.Starship:
 			{
@@ -320,7 +321,7 @@ namespace StaRTS.Main.Utils
 				credits = specialAttackTypeVO.Credits;
 				materials = specialAttackTypeVO.Materials;
 				contraband = specialAttackTypeVO.Contraband;
-				goto IL_1B5;
+				goto IL_1B1;
 			}
 			case DeliveryType.UpgradeBuilding:
 			{
@@ -328,7 +329,7 @@ namespace StaRTS.Main.Utils
 				credits = buildingTypeVO.UpgradeCredits;
 				materials = buildingTypeVO.UpgradeMaterials;
 				contraband = buildingTypeVO.UpgradeContraband;
-				goto IL_1B5;
+				goto IL_1B1;
 			}
 			case DeliveryType.SwapBuilding:
 			{
@@ -336,7 +337,7 @@ namespace StaRTS.Main.Utils
 				credits = buildingTypeVO2.SwapCredits;
 				materials = buildingTypeVO2.SwapMaterials;
 				contraband = buildingTypeVO2.SwapContraband;
-				goto IL_1B5;
+				goto IL_1B1;
 			}
 			case DeliveryType.UpgradeTroop:
 			{
@@ -344,7 +345,7 @@ namespace StaRTS.Main.Utils
 				credits = troopTypeVO2.UpgradeCredits;
 				materials = troopTypeVO2.UpgradeMaterials;
 				contraband = troopTypeVO2.UpgradeContraband;
-				goto IL_1B5;
+				goto IL_1B1;
 			}
 			case DeliveryType.UpgradeStarship:
 			{
@@ -352,21 +353,21 @@ namespace StaRTS.Main.Utils
 				credits = specialAttackTypeVO2.UpgradeCredits;
 				materials = specialAttackTypeVO2.UpgradeMaterials;
 				contraband = specialAttackTypeVO2.UpgradeContraband;
-				goto IL_1B5;
+				goto IL_1B1;
 			}
 			case DeliveryType.UpgradeEquipment:
-				goto IL_1B5;
+				goto IL_1B1;
 			case DeliveryType.ClearClearable:
 			{
 				BuildingTypeVO buildingTypeVO3 = Service.StaticDataController.Get<BuildingTypeVO>(productUid);
 				credits = buildingTypeVO3.Credits;
 				materials = buildingTypeVO3.Materials;
 				contraband = buildingTypeVO3.Contraband;
-				goto IL_1B5;
+				goto IL_1B1;
 			}
 			}
 			Service.Logger.Error("DeliveryType has no cost: " + deliveryType);
-			IL_1B5:
+			IL_1B1:
 			ContractType contractType = ContractUtils.GetContractType(deliveryType);
 			if (ContractUtils.IsTroopType(contractType) && buildingVO != null && contractPerkIds != null && contractPerkIds.Count > 0)
 			{
@@ -393,20 +394,20 @@ namespace StaRTS.Main.Utils
 			return contract != null && !contract.IsReadyToBeFinished() && contract.DeliveryType == DeliveryType.ClearClearable;
 		}
 
-		public static bool IsBuildingConstructing(Entity selectedBuilding)
+		public static bool IsBuildingConstructing(SmartEntity selectedBuilding)
 		{
 			if (selectedBuilding == null)
 			{
 				Service.Logger.Error("ContractUtils.IsBuildingConstructing: SelectedBuilding = null");
 				return false;
 			}
-			if (selectedBuilding.Get<BuildingComponent>() == null)
+			if (selectedBuilding.BuildingComp == null)
 			{
 				Service.Logger.Error("ContractUtils.IsBuildingConstructing: selectedBuilding.BuildingComponent = null");
 				return false;
 			}
-			BuildingComponent buildingComponent = selectedBuilding.Get<BuildingComponent>();
-			return ContractUtils.IsBuildingConstructing(buildingComponent.BuildingTO.Key);
+			BuildingComponent buildingComp = selectedBuilding.BuildingComp;
+			return ContractUtils.IsBuildingConstructing(buildingComp.BuildingTO.Key);
 		}
 
 		public static bool IsBuildingConstructing(string buildingKey)
@@ -436,20 +437,20 @@ namespace StaRTS.Main.Utils
 			return contract != null && !contract.IsReadyToBeFinished() && contract.DeliveryType == DeliveryType.Champion;
 		}
 
-		public static bool IsBuildingUpgrading(Entity selectedBuilding)
+		public static bool IsBuildingUpgrading(SmartEntity selectedBuilding)
 		{
 			if (selectedBuilding == null)
 			{
 				Service.Logger.Error("ContractUtils.IsBuildingUpgrading: SelectedBuilding = null");
 				return false;
 			}
-			if (selectedBuilding.Get<BuildingComponent>() == null)
+			if (selectedBuilding.BuildingComp == null)
 			{
 				Service.Logger.Error("ContractUtils.IsBuildingUpgrading: selectedBuilding.BuildingComponent = null");
 				return false;
 			}
-			BuildingComponent buildingComponent = selectedBuilding.Get<BuildingComponent>();
-			Contract contract = Service.ISupportController.FindCurrentContract(buildingComponent.BuildingTO.Key);
+			BuildingComponent buildingComp = selectedBuilding.BuildingComp;
+			Contract contract = Service.ISupportController.FindCurrentContract(buildingComp.BuildingTO.Key);
 			return contract != null && !contract.IsReadyToBeFinished() && contract.DeliveryType == DeliveryType.UpgradeBuilding;
 		}
 
@@ -651,7 +652,7 @@ namespace StaRTS.Main.Utils
 							if (buildingNode.BuildingComp.BuildingTO.Key == contract.ContractTO.BuildingKey)
 							{
 								Service.EventManager.SendEvent(EventId.InitiatedBuyout, null);
-								Service.ISupportController.BuyOutCurrentBuildingContract(buildingNode.Entity, true);
+								Service.ISupportController.BuyOutCurrentBuildingContract((SmartEntity)buildingNode.Entity, true);
 								return true;
 							}
 						}

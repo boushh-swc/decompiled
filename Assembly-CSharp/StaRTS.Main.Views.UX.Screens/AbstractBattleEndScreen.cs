@@ -345,19 +345,9 @@ namespace StaRTS.Main.Views.UX.Screens
 						num = squadTroops[current.Key];
 						squadTroops.Remove(current.Key);
 					}
-					IDeployableVO arg_92_0;
-					if (isSpecialAttack)
-					{
-						IDeployableVO deployableVO = staticDataController.Get<SpecialAttackTypeVO>(current.Key);
-						arg_92_0 = deployableVO;
-					}
-					else
-					{
-						arg_92_0 = staticDataController.Get<TroopTypeVO>(current.Key);
-					}
-					IDeployableVO deployableVO2 = arg_92_0;
-					UXElement item = this.CreateDeployableUXElement(this.troopGrid, current.Key, deployableVO2.AssetName, current.Value + num, deployableVO2, battle);
-					this.troopGrid.AddItem(item, deployableVO2.Order);
+					IDeployableVO deployableVO = (!isSpecialAttack) ? staticDataController.Get<TroopTypeVO>(current.Key) : staticDataController.Get<SpecialAttackTypeVO>(current.Key);
+					UXElement item = this.CreateDeployableUXElement(this.troopGrid, current.Key, deployableVO.AssetName, current.Value + num, deployableVO, battle);
+					this.troopGrid.AddItem(item, deployableVO.Order);
 				}
 			}
 		}

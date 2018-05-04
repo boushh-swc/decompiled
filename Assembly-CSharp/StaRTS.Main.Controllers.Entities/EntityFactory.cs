@@ -177,13 +177,13 @@ namespace StaRTS.Main.Controllers.Entities
 			return smartEntity;
 		}
 
-		public Entity CreateBuildingEntity(Building building, bool createCollider, bool requestAsset, bool addSupport)
+		public SmartEntity CreateBuildingEntity(Building building, bool createCollider, bool requestAsset, bool addSupport)
 		{
 			BuildingTypeVO buildingType = Service.StaticDataController.Get<BuildingTypeVO>(building.Uid);
 			return this.CreateBuildingEntity(buildingType, building, createCollider, requestAsset, addSupport);
 		}
 
-		public Entity CreateBuildingEntity(BuildingTypeVO buildingType, bool createCollider, bool requestAsset, bool addSupport)
+		public SmartEntity CreateBuildingEntity(BuildingTypeVO buildingType, bool createCollider, bool requestAsset, bool addSupport)
 		{
 			Building building = Building.FromBuildingTypeVO(buildingType);
 			return this.CreateBuildingEntity(buildingType, building, createCollider, requestAsset, addSupport);

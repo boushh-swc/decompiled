@@ -120,8 +120,7 @@ namespace SwrveUnity.Helpers
 		{
 			string result = string.Empty;
 			string text = (string)eventParameters["type"];
-			string text2 = text;
-			switch (text2)
+			switch (text)
 			{
 			case "session_start":
 				result = "Swrve.session.start";

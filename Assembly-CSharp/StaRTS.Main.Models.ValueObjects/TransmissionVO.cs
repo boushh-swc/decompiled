@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace StaRTS.Main.Models.ValueObjects
 {
-	public class TransmissionVO : ITimestamped, ICallToAction, IValueObject
+	public class TransmissionVO : ITimestamped, IValueObject, ICallToAction
 	{
 		private const string SERVER_START_DATE = "postingDate";
 

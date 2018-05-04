@@ -120,38 +120,35 @@ namespace StaRTS.Main.Controllers.CombatTriggers
 		private IntPosition DetermineSpawnPosition()
 		{
 			IntPosition zero = IntPosition.Zero;
-			switch (this.Type)
+			CombatTriggerType type = this.Type;
+			if (type != CombatTriggerType.Area && type != CombatTriggerType.Load)
 			{
-			case CombatTriggerType.Area:
-			case CombatTriggerType.Load:
-				if (this.Leashed)
+				if (type == CombatTriggerType.Death)
 				{
 					TransformComponent transformComponent = ((Entity)this.Owner).Get<TransformComponent>();
 					if (transformComponent != null)
 					{
-						zero = new IntPosition(transformComponent.X, transformComponent.Z);
+						zero = new IntPosition(transformComponent.CenterGridX(), transformComponent.CenterGridZ());
 					}
 				}
-				else
-				{
-					DamageableComponent damageableComponent = ((Entity)this.Owner).Get<DamageableComponent>();
-					if (damageableComponent != null)
-					{
-						BoardCell boardCell2;
-						BoardCell boardCell = damageableComponent.FindASafeSpawnSpot(this.Troop.SizeX, out boardCell2);
-						zero = new IntPosition(boardCell.X, boardCell.Z);
-					}
-				}
-				break;
-			case CombatTriggerType.Death:
+			}
+			else if (this.Leashed)
 			{
 				TransformComponent transformComponent = ((Entity)this.Owner).Get<TransformComponent>();
 				if (transformComponent != null)
 				{
-					zero = new IntPosition(transformComponent.CenterGridX(), transformComponent.CenterGridZ());
+					zero = new IntPosition(transformComponent.X, transformComponent.Z);
 				}
-				break;
 			}
+			else
+			{
+				DamageableComponent damageableComponent = ((Entity)this.Owner).Get<DamageableComponent>();
+				if (damageableComponent != null)
+				{
+					BoardCell boardCell2;
+					BoardCell boardCell = damageableComponent.FindASafeSpawnSpot(this.Troop.SizeX, out boardCell2);
+					zero = new IntPosition(boardCell.X, boardCell.Z);
+				}
 			}
 			return zero;
 		}

@@ -174,6 +174,10 @@ namespace StaRTS.Main.Controllers.Planets
 		public void UpdateGalaxyConstants()
 		{
 			GalaxyPlanetController galaxyPlanetController = Service.GalaxyPlanetController;
+			if (galaxyPlanetController == null)
+			{
+				return;
+			}
 			if (galaxyPlanetController.AreAllPlanetsLoaded())
 			{
 				MainCamera mainCamera = this.cameraManager.MainCamera;
@@ -505,16 +509,16 @@ namespace StaRTS.Main.Controllers.Planets
 		{
 			if (!this.ignoreSwipes)
 			{
-				if (type != GalaxySwipeType.SwipeRight)
+				if (type != GalaxySwipeType.SwipeLeft)
 				{
-					if (type == GalaxySwipeType.SwipeLeft)
+					if (type == GalaxySwipeType.SwipeRight)
 					{
-						this.TransitionToNextPlanet();
+						this.TransitionToPrevPlanet();
 					}
 				}
 				else
 				{
-					this.TransitionToPrevPlanet();
+					this.TransitionToNextPlanet();
 				}
 			}
 			this.ignoreSwipes = false;
@@ -1321,14 +1325,15 @@ namespace StaRTS.Main.Controllers.Planets
 			transform.rotation = Quaternion.Euler(0f, mainCamera.Camera.transform.rotation.eulerAngles.y, 0f);
 			transform.position = this.galaxyPosOffset;
 			transform.localPosition += new Vector3(0f, 0f, -8f);
-			switch (this.galaxyViewState)
+			GalaxyViewState galaxyViewState = this.galaxyViewState;
+			if (galaxyViewState != GalaxyViewState.PlanetTransitionInstantStart && galaxyViewState != GalaxyViewState.PlanetView)
 			{
-			case GalaxyViewState.PlanetTransitionInstantStart:
-			case GalaxyViewState.PlanetView:
-				this.DeactivateGrid();
-				return;
+				this.ActivateGrid();
 			}
-			this.ActivateGrid();
+			else
+			{
+				this.DeactivateGrid();
+			}
 		}
 
 		private void DestroyGalaxyGrid()
@@ -1369,8 +1374,8 @@ namespace StaRTS.Main.Controllers.Planets
 			this.stars = UnityEngine.Object.Instantiate<GameObject>(asset as GameObject);
 			Transform transform = this.stars.transform;
 			transform.position = this.galaxyStarsOffset;
-			this.cameraManager.StarsCamera = transform.FindChild("StarCamera").GetComponent<Camera>();
-			this.bgStars = transform.FindChild("bgStars").gameObject;
+			this.cameraManager.StarsCamera = transform.Find("StarCamera").GetComponent<Camera>();
+			this.bgStars = transform.Find("bgStars").gameObject;
 			this.stars.SetActive(false);
 			if (this.stars != null && this.spiral != null)
 			{

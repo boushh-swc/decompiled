@@ -107,17 +107,19 @@ public class UIRoot : MonoBehaviour
 			Vector2 screenSize2 = NGUITools.screenSize;
 			float num3 = screenSize2.x / screenSize2.y;
 			float num4 = (float)this.manualWidth / (float)this.manualHeight;
-			switch (constraint)
+			if (constraint == UIRoot.Constraint.FitWidth)
 			{
-			case UIRoot.Constraint.Fit:
-				return (num4 <= num3) ? this.manualHeight : Mathf.RoundToInt((float)this.manualWidth / num3);
-			case UIRoot.Constraint.Fill:
-				return (num4 >= num3) ? this.manualHeight : Mathf.RoundToInt((float)this.manualWidth / num3);
-			case UIRoot.Constraint.FitWidth:
 				return Mathf.RoundToInt((float)this.manualWidth / num3);
-			default:
+			}
+			if (constraint == UIRoot.Constraint.Fit)
+			{
+				return (num4 <= num3) ? this.manualHeight : Mathf.RoundToInt((float)this.manualWidth / num3);
+			}
+			if (constraint != UIRoot.Constraint.Fill)
+			{
 				return this.manualHeight;
 			}
+			return (num4 >= num3) ? this.manualHeight : Mathf.RoundToInt((float)this.manualWidth / num3);
 		}
 	}
 
@@ -207,7 +209,7 @@ public class UIRoot : MonoBehaviour
 					this.mTrans.localScale = new Vector3(num2, num2, num2);
 					if (updateAnchors)
 					{
-						base.BroadcastMessage("UpdateAnchors");
+						base.BroadcastMessage("UpdateAnchors", SendMessageOptions.DontRequireReceiver);
 					}
 				}
 			}

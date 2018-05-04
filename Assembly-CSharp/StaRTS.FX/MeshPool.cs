@@ -6,11 +6,11 @@ namespace StaRTS.FX
 {
 	public class MeshPool
 	{
-		private const int INITIAL_POOL_SIZE = 10;
-
 		private GameObject meshProto;
 
 		private Stack<GameObject> meshes;
+
+		private const int INITIAL_POOL_SIZE = 10;
 
 		public MeshPool(GameObject meshSeed)
 		{

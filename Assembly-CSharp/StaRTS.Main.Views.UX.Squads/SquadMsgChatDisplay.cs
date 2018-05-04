@@ -1063,7 +1063,7 @@ namespace StaRTS.Main.Views.UX.Squads
 			{
 				if (id == EventId.WarPhaseChanged)
 				{
-					if ((int)cookie == 3 && this.warTroopRequestItems != null)
+					if ((SquadWarStatusType)cookie == SquadWarStatusType.PhaseAction && this.warTroopRequestItems != null)
 					{
 						foreach (KeyValuePair<SquadMsg, UXElement> current in this.warTroopRequestItems)
 						{
@@ -1074,7 +1074,7 @@ namespace StaRTS.Main.Views.UX.Squads
 			}
 			else
 			{
-				ChatFilterType type = (ChatFilterType)((int)cookie);
+				ChatFilterType type = (ChatFilterType)cookie;
 				foreach (KeyValuePair<SquadMsg, ChatItemElements> current2 in this.msgToElementsMap)
 				{
 					SquadMsg key = current2.Key;

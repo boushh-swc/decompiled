@@ -14,6 +14,7 @@ using StaRTS.Utils;
 using StaRTS.Utils.Core;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace StaRTS.Main.Views.UX.Screens
@@ -116,6 +117,9 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		private StaticDataController sdc;
 
+		[CompilerGenerated]
+		private static Comparison<BattleEntry> <>f__mg$cache0;
+
 		protected override bool IsFullScreen
 		{
 			get
@@ -191,7 +195,7 @@ namespace StaRTS.Main.Views.UX.Screens
 			while (i < count)
 			{
 				UXCheckbox uXCheckbox = this.tabs[i];
-				uXCheckbox.Selected = (this.curTab == (BattleLogTab)((int)uXCheckbox.Tag));
+				uXCheckbox.Selected = (this.curTab == (BattleLogTab)uXCheckbox.Tag);
 				i++;
 			}
 			this.SetupCurTabElements();
@@ -222,7 +226,12 @@ namespace StaRTS.Main.Views.UX.Screens
 			}
 			if (list != null)
 			{
-				list.Sort(new Comparison<BattleEntry>(BattleLogScreen.CompareBattleLogEntry));
+				List<BattleEntry> arg_AD_0 = list;
+				if (BattleLogScreen.<>f__mg$cache0 == null)
+				{
+					BattleLogScreen.<>f__mg$cache0 = new Comparison<BattleEntry>(BattleLogScreen.CompareBattleLogEntry);
+				}
+				arg_AD_0.Sort(BattleLogScreen.<>f__mg$cache0);
 				if (list.Count > num)
 				{
 					int num2 = list.Count - num;
@@ -254,7 +263,7 @@ namespace StaRTS.Main.Views.UX.Screens
 			{
 				return;
 			}
-			BattleLogTab battleLogTab = (BattleLogTab)((int)checkbox.Tag);
+			BattleLogTab battleLogTab = (BattleLogTab)checkbox.Tag;
 			if (battleLogTab != this.curTab)
 			{
 				this.SetTab(battleLogTab);

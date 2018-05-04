@@ -10,11 +10,11 @@ namespace StaRTS.Main.Views.Projectors
 {
 	public class ProjectorShaderSwapDecorator : IProjectorRenderer
 	{
+		private static readonly string TOD_SHADER_SWAP_SRC = "UnlitTexture_Index0";
+
 		private const string MISSING_MESH_RENDERER_SHARED_MATERIAL = "sharedMaterial missing on {0}";
 
 		private const string MISSING_SKINNED_RENDERER_SHARED_MATERIAL = "skinnedMeshRenderer missing on {0}";
-
-		private static readonly string TOD_SHADER_SWAP_SRC = "UnlitTexture_Index0";
 
 		private static readonly string[] TOD_SHADER_SWAP_LIST = new string[]
 		{

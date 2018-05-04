@@ -724,10 +724,5 @@ namespace StaRTS.Main.Views.UX.Elements
 				i++;
 			}
 		}
-
-		public void SetPanelAnimationEventCallback(UIPanel.OnAnimationEventCallback callback)
-		{
-			this.GetRootPanel().animationEventCallback = callback;
-		}
 	}
 }

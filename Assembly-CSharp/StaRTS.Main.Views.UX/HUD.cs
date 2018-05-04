@@ -35,12 +35,14 @@ using StaRTS.Utils.Core;
 using StaRTS.Utils.Scheduling;
 using StaRTS.Utils.State;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace StaRTS.Main.Views.UX
 {
-	public class HUD : UXFactory, IPerformanceObserver, IEventObserver, IViewClockTimeObserver, IViewFrameTimeObserver
+	public class HUD : UXFactory, IEventObserver, IPerformanceObserver, IViewClockTimeObserver, IViewFrameTimeObserver
 	{
 		public const string CURRENCY_GROUP = "Currency";
 
@@ -466,6 +468,10 @@ namespace StaRTS.Main.Views.UX
 
 		private const int MAX_TIMER_LABEL_WIDTH = 108;
 
+		private string FACTION_FLIP_ALERT_TITLE = "FACTION_ICON_FACTION_FLIP_ALERT_TITLE";
+
+		private string FACTION_FLIP_ALERT_DESC = "FACTION_ICON_FACTION_FLIP_ALERT_DESC";
+
 		private const string RAID_ICON_DEFEND = "icoDefend";
 
 		private const string RAID_DEFEND_BG = "BtnTroopBg_Gold";
@@ -487,10 +493,6 @@ namespace StaRTS.Main.Views.UX
 		private const string ACTION_TYPE_BUYOUT_BUILDING_FUE = "FUE_speed_up_building";
 
 		private const string STICKER_SHOP_ANIM = "SwapJewels";
-
-		private string FACTION_FLIP_ALERT_TITLE = "FACTION_ICON_FACTION_FLIP_ALERT_TITLE";
-
-		private string FACTION_FLIP_ALERT_DESC = "FACTION_ICON_FACTION_FLIP_ALERT_DESC";
 
 		private readonly string[] ANIMATION_TRANSITION_WHITE_LIST = new string[]
 		{
@@ -789,6 +791,15 @@ namespace StaRTS.Main.Views.UX
 		private UXSprite neighborFactionBackgroundUpgradeEmpire;
 
 		private bool readyToToggleVisibility;
+
+		[CompilerGenerated]
+		private static Easing.EasingDelegate <>f__mg$cache0;
+
+		[CompilerGenerated]
+		private static Easing.EasingDelegate <>f__mg$cache1;
+
+		[CompilerGenerated]
+		private static Easing.EasingDelegate <>f__mg$cache2;
 
 		public HUDBaseLayoutToolView BaseLayoutToolView
 		{
@@ -1436,17 +1447,7 @@ namespace StaRTS.Main.Views.UX
 				int value = current.Value;
 				if (value > 0)
 				{
-					IDeployableVO arg_B0_0;
-					if (flag)
-					{
-						IDeployableVO optional = staticDataController.GetOptional<SpecialAttackTypeVO>(key);
-						arg_B0_0 = optional;
-					}
-					else
-					{
-						arg_B0_0 = staticDataController.GetOptional<TroopTypeVO>(key);
-					}
-					IDeployableVO deployableVO = arg_B0_0;
+					IDeployableVO deployableVO = (!flag) ? staticDataController.GetOptional<TroopTypeVO>(key) : staticDataController.GetOptional<SpecialAttackTypeVO>(key);
 					if (deployableVO != null)
 					{
 						bool flag4 = seededDeployables != null && seededDeployables.ContainsKey(current.Key);
@@ -1862,7 +1863,7 @@ namespace StaRTS.Main.Views.UX
 			}
 		}
 
-		public void ShowContextButtons(Entity selectedBuilding)
+		public void ShowContextButtons(SmartEntity selectedBuilding)
 		{
 			AnimController animController = Service.AnimController;
 			int i = 0;
@@ -1948,9 +1949,24 @@ namespace StaRTS.Main.Views.UX
 					localPosition.y = element2.LocalPosition.y;
 				}
 				AnimUXPosition animUXPosition = new AnimUXPosition(uXElement2, 0.5f, localPosition);
-				animUXPosition.EaseFunctionX = new Easing.EasingDelegate(Easing.AlwaysStart);
-				animUXPosition.EaseFunctionY = new Easing.EasingDelegate(Easing.ExpoEaseOut);
-				animUXPosition.EaseFunctionZ = new Easing.EasingDelegate(Easing.AlwaysStart);
+				AbstractAnimVector arg_33F_0 = animUXPosition;
+				if (HUD.<>f__mg$cache0 == null)
+				{
+					HUD.<>f__mg$cache0 = new Easing.EasingDelegate(Easing.AlwaysStart);
+				}
+				arg_33F_0.EaseFunctionX = HUD.<>f__mg$cache0;
+				AbstractAnimVector arg_363_0 = animUXPosition;
+				if (HUD.<>f__mg$cache1 == null)
+				{
+					HUD.<>f__mg$cache1 = new Easing.EasingDelegate(Easing.ExpoEaseOut);
+				}
+				arg_363_0.EaseFunctionY = HUD.<>f__mg$cache1;
+				AbstractAnimVector arg_387_0 = animUXPosition;
+				if (HUD.<>f__mg$cache2 == null)
+				{
+					HUD.<>f__mg$cache2 = new Easing.EasingDelegate(Easing.AlwaysStart);
+				}
+				arg_387_0.EaseFunctionZ = HUD.<>f__mg$cache2;
 				animUXPosition.Tag = uXElement2;
 				this.curAnims.Add(animUXPosition);
 			}
@@ -1968,7 +1984,7 @@ namespace StaRTS.Main.Views.UX
 			}
 		}
 
-		private void AddContextButtons(Entity selectedBuilding, BuildingTypeVO buildingInfo, bool inHomeMode, bool inVisitMode, bool isBaseLayoutToolMode, bool isLifted)
+		private void AddContextButtons(SmartEntity selectedBuilding, BuildingTypeVO buildingInfo, bool inHomeMode, bool inVisitMode, bool isBaseLayoutToolMode, bool isLifted)
 		{
 			RaidDefenseController raidDefenseController = Service.RaidDefenseController;
 			int numSelectedBuildings = Service.BuildingController.NumSelectedBuildings;
@@ -2039,28 +2055,25 @@ namespace StaRTS.Main.Views.UX
 					this.AddContextButton("Cancel", 0, 0, 0, 0);
 					this.AddFinishContextButton(selectedBuilding);
 					BuildingType type = buildingInfo.Type;
-					if (type != BuildingType.HQ)
+					if (type != BuildingType.NavigationCenter)
 					{
-						if (type == BuildingType.NavigationCenter)
+						if (type == BuildingType.HQ)
 						{
-							if (inHomeMode)
-							{
-								this.AddContextButton("Navigate", 0, 0, 0, 0, "context_Galaxy");
-							}
+							this.AddHQInventoryContextButtonIfProper();
 						}
 					}
-					else
+					else if (inHomeMode)
 					{
-						this.AddHQInventoryContextButtonIfProper();
+						this.AddContextButton("Navigate", 0, 0, 0, 0, "context_Galaxy");
 					}
 				}
 				else
 				{
-					bool flag2 = buildingInfo.Type == BuildingType.ChampionPlatform && !Service.ChampionController.IsChampionAvailable((SmartEntity)selectedBuilding);
+					bool flag2 = buildingInfo.Type == BuildingType.ChampionPlatform && !Service.ChampionController.IsChampionAvailable(selectedBuilding);
 					if (GameUtils.IsBuildingUpgradable(buildingInfo) && !flag2 && !isBaseLayoutToolMode)
 					{
-						BuildingComponent buildingComponent = selectedBuilding.Get<BuildingComponent>();
-						if (Service.ISupportController.FindBuildingContract(buildingComponent.BuildingTO.Key) == null)
+						BuildingComponent buildingComp = selectedBuilding.BuildingComp;
+						if (Service.ISupportController.FindBuildingContract(buildingComp.BuildingTO.Key) == null)
 						{
 							BuildingTypeVO nextLevel = Service.BuildingUpgradeCatalog.GetNextLevel(buildingInfo);
 							this.AddContextButton("Upgrade", nextLevel.UpgradeCredits, nextLevel.UpgradeMaterials, nextLevel.UpgradeContraband, 0);
@@ -2068,12 +2081,12 @@ namespace StaRTS.Main.Views.UX
 					}
 					if (buildingInfo.Type == BuildingType.Trap && !isBaseLayoutToolMode)
 					{
-						if (selectedBuilding.Get<TrapComponent>().CurrentState == TrapState.Spent)
+						if (selectedBuilding.TrapComp.CurrentState == TrapState.Spent)
 						{
 							TrapTypeVO trapTypeVO = Service.StaticDataController.Get<TrapTypeVO>(buildingInfo.TrapUid);
 							this.AddContextButton("Trap_Rearm", trapTypeVO.RearmCreditsCost, trapTypeVO.RearmMaterialsCost, trapTypeVO.RearmContrabandCost, 0);
 						}
-						List<Entity> rearmableTraps = TrapUtils.GetRearmableTraps();
+						List<SmartEntity> rearmableTraps = TrapUtils.GetRearmableTraps();
 						if (rearmableTraps.Count > 1 || rearmableTraps.Count == 0 || rearmableTraps[0] != selectedBuilding)
 						{
 							int credits;
@@ -2135,17 +2148,24 @@ namespace StaRTS.Main.Views.UX
 						case BuildingType.Resource:
 						{
 							string contextId = null;
-							switch (buildingInfo.Currency)
+							CurrencyType currency = buildingInfo.Currency;
+							if (currency != CurrencyType.Credits)
 							{
-							case CurrencyType.Credits:
+								if (currency != CurrencyType.Materials)
+								{
+									if (currency == CurrencyType.Contraband)
+									{
+										contextId = "Contraband";
+									}
+								}
+								else
+								{
+									contextId = "Materials";
+								}
+							}
+							else
+							{
 								contextId = "Credits";
-								break;
-							case CurrencyType.Materials:
-								contextId = "Materials";
-								break;
-							case CurrencyType.Contraband:
-								contextId = "Contraband";
-								break;
 							}
 							this.AddContextButton(contextId, 0, 0, 0, 0);
 							break;
@@ -2389,21 +2409,34 @@ namespace StaRTS.Main.Views.UX
 				GameObject gameObject = animation.gameObject;
 				if (this.IsAnimationWhiteListed(gameObject))
 				{
-					foreach (AnimationState animationState in animation.gameObject.GetComponent<Animation>())
+					IEnumerator enumerator = animation.gameObject.GetComponent<Animation>().GetEnumerator();
+					try
 					{
-						if (bringIn)
+						while (enumerator.MoveNext())
 						{
-							animationState.speed = speed;
-							animationState.time = 0f;
+							AnimationState animationState = (AnimationState)enumerator.Current;
+							if (bringIn)
+							{
+								animationState.speed = speed;
+								animationState.time = 0f;
+							}
+							else
+							{
+								animationState.speed = -speed;
+								animationState.time = animationState.length;
+							}
+							if (animationState.length > num && bringIn)
+							{
+								num = animationState.length;
+							}
 						}
-						else
+					}
+					finally
+					{
+						IDisposable disposable;
+						if ((disposable = (enumerator as IDisposable)) != null)
 						{
-							animationState.speed = -speed;
-							animationState.time = animationState.length;
-						}
-						if (animationState.length > num && bringIn)
-						{
-							num = animationState.length;
+							disposable.Dispose();
 						}
 					}
 					this.animations[i].Play();
@@ -2813,7 +2846,7 @@ namespace StaRTS.Main.Views.UX
 
 		private void OnWarAttackClicked(UXButton button)
 		{
-			SquadWarScoutState squadWarScoutState = (SquadWarScoutState)((int)button.Tag);
+			SquadWarScoutState squadWarScoutState = (SquadWarScoutState)button.Tag;
 			CurrentBattle currentBattle = Service.BattleController.GetCurrentBattle();
 			if (squadWarScoutState == SquadWarScoutState.AttackAvailable)
 			{
@@ -3087,106 +3120,122 @@ namespace StaRTS.Main.Views.UX
 			}
 			switch (id)
 			{
-			case EventId.SquadTroopsRequestedByCurrentPlayer:
+			case EventId.SquadJoinApplicationAccepted:
 			{
-				SmartEntity smartEntity = (SmartEntity)Service.BuildingController.SelectedBuilding;
-				if (smartEntity != null && smartEntity.SquadBuildingComp != null)
+				if (ScreenUtils.IsAnySquadScreenOpen())
 				{
-					this.ShowContextButtons(smartEntity);
+					Service.ScreenController.CloseAll();
 				}
-				goto IL_746;
+				string text = (string)cookie;
+				if (!string.IsNullOrEmpty(text))
+				{
+					string instructions = Service.Lang.Get("SQUAD_ACCEPTED_MESSAGE", new object[]
+					{
+						text
+					});
+					Service.UXController.MiscElementsManager.ShowPlayerInstructions(instructions);
+				}
+				goto IL_717;
 			}
-			case EventId.SquadWarTroopsRequestStartedByCurrentPlayer:
-			case EventId.SquadWarTroopsRequestedByCurrentPlayer:
-			case EventId.SquadTroopsDonatedByCurrentPlayer:
-			case EventId.SquadReplaySharedByCurrentPlayer:
-			case EventId.CurrentPlayerMemberDataUpdated:
+			case EventId.SquadTroopsReceivedFromDonor:
+			{
+				string text2 = (string)cookie;
+				if (!string.IsNullOrEmpty(text2))
+				{
+					string instructions2 = Service.Lang.Get("TROOPS_RECEIVED_FROM", new object[]
+					{
+						text2
+					});
+					Service.UXController.MiscElementsManager.ShowPlayerInstructions(instructions2);
+				}
+				goto IL_717;
+			}
 			case EventId.SquadJoinInviteRemoved:
 			case EventId.SquadServerMessage:
 			case EventId.WarBuffBaseCaptured:
 			case EventId.WarVictoryPointsUpdated:
 			case EventId.WarRewardClaimed:
 			{
-				IL_71:
+				IL_55:
 				switch (id)
 				{
 				case EventId.TroopLevelUpgraded:
 				case EventId.StarshipLevelUpgraded:
-					goto IL_50A;
+					goto IL_4E5;
 				case EventId.BuildingLevelUpgraded:
 				case EventId.BuildingReplaced:
-					goto IL_390;
+					goto IL_36B;
 				case EventId.BuildingSwapped:
 				case EventId.SpecialAttackSpawned:
-					IL_9B:
+					IL_7E:
 					switch (id)
 					{
 					case EventId.InventoryUnlockUpdated:
-						goto IL_390;
+						goto IL_36B;
 					case EventId.InventoryPrizeUpdated:
 					case EventId.LootCollected:
-						IL_C0:
+						IL_A2:
 						switch (id)
 						{
-						case EventId.MissionActionButtonClicked:
-							if (cookie != null)
-							{
-								CampaignMissionVO campaignMissionVO = (CampaignMissionVO)cookie;
-								if (campaignMissionVO.MissionType == MissionType.Defend || campaignMissionVO.MissionType == MissionType.RaidDefend)
-								{
-									this.DestroySquadScreen();
-								}
-							}
-							goto IL_746;
-						case EventId.PlayerNameChanged:
-							this.RefreshPlayerSocialInformation();
-							goto IL_746;
-						case EventId.PlayerFactionChanged:
-							IL_DD:
+						case EventId.HolonetContentPrepareStarted:
+							Service.EventManager.RegisterObserver(this, EventId.AllHolonetContentPrepared);
+							this.UpdateHolonetButtonVisibility(false);
+							goto IL_717;
+						case EventId.AllHolonetContentPrepared:
+							this.UpdateHolonetButtonVisibility(true);
+							Service.EventManager.UnregisterObserver(this, EventId.AllHolonetContentPrepared);
+							goto IL_717;
+						case EventId.HolonetContentPrepared:
+							this.UpdateHolonetJewel();
+							goto IL_717;
+						case EventId.TargetedBundleContentPrepared:
+							break;
+						default:
 							switch (id)
 							{
-							case EventId.HolonetContentPrepareStarted:
-								Service.EventManager.RegisterObserver(this, EventId.AllHolonetContentPrepared);
-								this.UpdateHolonetButtonVisibility(false);
-								goto IL_746;
-							case EventId.AllHolonetContentPrepared:
-								this.UpdateHolonetButtonVisibility(true);
-								Service.EventManager.UnregisterObserver(this, EventId.AllHolonetContentPrepared);
-								goto IL_746;
-							case EventId.HolonetContentPrepared:
-								this.UpdateHolonetJewel();
-								goto IL_746;
-							case EventId.TargetedBundleContentPrepared:
-								break;
-							default:
+							case EventId.MissionActionButtonClicked:
+								if (cookie != null)
+								{
+									CampaignMissionVO campaignMissionVO = (CampaignMissionVO)cookie;
+									if (campaignMissionVO.MissionType == MissionType.Defend || campaignMissionVO.MissionType == MissionType.RaidDefend)
+									{
+										this.DestroySquadScreen();
+									}
+								}
+								goto IL_717;
+							case EventId.PlayerNameChanged:
+								this.RefreshPlayerSocialInformation();
+								goto IL_717;
+							case EventId.PlayerFactionChanged:
 							{
+								IL_DA:
 								if (id != EventId.SquadTroopsReceived)
 								{
 									if (id == EventId.SquadTroopsDeployedByPlayer)
 									{
 										this.OnSquadTroopsDeployed();
-										goto IL_746;
+										goto IL_717;
 									}
 									if (id != EventId.SquadUpdated)
 									{
 										if (id == EventId.SquadLeft)
 										{
 											this.joinSquadButton.Visible = true;
-											goto IL_746;
+											goto IL_717;
 										}
 										if (id == EventId.BuildingPurchaseSuccess)
 										{
 											this.RefreshAllResourceViews(true);
-											goto IL_746;
+											goto IL_717;
 										}
 										if (id == EventId.TroopDeployed)
 										{
 											this.OnTroopPlaced(cookie as SmartEntity);
-											goto IL_746;
+											goto IL_717;
 										}
 										if (id == EventId.ChampionRepaired)
 										{
-											goto IL_50A;
+											goto IL_4E5;
 										}
 										if (id == EventId.WorldLoadComplete)
 										{
@@ -3198,7 +3247,7 @@ namespace StaRTS.Main.Views.UX
 											}
 											this.UpdateStoreJewel();
 											this.UpdateLogJewel();
-											goto IL_746;
+											goto IL_717;
 										}
 										if (id == EventId.GameStateChanged)
 										{
@@ -3224,7 +3273,7 @@ namespace StaRTS.Main.Views.UX
 												Service.UXController.MiscElementsManager.SetEventTickerViewVisible(false);
 												this.DestroySquadScreen();
 											}
-											goto IL_746;
+											goto IL_717;
 										}
 										if (id == EventId.ContractStarted)
 										{
@@ -3233,13 +3282,13 @@ namespace StaRTS.Main.Views.UX
 											{
 												this.UpdateStoreJewel();
 											}
-											goto IL_746;
+											goto IL_717;
 										}
 										if (id == EventId.InventoryResourceUpdated)
 										{
 											this.RefreshResourceView((string)cookie, !Service.BattleController.BattleInProgress);
 											this.RefreshCurrentPlayerLevel();
-											goto IL_746;
+											goto IL_717;
 										}
 										if (id == EventId.HUDVisibilityChanged)
 										{
@@ -3261,68 +3310,78 @@ namespace StaRTS.Main.Views.UX
 											{
 												this.StopPromoButtonGlowEffect(0u, null);
 											}
-											goto IL_746;
+											goto IL_717;
 										}
 										if (id == EventId.HeroDeployed)
 										{
 											this.OnHeroDeployed(cookie as SmartEntity);
-											goto IL_746;
+											goto IL_717;
 										}
 										if (id == EventId.ChampionDeployed)
 										{
 											this.OnChampionDeployed(cookie as SmartEntity);
-											goto IL_746;
+											goto IL_717;
+										}
+										if (id == EventId.SquadTroopsRequestedByCurrentPlayer)
+										{
+											SmartEntity selectedBuilding = Service.BuildingController.SelectedBuilding;
+											if (selectedBuilding != null && selectedBuilding.SquadBuildingComp != null)
+											{
+												this.ShowContextButtons(selectedBuilding);
+											}
+											goto IL_717;
 										}
 										if (id == EventId.TargetedBundleRewardRedeemed)
 										{
-											break;
+											goto IL_270;
 										}
 										if (id != EventId.EquipmentUpgraded)
 										{
-											goto IL_746;
+											goto IL_717;
 										}
-										goto IL_50A;
+										goto IL_4E5;
 									}
 								}
 								IState currentState2 = Service.GameStateMachine.CurrentState;
 								if (!(currentState2 is HomeState) && !(currentState2 is EditBaseState))
 								{
-									goto IL_746;
+									goto IL_717;
 								}
 								this.RefreshView();
-								SmartEntity smartEntity2 = (SmartEntity)Service.BuildingController.SelectedBuilding;
-								if (smartEntity2 != null && smartEntity2.SquadBuildingComp != null)
+								SmartEntity selectedBuilding2 = Service.BuildingController.SelectedBuilding;
+								if (selectedBuilding2 != null && selectedBuilding2.SquadBuildingComp != null)
 								{
-									this.ShowContextButtons(smartEntity2);
+									this.ShowContextButtons(selectedBuilding2);
 								}
 								BuildingLookupController buildingLookupController = Service.BuildingLookupController;
-								SmartEntity smartEntity3 = (SmartEntity)buildingLookupController.GetCurrentSquadBuilding();
-								if (smartEntity3 != null)
+								SmartEntity smartEntity = (SmartEntity)buildingLookupController.GetCurrentSquadBuilding();
+								if (smartEntity != null)
 								{
-									Service.BuildingTooltipController.EnsureBuildingTooltip(smartEntity3);
+									Service.BuildingTooltipController.EnsureBuildingTooltip(smartEntity);
 								}
-								goto IL_746;
+								goto IL_717;
 							}
+							case EventId.PvpRatingChanged:
+								this.RefreshPlayerMedals();
+								goto IL_717;
 							}
-							this.UpdateTargetedBundleButtonVisibility();
-							goto IL_746;
-						case EventId.PvpRatingChanged:
-							this.RefreshPlayerMedals();
-							goto IL_746;
+							goto IL_DA;
 						}
-						goto IL_DD;
+						IL_270:
+						this.UpdateTargetedBundleButtonVisibility();
+						goto IL_717;
 					case EventId.NumInventoryItemsNotViewedUpdated:
 					{
-						Entity selectedBuilding = Service.BuildingController.SelectedBuilding;
-						if (selectedBuilding != null)
+						SmartEntity selectedBuilding3 = Service.BuildingController.SelectedBuilding;
+						if (selectedBuilding3 != null)
 						{
-							this.ShowContextButtons(selectedBuilding);
+							this.ShowContextButtons(selectedBuilding3);
 						}
-						goto IL_746;
+						goto IL_717;
 					}
 					case EventId.LootEarnedUpdated:
 						this.RefreshLoot();
-						goto IL_746;
+						goto IL_717;
 					case EventId.ScreenClosing:
 						if (cookie is StoreScreen)
 						{
@@ -3335,84 +3394,54 @@ namespace StaRTS.Main.Views.UX
 						{
 							this.UpdateHolonetJewel();
 						}
-						goto IL_746;
+						goto IL_717;
 					}
-					goto IL_C0;
+					goto IL_A2;
 				case EventId.BuildingConstructed:
 				{
-					Entity selectedBuilding2 = Service.BuildingController.SelectedBuilding;
+					SmartEntity selectedBuilding4 = Service.BuildingController.SelectedBuilding;
 					ContractEventData contractEventData2 = (ContractEventData)cookie;
 					if (contractEventData2.BuildingVO.Currency == CurrencyType.Contraband)
 					{
 						this.RefreshView();
 					}
-					if (selectedBuilding2 != null && selectedBuilding2 == contractEventData2.Entity)
+					if (selectedBuilding4 != null && selectedBuilding4 == contractEventData2.Entity)
 					{
-						this.ShowContextButtons(selectedBuilding2);
+						this.ShowContextButtons(selectedBuilding4);
 					}
 					this.UpdateStoreJewel();
-					goto IL_746;
+					goto IL_717;
 				}
 				case EventId.SpecialAttackDeployed:
 					this.OnSpecialAttackDeployed((SpecialAttack)cookie);
-					goto IL_746;
+					goto IL_717;
 				}
-				goto IL_9B;
-				IL_390:
+				goto IL_7E;
+				IL_36B:
 				this.UpdateStoreJewel();
 				this.UpdateLogJewel();
-				goto IL_746;
-				IL_50A:
-				Entity selectedBuilding3 = Service.BuildingController.SelectedBuilding;
-				if (selectedBuilding3 != null && selectedBuilding3 == ((ContractEventData)cookie).Entity)
+				goto IL_717;
+				IL_4E5:
+				SmartEntity selectedBuilding5 = Service.BuildingController.SelectedBuilding;
+				if (selectedBuilding5 != null && selectedBuilding5 == ((ContractEventData)cookie).Entity)
 				{
-					this.ShowContextButtons(selectedBuilding3);
+					this.ShowContextButtons(selectedBuilding5);
 				}
-				goto IL_746;
-			}
-			case EventId.SquadJoinApplicationAccepted:
-			{
-				if (ScreenUtils.IsAnySquadScreenOpen())
-				{
-					Service.ScreenController.CloseAll();
-				}
-				string text = (string)cookie;
-				if (!string.IsNullOrEmpty(text))
-				{
-					string instructions = Service.Lang.Get("SQUAD_ACCEPTED_MESSAGE", new object[]
-					{
-						text
-					});
-					Service.UXController.MiscElementsManager.ShowPlayerInstructions(instructions);
-				}
-				goto IL_746;
-			}
-			case EventId.SquadTroopsReceivedFromDonor:
-			{
-				string text2 = (string)cookie;
-				if (!string.IsNullOrEmpty(text2))
-				{
-					string instructions2 = Service.Lang.Get("TROOPS_RECEIVED_FROM", new object[]
-					{
-						text2
-					});
-					Service.UXController.MiscElementsManager.ShowPlayerInstructions(instructions2);
-				}
-				goto IL_746;
+				goto IL_717;
 			}
 			case EventId.SquadJoinInviteReceived:
 			case EventId.SquadJoinInvitesReceived:
 				this.UpdateSquadJewelCount();
-				goto IL_746;
+				goto IL_717;
 			case EventId.WarPhaseChanged:
 				this.UpdateWarButton();
-				goto IL_746;
+				goto IL_717;
 			case EventId.WarAttackPlayerStarted:
 			case EventId.WarAttackPlayerCompleted:
 			case EventId.WarAttackBuffBaseStarted:
 			case EventId.WarAttackBuffBaseCompleted:
 				this.UpdateWarAttackState();
-				goto IL_746;
+				goto IL_717;
 			case EventId.WarAttackCommandFailed:
 				if (this.warAttackButton != null)
 				{
@@ -3421,10 +3450,10 @@ namespace StaRTS.Main.Views.UX
 					this.DisableWarAttacksUI();
 				}
 				Service.EventManager.UnregisterObserver(this, EventId.WarAttackCommandFailed);
-				goto IL_746;
+				goto IL_717;
 			}
-			goto IL_71;
-			IL_746:
+			goto IL_55;
+			IL_717:
 			return base.OnEvent(id, cookie);
 		}
 
@@ -3730,10 +3759,10 @@ namespace StaRTS.Main.Views.UX
 			{
 				return;
 			}
-			SmartEntity smartEntity = (SmartEntity)Service.BuildingController.SelectedBuilding;
-			if (smartEntity != null && smartEntity.BuildingComp != null && smartEntity.BuildingComp.BuildingTO != null && !string.IsNullOrEmpty(smartEntity.BuildingComp.BuildingTO.Key))
+			SmartEntity selectedBuilding = Service.BuildingController.SelectedBuilding;
+			if (selectedBuilding != null && selectedBuilding.BuildingComp != null && selectedBuilding.BuildingComp.BuildingTO != null && !string.IsNullOrEmpty(selectedBuilding.BuildingComp.BuildingTO.Key))
 			{
-				BuildingComponent buildingComp = smartEntity.BuildingComp;
+				BuildingComponent buildingComp = selectedBuilding.BuildingComp;
 				int i = 0;
 				int count = this.contextButtons.Count;
 				while (i < count)
@@ -3849,40 +3878,39 @@ namespace StaRTS.Main.Views.UX
 
 		private BuildingType GetBuildingType(BuildingTypeVO building, bool simpleInfoScreen)
 		{
-			BuildingType buildingType = building.Type;
+			BuildingType result = building.Type;
 			if (simpleInfoScreen)
 			{
-				BuildingType buildingType2 = buildingType;
-				switch (buildingType2)
+				switch (result)
 				{
 				case BuildingType.Barracks:
 				case BuildingType.Factory:
 				case BuildingType.FleetCommand:
 				case BuildingType.Squad:
 				case BuildingType.Starport:
-					goto IL_55;
+					goto IL_53;
 				case BuildingType.HeroMobilizer:
 				case BuildingType.ChampionPlatform:
 				case BuildingType.Housing:
-					IL_37:
-					switch (buildingType2)
+					IL_35:
+					switch (result)
 					{
 					case BuildingType.Cantina:
 					case BuildingType.NavigationCenter:
 					case BuildingType.Armory:
-						goto IL_55;
+						goto IL_53;
 					case BuildingType.ScoutTower:
-						return buildingType;
+						return result;
 					default:
-						return buildingType;
+						return result;
 					}
 					break;
 				}
-				goto IL_37;
-				IL_55:
-				buildingType = BuildingType.Invalid;
+				goto IL_35;
+				IL_53:
+				result = BuildingType.Invalid;
 			}
-			return buildingType;
+			return result;
 		}
 
 		private void OnDisabledContextButtonClicked(UXButton button)
@@ -3895,7 +3923,7 @@ namespace StaRTS.Main.Views.UX
 
 		private void OnContextButtonClicked(UXButton button)
 		{
-			Entity selectedBuilding = Service.BuildingController.SelectedBuilding;
+			SmartEntity selectedBuilding = Service.BuildingController.SelectedBuilding;
 			if (selectedBuilding == null)
 			{
 				UXElement buttonHighlight = Service.UXController.MiscElementsManager.GetButtonHighlight();
@@ -3917,8 +3945,7 @@ namespace StaRTS.Main.Views.UX
 			BuildingType buildingType2 = this.GetBuildingType(buildingType, simpleInfoScreen);
 			ScreenBase screenBase = null;
 			string text2 = button.Tag as string;
-			string text3 = text2;
-			switch (text3)
+			switch (text2)
 			{
 			case "Info":
 				switch (buildingType2)
@@ -3927,43 +3954,43 @@ namespace StaRTS.Main.Views.UX
 				case BuildingType.Factory:
 				case BuildingType.Cantina:
 					screenBase = new TrainingInfoScreen(selectedBuilding);
-					goto IL_44A;
+					goto IL_449;
 				case BuildingType.FleetCommand:
 					screenBase = new StarshipInfoScreen(selectedBuilding);
-					goto IL_44A;
+					goto IL_449;
 				case BuildingType.ChampionPlatform:
 					screenBase = new ChampionInfoScreen(selectedBuilding, Service.ChampionController.FindChampionTypeIfPlatform(buildingType), false);
-					goto IL_44A;
+					goto IL_449;
 				case BuildingType.Squad:
 					this.OpenSquadBuildingInfoScreen(selectedBuilding);
-					goto IL_44A;
+					goto IL_449;
 				case BuildingType.Starport:
 					screenBase = new StarportInfoScreen(selectedBuilding);
-					goto IL_44A;
+					goto IL_449;
 				case BuildingType.Turret:
 					screenBase = new TurretInfoScreen(selectedBuilding);
-					goto IL_44A;
+					goto IL_449;
 				case BuildingType.Resource:
 					screenBase = new GeneratorInfoScreen(selectedBuilding);
-					goto IL_44A;
+					goto IL_449;
 				case BuildingType.Storage:
 					screenBase = new StorageInfoScreen(selectedBuilding);
-					goto IL_44A;
+					goto IL_449;
 				case BuildingType.ShieldGenerator:
 					screenBase = new ShieldGeneratorInfoScreen(selectedBuilding);
-					goto IL_44A;
+					goto IL_449;
 				case BuildingType.Trap:
 					screenBase = new TrapInfoScreen(selectedBuilding, false);
-					goto IL_44A;
+					goto IL_449;
 				case BuildingType.NavigationCenter:
 					screenBase = new NavigationCenterInfoScreen(selectedBuilding);
-					goto IL_44A;
+					goto IL_449;
 				case BuildingType.Armory:
 					screenBase = new ArmoryUpgradeScreen(selectedBuilding, false);
-					goto IL_44A;
+					goto IL_449;
 				}
 				screenBase = new BuildingInfoScreen(selectedBuilding);
-				IL_44A:
+				IL_449:
 				break;
 			case "Inventory":
 				screenBase = this.CreatePrizeInventoryScreen();
@@ -3990,7 +4017,7 @@ namespace StaRTS.Main.Views.UX
 				screenBase = new TroopTrainingScreen(selectedBuilding);
 				break;
 			case "Repair":
-				Service.ChampionController.StartChampionRepair((SmartEntity)selectedBuilding);
+				Service.ChampionController.StartChampionRepair(selectedBuilding);
 				break;
 			case "Trap_RearmAll":
 				TrapUtils.RearmAllTraps();
@@ -4003,50 +4030,50 @@ namespace StaRTS.Main.Views.UX
 				{
 				case BuildingType.HQ:
 					screenBase = new HQUpgradeScreen(selectedBuilding);
-					goto IL_65A;
+					goto IL_654;
 				case BuildingType.Barracks:
 				case BuildingType.Factory:
 				case BuildingType.FleetCommand:
 				case BuildingType.HeroMobilizer:
 				case BuildingType.Cantina:
 					screenBase = new TrainingUpgradeScreen(selectedBuilding);
-					goto IL_65A;
+					goto IL_654;
 				case BuildingType.ChampionPlatform:
 					screenBase = new ChampionInfoScreen(selectedBuilding, Service.ChampionController.FindChampionTypeIfPlatform(buildingType), true);
-					goto IL_65A;
+					goto IL_654;
 				case BuildingType.Squad:
 					screenBase = new SquadUpgradeScreen(selectedBuilding);
-					goto IL_65A;
+					goto IL_654;
 				case BuildingType.Starport:
 					screenBase = new StarportUpgradeScreen(selectedBuilding);
-					goto IL_65A;
+					goto IL_654;
 				case BuildingType.Wall:
 					screenBase = new WallUpgradeScreen(selectedBuilding);
-					goto IL_65A;
+					goto IL_654;
 				case BuildingType.Turret:
 					screenBase = new TurretUpgradeScreen(selectedBuilding, false);
-					goto IL_65A;
+					goto IL_654;
 				case BuildingType.Resource:
 					screenBase = new GeneratorUpgradeScreen(selectedBuilding);
-					goto IL_65A;
+					goto IL_654;
 				case BuildingType.Storage:
 					screenBase = new StorageUpgradeScreen(selectedBuilding);
-					goto IL_65A;
+					goto IL_654;
 				case BuildingType.ShieldGenerator:
 					screenBase = new ShieldGeneratorUpgradeScreen(selectedBuilding);
-					goto IL_65A;
+					goto IL_654;
 				case BuildingType.Trap:
 					screenBase = new TrapInfoScreen(selectedBuilding, true);
-					goto IL_65A;
+					goto IL_654;
 				case BuildingType.NavigationCenter:
 					screenBase = new NavigationCenterUpgradeScreen(selectedBuilding);
-					goto IL_65A;
+					goto IL_654;
 				case BuildingType.Armory:
 					screenBase = new ArmoryUpgradeScreen(selectedBuilding, true);
-					goto IL_65A;
+					goto IL_654;
 				}
 				screenBase = new BuildingInfoScreen(selectedBuilding, true);
-				IL_65A:
+				IL_654:
 				break;
 			case "Upgrade_Troops":
 				screenBase = new TroopUpgradeScreen(selectedBuilding);
@@ -4104,13 +4131,13 @@ namespace StaRTS.Main.Views.UX
 				List<string> list = new List<string>();
 				if (buildingController.NumSelectedBuildings > 1)
 				{
-					List<Entity> additionalSelectedBuildings = buildingController.GetAdditionalSelectedBuildings();
+					List<SmartEntity> additionalSelectedBuildings = buildingController.GetAdditionalSelectedBuildings();
 					int i = 0;
 					int count = additionalSelectedBuildings.Count;
 					while (i < count)
 					{
-						Entity entity = additionalSelectedBuildings[i];
-						string uid = entity.Get<BuildingComponent>().BuildingType.Uid;
+						SmartEntity smartEntity = additionalSelectedBuildings[i];
+						string uid = smartEntity.BuildingComp.BuildingType.Uid;
 						if (!list.Contains(uid))
 						{
 							list.Add(uid);
@@ -4120,7 +4147,7 @@ namespace StaRTS.Main.Views.UX
 					}
 				}
 				Service.BaseLayoutToolController.StashBuilding(selectedBuilding);
-				string uid2 = selectedBuilding.Get<BuildingComponent>().BuildingTO.Uid;
+				string uid2 = selectedBuilding.BuildingComp.BuildingTO.Uid;
 				if (!list.Contains(uid2))
 				{
 					list.Add(uid2);
@@ -4155,13 +4182,13 @@ namespace StaRTS.Main.Views.UX
 			return new PrizeInventoryScreen();
 		}
 
-		public void InitialNavigationCenterPlanetSelect(Entity entity, BuildingTypeVO buildingTypeVO, OnScreenModalResult callback)
+		public void InitialNavigationCenterPlanetSelect(SmartEntity entity, BuildingTypeVO buildingTypeVO, OnScreenModalResult callback)
 		{
 			Service.ScreenController.AddScreen(new NavigationCenterUpgradeScreen(entity, buildingTypeVO, callback));
 			Service.CurrentPlayer.SetFreeRelocation();
 		}
 
-		private void SelectWallGroup(Entity selectedBuilding)
+		private void SelectWallGroup(SmartEntity selectedBuilding)
 		{
 			Service.BuildingController.SelectAdjacentWalls(selectedBuilding);
 			this.ShowContextButtons(selectedBuilding);
@@ -4179,23 +4206,23 @@ namespace StaRTS.Main.Views.UX
 
 		private void OnCancelModalResult(object result, object cookie)
 		{
-			Entity entity = result as Entity;
-			if (entity == null)
+			SmartEntity smartEntity = result as SmartEntity;
+			if (smartEntity == null)
 			{
 				return;
 			}
-			Contract contract = Service.ISupportController.FindCurrentContract(entity.Get<BuildingComponent>().BuildingTO.Key);
+			Contract contract = Service.ISupportController.FindCurrentContract(smartEntity.Get<BuildingComponent>().BuildingTO.Key);
 			if (contract != null)
 			{
 				if (ContractUtils.IsTroopType(ContractUtils.GetContractType(contract.DeliveryType)))
 				{
-					Service.ISupportController.CancelTroopTrainContract(contract.ProductUid, entity);
+					Service.ISupportController.CancelTroopTrainContract(contract.ProductUid, smartEntity);
 				}
 				else
 				{
-					Service.ISupportController.CancelCurrentBuildingContract(contract, entity);
+					Service.ISupportController.CancelCurrentBuildingContract(contract, smartEntity);
 				}
-				this.ShowContextButtons(entity);
+				this.ShowContextButtons(smartEntity);
 			}
 		}
 
@@ -4234,20 +4261,20 @@ namespace StaRTS.Main.Views.UX
 				Service.EventManager.SendEvent(EventId.DroidPurchaseCancelled, null);
 				return;
 			}
-			Entity selectedBuilding = Service.BuildingController.SelectedBuilding;
+			SmartEntity selectedBuilding = Service.BuildingController.SelectedBuilding;
 			if (selectedBuilding != null)
 			{
-				BuildingComponent buildingComponent = selectedBuilding.Get<BuildingComponent>();
-				if (buildingComponent.BuildingType.Type == BuildingType.DroidHut)
+				BuildingComponent buildingComp = selectedBuilding.BuildingComp;
+				if (buildingComp.BuildingType.Type == BuildingType.DroidHut)
 				{
 					this.ShowContextButtons(selectedBuilding);
 				}
 			}
 		}
 
-		private void MaybeShowFinishContractScreen(Entity selectedBuilding)
+		private void MaybeShowFinishContractScreen(SmartEntity selectedBuilding)
 		{
-			Contract contract = Service.ISupportController.FindCurrentContract(selectedBuilding.Get<BuildingComponent>().BuildingTO.Key);
+			Contract contract = Service.ISupportController.FindCurrentContract(selectedBuilding.BuildingComp.BuildingTO.Key);
 			int crystalCostToFinishContract = ContractUtils.GetCrystalCostToFinishContract(contract);
 			if (crystalCostToFinishContract >= GameConstants.CRYSTAL_SPEND_WARNING_MINIMUM)
 			{
@@ -4265,9 +4292,9 @@ namespace StaRTS.Main.Views.UX
 			{
 				return;
 			}
-			Entity entity = (Entity)result;
-			BuildingComponent buildingComponent = entity.Get<BuildingComponent>();
-			Contract contract = Service.ISupportController.FindCurrentContract(buildingComponent.BuildingTO.Key);
+			SmartEntity smartEntity = (SmartEntity)result;
+			BuildingComponent buildingComp = smartEntity.BuildingComp;
+			Contract contract = Service.ISupportController.FindCurrentContract(buildingComp.BuildingTO.Key);
 			if (contract == null)
 			{
 				return;
@@ -4279,19 +4306,19 @@ namespace StaRTS.Main.Views.UX
 			}
 			if (ContractUtils.IsTroopType(ContractUtils.GetContractType(contract.DeliveryType)))
 			{
-				Service.ISupportController.BuyoutAllTroopTrainContracts(entity, true);
+				Service.ISupportController.BuyoutAllTroopTrainContracts(smartEntity, true);
 			}
 			else
 			{
-				Service.ISupportController.BuyOutCurrentBuildingContract(entity, true);
+				Service.ISupportController.BuyOutCurrentBuildingContract(smartEntity, true);
 			}
-			if (entity == Service.BuildingController.SelectedBuilding)
+			if (smartEntity == Service.BuildingController.SelectedBuilding)
 			{
-				this.ShowContextButtons(entity);
+				this.ShowContextButtons(smartEntity);
 			}
-			if (buildingComponent != null)
+			if (buildingComp != null)
 			{
-				BuildingTypeVO buildingType = buildingComponent.BuildingType;
+				BuildingTypeVO buildingType = buildingComp.BuildingType;
 				if (buildingType != null)
 				{
 					int currencyAmount = -crystalCostToFinishContract;
@@ -4507,7 +4534,7 @@ namespace StaRTS.Main.Views.UX
 			Service.ScreenController.AddScreen(new SquadJoinScreen());
 		}
 
-		private void OpenSquadBuildingInfoScreen(Entity building)
+		private void OpenSquadBuildingInfoScreen(SmartEntity building)
 		{
 			ServerPlayerPrefs serverPlayerPrefs = Service.ServerPlayerPrefs;
 			string pref = serverPlayerPrefs.GetPref(ServerPref.SquadIntroViewed);

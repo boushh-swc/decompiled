@@ -1,6 +1,5 @@
-using Net.RichardLord.Ash.Core;
 using StaRTS.Main.Models;
-using StaRTS.Main.Models.Entities.Components;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.ValueObjects;
 using StaRTS.Main.Utils;
 using StaRTS.Utils.Core;
@@ -31,10 +30,10 @@ namespace StaRTS.Main.Views.World
 			base.TryFindParticleSystem(ref this.damageRadius, "fx_trap_damage_radius");
 		}
 
-		protected override bool SetupParticlesOnShow(Entity entity)
+		protected override bool SetupParticlesOnShow(SmartEntity entity)
 		{
-			BuildingTypeVO buildingType = entity.Get<BuildingComponent>().BuildingType;
-			if (buildingType.Type == BuildingType.Trap && entity.Get<TrapComponent>().CurrentState != TrapState.Spent && !ContractUtils.IsBuildingUpgrading(entity) && !ContractUtils.IsBuildingConstructing(entity))
+			BuildingTypeVO buildingType = entity.BuildingComp.BuildingType;
+			if (buildingType.Type == BuildingType.Trap && entity.TrapComp.CurrentState != TrapState.Spent && !ContractUtils.IsBuildingUpgrading(entity) && !ContractUtils.IsBuildingConstructing(entity))
 			{
 				TrapTypeVO trapType = Service.StaticDataController.Get<TrapTypeVO>(buildingType.TrapUid);
 				uint trapMaxRadius = TrapUtils.GetTrapMaxRadius(trapType);

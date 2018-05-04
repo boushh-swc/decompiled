@@ -1,5 +1,5 @@
-using Net.RichardLord.Ash.Core;
 using StaRTS.Main.Controllers;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.Entities.Components;
 using StaRTS.Main.Views.UX.Elements;
 using StaRTS.Utils.Core;
@@ -21,7 +21,7 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		private ICurrencyController currencyController;
 
-		public GeneratorInfoScreen(Entity generatorBuilding) : base(generatorBuilding)
+		public GeneratorInfoScreen(SmartEntity generatorBuilding) : base(generatorBuilding)
 		{
 			this.currencyController = Service.ICurrencyController;
 		}

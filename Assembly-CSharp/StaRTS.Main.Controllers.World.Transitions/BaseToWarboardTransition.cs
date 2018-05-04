@@ -31,22 +31,22 @@ namespace StaRTS.Main.Controllers.World.Transitions
 
 		public override EatResponse OnEvent(EventId id, object cookie)
 		{
-			if (id != EventId.WipeCameraSnapshotTaken)
+			if (id != EventId.WarBoardLoadComplete)
 			{
-				if (id == EventId.WarBoardLoadComplete)
+				if (id == EventId.WipeCameraSnapshotTaken)
 				{
-					Service.EventManager.UnregisterObserver(this, EventId.WarBoardLoadComplete);
-					Service.CameraManager.WipeCamera.ContinueWipe();
-					Service.AudioManager.PlayAudio("sfx_ui_squadwar_warboard_open");
+					Service.EventManager.UnregisterObserver(this, EventId.WipeCameraSnapshotTaken);
+					if (this.transitionToState != null)
+					{
+						Service.GameStateMachine.SetState(this.transitionToState);
+					}
 				}
 			}
 			else
 			{
-				Service.EventManager.UnregisterObserver(this, EventId.WipeCameraSnapshotTaken);
-				if (this.transitionToState != null)
-				{
-					Service.GameStateMachine.SetState(this.transitionToState);
-				}
+				Service.EventManager.UnregisterObserver(this, EventId.WarBoardLoadComplete);
+				Service.CameraManager.WipeCamera.ContinueWipe();
+				Service.AudioManager.PlayAudio("sfx_ui_squadwar_warboard_open");
 			}
 			return EatResponse.NotEaten;
 		}

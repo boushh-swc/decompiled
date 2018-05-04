@@ -28,9 +28,7 @@ namespace StaRTS.Main.Models.Squads
 			if (this.SenderAmounts.ContainsKey(senderId))
 			{
 				Dictionary<string, int> senderAmounts;
-				Dictionary<string, int> expr_17 = senderAmounts = this.SenderAmounts;
-				int num = senderAmounts[senderId];
-				expr_17[senderId] = num + amount;
+				(senderAmounts = this.SenderAmounts)[senderId] = senderAmounts[senderId] + amount;
 			}
 			else
 			{

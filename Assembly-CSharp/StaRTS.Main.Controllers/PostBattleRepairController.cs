@@ -50,7 +50,7 @@ namespace StaRTS.Main.Controllers
 				return EatResponse.NotEaten;
 			case EventId.MapDataProcessingEnd:
 			{
-				IL_17:
+				IL_15:
 				if (id == EventId.BuildingViewReady)
 				{
 					if (this.canRepair)
@@ -86,7 +86,7 @@ namespace StaRTS.Main.Controllers
 				return EatResponse.NotEaten;
 			}
 			}
-			goto IL_17;
+			goto IL_15;
 		}
 
 		private bool CheckIfCanRepair()
@@ -223,16 +223,16 @@ namespace StaRTS.Main.Controllers
 		private void OnHeathRepairStopped(HealthViewComponent healthView)
 		{
 			healthView.TeardownElements();
-			Entity entity = healthView.Entity;
-			this.eventManager.SendEvent(EventId.EntityPostBattleRepairFinished, entity);
+			SmartEntity smartEntity = (SmartEntity)healthView.Entity;
+			this.eventManager.SendEvent(EventId.EntityPostBattleRepairFinished, smartEntity);
 			if (this.entitiesInRepairMap == null || this.entitiesInRepairMap.Count == 0)
 			{
 				this.eventManager.SendEvent(EventId.AllPostBattleRepairFinished, null);
 			}
-			Service.BuildingTooltipController.EnsureBuildingTooltip((SmartEntity)entity);
-			if (Service.BuildingController.SelectedBuilding == entity)
+			Service.BuildingTooltipController.EnsureBuildingTooltip(smartEntity);
+			if (Service.BuildingController.SelectedBuilding == smartEntity)
 			{
-				Service.UXController.HUD.ShowContextButtons(entity);
+				Service.UXController.HUD.ShowContextButtons(smartEntity);
 			}
 		}
 

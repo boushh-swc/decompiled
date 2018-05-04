@@ -328,11 +328,8 @@ namespace StaRTS.Main.Controllers
 					if (deployables.ContainsKey(current.Key))
 					{
 						Dictionary<string, int> dictionary;
-						Dictionary<string, int> expr_39 = dictionary = deployables;
 						string key;
-						string expr_42 = key = current.Key;
-						int num = dictionary[key];
-						expr_39[expr_42] = num + current.Value.Amount;
+						(dictionary = deployables)[key = current.Key] = dictionary[key] + current.Value.Amount;
 					}
 					else
 					{
@@ -368,7 +365,7 @@ namespace StaRTS.Main.Controllers
 			{
 				if (this.currentBattle.DisabledBuildings.Contains(buildingNode.BuildingComp.BuildingTO.Key))
 				{
-					Service.ISupportController.DisableBuilding(buildingNode.Entity);
+					Service.ISupportController.DisableBuilding((SmartEntity)buildingNode.Entity);
 				}
 			}
 		}
@@ -1296,11 +1293,8 @@ namespace StaRTS.Main.Controllers
 			if (dictionary.ContainsKey(uid))
 			{
 				Dictionary<string, int> dictionary2;
-				Dictionary<string, int> expr_5D = dictionary2 = dictionary;
 				string key;
-				string expr_61 = key = uid;
-				int num = dictionary2[key];
-				expr_5D[expr_61] = num + 1;
+				(dictionary2 = dictionary)[key = uid] = dictionary2[key] + 1;
 			}
 			else
 			{
@@ -1315,11 +1309,8 @@ namespace StaRTS.Main.Controllers
 			if (this.currentBattle.DefenderGuildTroopsDestroyed.ContainsKey(uid))
 			{
 				Dictionary<string, int> defenderGuildTroopsDestroyed;
-				Dictionary<string, int> expr_34 = defenderGuildTroopsDestroyed = this.currentBattle.DefenderGuildTroopsDestroyed;
 				string key;
-				string expr_37 = key = uid;
-				int num = defenderGuildTroopsDestroyed[key];
-				expr_34[expr_37] = num + 1;
+				(defenderGuildTroopsDestroyed = this.currentBattle.DefenderGuildTroopsDestroyed)[key = uid] = defenderGuildTroopsDestroyed[key] + 1;
 			}
 			else
 			{
@@ -1351,115 +1342,115 @@ namespace StaRTS.Main.Controllers
 			case EventId.TroopDonationTrackProgressUpdated:
 			case EventId.TroopDonationTrackRewardReceived:
 			case EventId.SquadTroopsReceived:
-				IL_37:
-				switch (id)
+				IL_33:
+				if (id == EventId.ApplicationPauseToggled)
 				{
-				case EventId.BattleEndRecorded:
-					this.OnBattleEndRecorded();
+					if (this.BattleInProgress && (bool)cookie && GameConstants.PVP_LOSE_ON_PAUSE && this.currentBattle.Type == BattleType.Pvp)
+					{
+						this.CancelBattleRightAway();
+					}
 					return EatResponse.NotEaten;
-				case EventId.BattleEndFullyProcessed:
+				}
+				if (id != EventId.ApplicationQuit)
 				{
-					IL_50:
-					if (id == EventId.ApplicationPauseToggled)
+					switch (id)
 					{
-						if (this.BattleInProgress && (bool)cookie && GameConstants.PVP_LOSE_ON_PAUSE && this.currentBattle.Type == BattleType.Pvp)
-						{
-							this.CancelBattleRightAway();
-						}
+					case EventId.BattleEndRecorded:
+						this.OnBattleEndRecorded();
 						return EatResponse.NotEaten;
-					}
-					if (id == EventId.ApplicationQuit)
+					case EventId.BattleEndFullyProcessed:
 					{
-						if (this.BattleInProgress && GameConstants.PVP_LOSE_ON_QUIT && this.currentBattle.Type == BattleType.Pvp)
+						IL_59:
+						if (id == EventId.VictoryConditionSuccess)
 						{
-							this.CancelBattleRightAway();
-						}
-						return EatResponse.NotEaten;
-					}
-					if (id == EventId.VictoryConditionSuccess)
-					{
-						this.currentBattle.Won = true;
-						int count = this.conditionController.Successes.Count;
-						if (count == 3)
-						{
-							this.UpdateHealth();
-							this.EndBattleWithDelay();
-						}
-						if (Service.UXController.HUD.AreBattleStarsVisible())
-						{
-							string message = Service.Lang.Get("STAR_MESSAGE_" + count, new object[0]);
-							this.starAnimations.Enqueue(new VictoryStarAnimation(count, message));
-							this.PumpStarAnimations();
-							Service.EventManager.SendEvent(EventId.StarEarned, count);
-						}
-						return EatResponse.NotEaten;
-					}
-					if (id == EventId.VictoryConditionFailure)
-					{
-						if (this.conditionController.FailureConditionVO == cookie)
-						{
-							this.currentBattle.FailedConditionUid = ((ConditionVO)cookie).Uid;
-							Service.UXController.HUD.UpdateDamageStars(0);
-							this.UpdateHealth();
-							this.EndBattleWithDelay();
-						}
-						else if (this.currentBattle.Type == BattleType.PveDefend)
-						{
-							int num = 3 - this.conditionController.Failures.Count;
-							Service.UXController.HUD.UpdateDamageStars(num);
-							if (num == 0)
+							this.currentBattle.Won = true;
+							int count = this.conditionController.Successes.Count;
+							if (count == 3)
 							{
+								this.UpdateHealth();
 								this.EndBattleWithDelay();
 							}
+							if (Service.UXController.HUD.AreBattleStarsVisible())
+							{
+								string message = Service.Lang.Get("STAR_MESSAGE_" + count, new object[0]);
+								this.starAnimations.Enqueue(new VictoryStarAnimation(count, message));
+								this.PumpStarAnimations();
+								Service.EventManager.SendEvent(EventId.StarEarned, count);
+							}
+							return EatResponse.NotEaten;
 						}
-						return EatResponse.NotEaten;
-					}
-					if (id == EventId.EntityKilled)
-					{
-						Entity entity = cookie as Entity;
-						this.PerformShakeEffect(entity);
-						this.RecordBuildingDestroyed(entity);
-						this.RecordUnitKilled(entity);
-						if (this.defenderGuildTroopsDeployed != null && this.defenderGuildTroopsDeployed.Contains(entity))
+						if (id == EventId.VictoryConditionFailure)
 						{
-							this.RecordDefenderGuildTroopDestroyed(entity);
+							if (this.conditionController.FailureConditionVO == cookie)
+							{
+								this.currentBattle.FailedConditionUid = ((ConditionVO)cookie).Uid;
+								Service.UXController.HUD.UpdateDamageStars(0);
+								this.UpdateHealth();
+								this.EndBattleWithDelay();
+							}
+							else if (this.currentBattle.Type == BattleType.PveDefend)
+							{
+								int num = 3 - this.conditionController.Failures.Count;
+								Service.UXController.HUD.UpdateDamageStars(num);
+								if (num == 0)
+								{
+									this.EndBattleWithDelay();
+								}
+							}
+							return EatResponse.NotEaten;
 						}
-						return EatResponse.NotEaten;
-					}
-					if (id == EventId.TroopPlacedOnBoard)
-					{
-						this.battleMessageView.HideImmediately();
-						return EatResponse.NotEaten;
-					}
-					if (id == EventId.LootEarnedUpdated)
-					{
-						this.UpdateCurrencyInventory();
-						return EatResponse.NotEaten;
-					}
-					if (id != EventId.DefenderTriggeredInBattle)
-					{
-						return EatResponse.NotEaten;
-					}
-					DefenderTroopDeployedData defenderTroopDeployedData = (DefenderTroopDeployedData)cookie;
-					BuildingComponent buildingComponent = defenderTroopDeployedData.OwnerEntity.Get<BuildingComponent>();
-					if (buildingComponent != null && buildingComponent.BuildingType.Type == BuildingType.Squad)
-					{
-						if (this.defenderGuildTroopsDeployed == null)
+						if (id == EventId.EntityKilled)
 						{
-							this.defenderGuildTroopsDeployed = new List<Entity>();
+							Entity entity = cookie as Entity;
+							this.PerformShakeEffect(entity);
+							this.RecordBuildingDestroyed(entity);
+							this.RecordUnitKilled(entity);
+							if (this.defenderGuildTroopsDeployed != null && this.defenderGuildTroopsDeployed.Contains(entity))
+							{
+								this.RecordDefenderGuildTroopDestroyed(entity);
+							}
+							return EatResponse.NotEaten;
 						}
-						this.defenderGuildTroopsDeployed.Add(defenderTroopDeployedData.TroopEntity);
+						if (id == EventId.TroopPlacedOnBoard)
+						{
+							this.battleMessageView.HideImmediately();
+							return EatResponse.NotEaten;
+						}
+						if (id == EventId.LootEarnedUpdated)
+						{
+							this.UpdateCurrencyInventory();
+							return EatResponse.NotEaten;
+						}
+						if (id != EventId.DefenderTriggeredInBattle)
+						{
+							return EatResponse.NotEaten;
+						}
+						DefenderTroopDeployedData defenderTroopDeployedData = (DefenderTroopDeployedData)cookie;
+						BuildingComponent buildingComponent = defenderTroopDeployedData.OwnerEntity.Get<BuildingComponent>();
+						if (buildingComponent != null && buildingComponent.BuildingType.Type == BuildingType.Squad)
+						{
+							if (this.defenderGuildTroopsDeployed == null)
+							{
+								this.defenderGuildTroopsDeployed = new List<Entity>();
+							}
+							this.defenderGuildTroopsDeployed.Add(defenderTroopDeployedData.TroopEntity);
+						}
+						return EatResponse.NotEaten;
 					}
-					return EatResponse.NotEaten;
+					case EventId.BattleCancelRequested:
+					{
+						string message2 = Service.Lang.Get("CONFIRM_END_BATTLE", new object[0]);
+						AlertScreen.ShowModal(false, null, message2, new OnScreenModalResult(this.OnAlertModalResult), null);
+						return EatResponse.NotEaten;
+					}
+					}
+					goto IL_59;
 				}
-				case EventId.BattleCancelRequested:
+				if (this.BattleInProgress && GameConstants.PVP_LOSE_ON_QUIT && this.currentBattle.Type == BattleType.Pvp)
 				{
-					string message2 = Service.Lang.Get("CONFIRM_END_BATTLE", new object[0]);
-					AlertScreen.ShowModal(false, null, message2, new OnScreenModalResult(this.OnAlertModalResult), null);
-					return EatResponse.NotEaten;
+					this.CancelBattleRightAway();
 				}
-				}
-				goto IL_50;
+				return EatResponse.NotEaten;
 			case EventId.SquadTroopsDeployedByPlayer:
 				this.currentBattle.PlayerDeployedGuildTroops = true;
 				if (!this.currentBattle.IsReplay)
@@ -1481,7 +1472,7 @@ namespace StaRTS.Main.Controllers
 				}
 				return EatResponse.NotEaten;
 			}
-			goto IL_37;
+			goto IL_33;
 		}
 
 		private void PumpStarAnimations()
@@ -1579,7 +1570,7 @@ namespace StaRTS.Main.Controllers
 
 		public int GetHealth(BuildingType buildingType, HealthComponent health)
 		{
-			if (buildingType != BuildingType.Blocker && buildingType != BuildingType.Trap && buildingType != BuildingType.Wall)
+			if (buildingType != BuildingType.Wall && buildingType != BuildingType.Blocker && buildingType != BuildingType.Trap)
 			{
 				return health.Health;
 			}
@@ -1696,11 +1687,8 @@ namespace StaRTS.Main.Controllers
 					if (troopType.Type != TroopType.Hero && troopType.Type != TroopType.Champion)
 					{
 						Dictionary<string, int> troopData;
-						Dictionary<string, int> expr_7A = troopData = playerDeployedData.TroopData;
 						string uid;
-						string expr_83 = uid = troopType.Uid;
-						int num = troopData[uid];
-						expr_7A[expr_83] = num - 1;
+						(troopData = playerDeployedData.TroopData)[uid = troopType.Uid] = troopData[uid] - 1;
 					}
 				}
 			}
@@ -1821,9 +1809,7 @@ namespace StaRTS.Main.Controllers
 			BattleDeploymentData battleDeploymentData2 = null;
 			this.GetDeploymentDataFromTeamType(teamType, out battleDeploymentData, out battleDeploymentData2);
 			Dictionary<string, int> troopData;
-			Dictionary<string, int> expr_15 = troopData = battleDeploymentData.TroopData;
-			int num = troopData[uid];
-			expr_15[uid] = num - 1;
+			(troopData = battleDeploymentData.TroopData)[uid] = troopData[uid] - 1;
 			if (battleDeploymentData2.TroopData == null)
 			{
 				battleDeploymentData2.TroopData = new Dictionary<string, int>();
@@ -1834,10 +1820,7 @@ namespace StaRTS.Main.Controllers
 			}
 			if (battleDeploymentData2.TroopData.ContainsKey(uid))
 			{
-				Dictionary<string, int> troopData2;
-				Dictionary<string, int> expr_71 = troopData2 = battleDeploymentData2.TroopData;
-				num = troopData2[uid];
-				expr_71[uid] = num + 1;
+				(troopData = battleDeploymentData2.TroopData)[uid] = troopData[uid] + 1;
 			}
 			else
 			{
@@ -1857,9 +1840,7 @@ namespace StaRTS.Main.Controllers
 			BattleDeploymentData battleDeploymentData2 = null;
 			this.GetDeploymentDataFromTeamType(teamType, out battleDeploymentData, out battleDeploymentData2);
 			Dictionary<string, int> specialAttackData;
-			Dictionary<string, int> expr_15 = specialAttackData = battleDeploymentData.SpecialAttackData;
-			int num = specialAttackData[uid];
-			expr_15[uid] = num - 1;
+			(specialAttackData = battleDeploymentData.SpecialAttackData)[uid] = specialAttackData[uid] - 1;
 			if (battleDeploymentData2.SpecialAttackData == null)
 			{
 				battleDeploymentData2.SpecialAttackData = new Dictionary<string, int>();
@@ -1870,10 +1851,7 @@ namespace StaRTS.Main.Controllers
 			}
 			if (battleDeploymentData2.SpecialAttackData.ContainsKey(uid))
 			{
-				Dictionary<string, int> specialAttackData2;
-				Dictionary<string, int> expr_71 = specialAttackData2 = battleDeploymentData2.SpecialAttackData;
-				num = specialAttackData2[uid];
-				expr_71[uid] = num + 1;
+				(specialAttackData = battleDeploymentData2.SpecialAttackData)[uid] = specialAttackData[uid] + 1;
 			}
 			else
 			{
@@ -1893,9 +1871,7 @@ namespace StaRTS.Main.Controllers
 			BattleDeploymentData battleDeploymentData2 = null;
 			this.GetDeploymentDataFromTeamType(teamType, out battleDeploymentData, out battleDeploymentData2);
 			Dictionary<string, int> heroData;
-			Dictionary<string, int> expr_15 = heroData = battleDeploymentData.HeroData;
-			int num = heroData[uid];
-			expr_15[uid] = num - 1;
+			(heroData = battleDeploymentData.HeroData)[uid] = heroData[uid] - 1;
 			if (battleDeploymentData2.HeroData == null)
 			{
 				battleDeploymentData2.HeroData = new Dictionary<string, int>();
@@ -1906,10 +1882,7 @@ namespace StaRTS.Main.Controllers
 			}
 			if (battleDeploymentData2.HeroData.ContainsKey(uid))
 			{
-				Dictionary<string, int> heroData2;
-				Dictionary<string, int> expr_71 = heroData2 = battleDeploymentData2.HeroData;
-				num = heroData2[uid];
-				expr_71[uid] = num + 1;
+				(heroData = battleDeploymentData2.HeroData)[uid] = heroData[uid] + 1;
 			}
 			else
 			{
@@ -1931,9 +1904,7 @@ namespace StaRTS.Main.Controllers
 			if (battleDeploymentData.ChampionData != null && battleDeploymentData.ChampionData.ContainsKey(uid))
 			{
 				Dictionary<string, int> championData;
-				Dictionary<string, int> expr_31 = championData = battleDeploymentData.ChampionData;
-				int num = championData[uid];
-				expr_31[uid] = num - 1;
+				(championData = battleDeploymentData.ChampionData)[uid] = championData[uid] - 1;
 			}
 			else
 			{
@@ -1949,10 +1920,8 @@ namespace StaRTS.Main.Controllers
 			}
 			if (battleDeploymentData2.ChampionData.ContainsKey(uid))
 			{
-				Dictionary<string, int> championData2;
-				Dictionary<string, int> expr_A7 = championData2 = battleDeploymentData2.ChampionData;
-				int num = championData2[uid];
-				expr_A7[uid] = num + 1;
+				Dictionary<string, int> championData;
+				(championData = battleDeploymentData2.ChampionData)[uid] = championData[uid] + 1;
 			}
 			else
 			{

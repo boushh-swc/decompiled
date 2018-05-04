@@ -3,6 +3,7 @@ using StaRTS.Main.Controllers;
 using StaRTS.Main.Controllers.GameStates;
 using StaRTS.Main.Controllers.Squads;
 using StaRTS.Main.Models;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.Perks;
 using StaRTS.Main.Models.Player.Store;
 using StaRTS.Main.Models.Squads;
@@ -478,7 +479,7 @@ namespace StaRTS.Main.Views.UX.Screens.Squads
 
 		private void OpenTroopTrainingScreen(object cookie)
 		{
-			Entity selectedBuilding = (Entity)cookie;
+			SmartEntity selectedBuilding = (SmartEntity)cookie;
 			Service.ScreenController.AddScreen(new TroopTrainingScreen(selectedBuilding));
 		}
 
@@ -544,19 +545,16 @@ namespace StaRTS.Main.Views.UX.Screens.Squads
 				if (this.troopsToDonate.ContainsKey(key))
 				{
 					Dictionary<string, int> dictionary;
-					Dictionary<string, int> expr_132 = dictionary = this.troopsToDonate;
 					string key2;
-					string expr_136 = key2 = key;
-					int num3 = dictionary[key2];
-					expr_132[expr_136] = num3 + 1;
+					(dictionary = this.troopsToDonate)[key2 = key] = dictionary[key2] + 1;
 				}
 				else
 				{
 					this.troopsToDonate.Add(key, 1);
 				}
-				int num4 = value.Amount - this.troopsToDonate[key];
+				int num3 = value.Amount - this.troopsToDonate[key];
 				UXLabel subElement = this.troopDonateGrid.GetSubElement<UXLabel>(itemUid, "LabelDonateTroops");
-				subElement.Text = string.Format("x{0}", num4);
+				subElement.Text = string.Format("x{0}", num3);
 			}
 			this.donateTroopsConfirm.Enabled = true;
 			this.RefreshView();

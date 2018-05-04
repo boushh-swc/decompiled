@@ -10,13 +10,13 @@ namespace StaRTS.Main.Controllers.Startup
 {
 	public class ShowLoadingScreenPopupsStartupTask : StartupTask
 	{
-		private const string COUNTRY_CODE_ALL = "ALL";
-
 		private bool checkedDeviceCompatibilty;
 
 		private bool checkedIAPDisclaimer;
 
 		private bool checkedUnderAttack;
+
+		private const string COUNTRY_CODE_ALL = "ALL";
 
 		public ShowLoadingScreenPopupsStartupTask(float startPercentage) : base(startPercentage)
 		{

@@ -75,52 +75,6 @@ namespace com.amazon.device.iap.cpt.json
 					char peekChar = this.PeekChar;
 					switch (peekChar)
 					{
-					case '"':
-						return Json.Parser.TOKEN.STRING;
-					case '#':
-					case '$':
-					case '%':
-					case '&':
-					case '\'':
-					case '(':
-					case ')':
-					case '*':
-					case '+':
-					case '.':
-					case '/':
-						IL_8D:
-						switch (peekChar)
-						{
-						case '[':
-							return Json.Parser.TOKEN.SQUARED_OPEN;
-						case '\\':
-						{
-							IL_A2:
-							switch (peekChar)
-							{
-							case '{':
-								return Json.Parser.TOKEN.CURLY_OPEN;
-							case '}':
-								this.json.Read();
-								return Json.Parser.TOKEN.CURLY_CLOSE;
-							}
-							string nextWord = this.NextWord;
-							switch (nextWord)
-							{
-							case "false":
-								return Json.Parser.TOKEN.FALSE;
-							case "true":
-								return Json.Parser.TOKEN.TRUE;
-							case "null":
-								return Json.Parser.TOKEN.NULL;
-							}
-							return Json.Parser.TOKEN.NONE;
-						}
-						case ']':
-							this.json.Read();
-							return Json.Parser.TOKEN.SQUARED_CLOSE;
-						}
-						goto IL_A2;
 					case ',':
 						this.json.Read();
 						return Json.Parser.TOKEN.COMMA;
@@ -136,10 +90,56 @@ namespace com.amazon.device.iap.cpt.json
 					case '8':
 					case '9':
 						return Json.Parser.TOKEN.NUMBER;
+					case '.':
+					case '/':
+						IL_65:
+						switch (peekChar)
+						{
+						case '[':
+							return Json.Parser.TOKEN.SQUARED_OPEN;
+						case '\\':
+							IL_7A:
+							switch (peekChar)
+							{
+							case '{':
+								return Json.Parser.TOKEN.CURLY_OPEN;
+							case '|':
+								IL_8F:
+								if (peekChar != '"')
+								{
+									string nextWord = this.NextWord;
+									if (nextWord != null)
+									{
+										if (nextWord == "false")
+										{
+											return Json.Parser.TOKEN.FALSE;
+										}
+										if (nextWord == "true")
+										{
+											return Json.Parser.TOKEN.TRUE;
+										}
+										if (nextWord == "null")
+										{
+											return Json.Parser.TOKEN.NULL;
+										}
+									}
+									return Json.Parser.TOKEN.NONE;
+								}
+								return Json.Parser.TOKEN.STRING;
+							case '}':
+								this.json.Read();
+								return Json.Parser.TOKEN.CURLY_CLOSE;
+							}
+							goto IL_8F;
+						case ']':
+							this.json.Read();
+							return Json.Parser.TOKEN.SQUARED_CLOSE;
+						}
+						goto IL_7A;
 					case ':':
 						return Json.Parser.TOKEN.COLON;
 					}
-					goto IL_8D;
+					goto IL_65;
 				}
 			}
 
@@ -221,15 +221,14 @@ namespace com.amazon.device.iap.cpt.json
 				while (flag)
 				{
 					Json.Parser.TOKEN nextToken = this.NextToken;
-					Json.Parser.TOKEN tOKEN = nextToken;
-					switch (tOKEN)
+					switch (nextToken)
 					{
 					case Json.Parser.TOKEN.SQUARED_CLOSE:
 						flag = false;
 						continue;
 					case Json.Parser.TOKEN.COLON:
-						IL_38:
-						if (tOKEN != Json.Parser.TOKEN.NONE)
+						IL_34:
+						if (nextToken != Json.Parser.TOKEN.NONE)
 						{
 							object item = this.ParseByToken(nextToken);
 							list.Add(item);
@@ -239,7 +238,7 @@ namespace com.amazon.device.iap.cpt.json
 					case Json.Parser.TOKEN.COMMA:
 						continue;
 					}
-					goto IL_38;
+					goto IL_34;
 				}
 				return list;
 			}
@@ -254,10 +253,6 @@ namespace com.amazon.device.iap.cpt.json
 			{
 				switch (token)
 				{
-				case Json.Parser.TOKEN.CURLY_OPEN:
-					return this.ParseObject();
-				case Json.Parser.TOKEN.SQUARED_OPEN:
-					return this.ParseArray();
 				case Json.Parser.TOKEN.STRING:
 					return this.ParseString();
 				case Json.Parser.TOKEN.NUMBER:
@@ -268,8 +263,16 @@ namespace com.amazon.device.iap.cpt.json
 					return false;
 				case Json.Parser.TOKEN.NULL:
 					return null;
+				default:
+					switch (token)
+					{
+					case Json.Parser.TOKEN.CURLY_OPEN:
+						return this.ParseObject();
+					case Json.Parser.TOKEN.SQUARED_OPEN:
+						return this.ParseArray();
+					}
+					return null;
 				}
-				return null;
 			}
 
 			private string ParseString()
@@ -284,10 +287,9 @@ namespace com.amazon.device.iap.cpt.json
 						break;
 					}
 					char nextChar = this.NextChar;
-					char c = nextChar;
-					if (c != '"')
+					if (nextChar != '"')
 					{
-						if (c != '\\')
+						if (nextChar != '\\')
 						{
 							stringBuilder.Append(nextChar);
 						}
@@ -296,35 +298,33 @@ namespace com.amazon.device.iap.cpt.json
 							if (this.json.Peek() != -1)
 							{
 								nextChar = this.NextChar;
-								char c2 = nextChar;
-								switch (c2)
+								switch (nextChar)
 								{
-								case 'n':
-									stringBuilder.Append('\n');
+								case 'r':
+									stringBuilder.Append('\r');
 									continue;
-								case 'o':
-								case 'p':
-								case 'q':
 								case 's':
-									IL_A5:
-									if (c2 == '"' || c2 == '/' || c2 == '\\')
+									IL_8C:
+									if (nextChar == '"' || nextChar == '/' || nextChar == '\\')
 									{
 										stringBuilder.Append(nextChar);
 										continue;
 									}
-									if (c2 == 'b')
+									if (nextChar == 'b')
 									{
 										stringBuilder.Append('\b');
 										continue;
 									}
-									if (c2 != 'f')
+									if (nextChar == 'f')
+									{
+										stringBuilder.Append('\f');
+										continue;
+									}
+									if (nextChar != 'n')
 									{
 										continue;
 									}
-									stringBuilder.Append('\f');
-									continue;
-								case 'r':
-									stringBuilder.Append('\r');
+									stringBuilder.Append('\n');
 									continue;
 								case 't':
 									stringBuilder.Append('\t');
@@ -340,7 +340,7 @@ namespace com.amazon.device.iap.cpt.json
 									continue;
 								}
 								}
-								goto IL_A5;
+								goto IL_8C;
 							}
 							flag = false;
 						}
@@ -435,16 +435,29 @@ namespace com.amazon.device.iap.cpt.json
 			{
 				bool flag = true;
 				this.builder.Append('{');
-				foreach (object current in obj.Keys)
+				IEnumerator enumerator = obj.Keys.GetEnumerator();
+				try
 				{
-					if (!flag)
+					while (enumerator.MoveNext())
 					{
-						this.builder.Append(',');
+						object current = enumerator.Current;
+						if (!flag)
+						{
+							this.builder.Append(',');
+						}
+						this.SerializeString(current.ToString());
+						this.builder.Append(':');
+						this.SerializeValue(obj[current]);
+						flag = false;
 					}
-					this.SerializeString(current.ToString());
-					this.builder.Append(':');
-					this.SerializeValue(obj[current]);
-					flag = false;
+				}
+				finally
+				{
+					IDisposable disposable;
+					if ((disposable = (enumerator as IDisposable)) != null)
+					{
+						disposable.Dispose();
+					}
 				}
 				this.builder.Append('}');
 			}
@@ -453,14 +466,27 @@ namespace com.amazon.device.iap.cpt.json
 			{
 				this.builder.Append('[');
 				bool flag = true;
-				foreach (object current in anArray)
+				IEnumerator enumerator = anArray.GetEnumerator();
+				try
 				{
-					if (!flag)
+					while (enumerator.MoveNext())
 					{
-						this.builder.Append(',');
+						object current = enumerator.Current;
+						if (!flag)
+						{
+							this.builder.Append(',');
+						}
+						this.SerializeValue(current);
+						flag = false;
 					}
-					this.SerializeValue(current);
-					flag = false;
+				}
+				finally
+				{
+					IDisposable disposable;
+					if ((disposable = (enumerator as IDisposable)) != null)
+					{
+						disposable.Dispose();
+					}
 				}
 				this.builder.Append(']');
 			}
@@ -473,26 +499,25 @@ namespace com.amazon.device.iap.cpt.json
 				for (int i = 0; i < array2.Length; i++)
 				{
 					char c = array2[i];
-					char c2 = c;
-					switch (c2)
+					switch (c)
 					{
 					case '\b':
 						this.builder.Append("\\b");
-						goto IL_151;
+						goto IL_14B;
 					case '\t':
 						this.builder.Append("\\t");
-						goto IL_151;
+						goto IL_14B;
 					case '\n':
 						this.builder.Append("\\n");
-						goto IL_151;
+						goto IL_14B;
 					case '\v':
-						IL_46:
-						if (c2 == '"')
+						IL_42:
+						if (c == '"')
 						{
 							this.builder.Append("\\\"");
-							goto IL_151;
+							goto IL_14B;
 						}
-						if (c2 != '\\')
+						if (c != '\\')
 						{
 							int num = Convert.ToInt32(c);
 							if (num >= 32 && num <= 126)
@@ -504,19 +529,19 @@ namespace com.amazon.device.iap.cpt.json
 								this.builder.Append("\\u");
 								this.builder.Append(num.ToString("x4"));
 							}
-							goto IL_151;
+							goto IL_14B;
 						}
 						this.builder.Append("\\\\");
-						goto IL_151;
+						goto IL_14B;
 					case '\f':
 						this.builder.Append("\\f");
-						goto IL_151;
+						goto IL_14B;
 					case '\r':
 						this.builder.Append("\\r");
-						goto IL_151;
+						goto IL_14B;
 					}
-					goto IL_46;
-					IL_151:;
+					goto IL_42;
+					IL_14B:;
 				}
 				this.builder.Append('"');
 			}

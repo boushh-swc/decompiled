@@ -24,24 +24,6 @@ namespace StaRTS.Utils.Json
 
 		private static List<Dictionary<string, object>> pool;
 
-		public JsonParser(string json) : this(json, 0, false)
-		{
-		}
-
-		public JsonParser(string json, int startFrom) : this(json, startFrom, false)
-		{
-		}
-
-		public JsonParser(string json, int startFrom, bool internStrings)
-		{
-			this.json = json;
-			this.jsonLength = ((json != null) ? json.Length : 0);
-			this.index = startFrom;
-			this.internStrings = internStrings;
-			this.nextBackslash = 0;
-			this.FindNextBackslash();
-		}
-
 		static JsonParser()
 		{
 			JsonParser.jsonTokenMap = new JsonTokens[256];
@@ -73,6 +55,24 @@ namespace StaRTS.Utils.Json
 			JsonParser.jsonTokenMap[102] = JsonTokens.False;
 			JsonParser.jsonTokenMap[116] = JsonTokens.WordFirst;
 			JsonParser.jsonTokenMap[110] = JsonTokens.Null;
+		}
+
+		public JsonParser(string json) : this(json, 0, false)
+		{
+		}
+
+		public JsonParser(string json, int startFrom) : this(json, startFrom, false)
+		{
+		}
+
+		public JsonParser(string json, int startFrom, bool internStrings)
+		{
+			this.json = json;
+			this.jsonLength = ((json != null) ? json.Length : 0);
+			this.index = startFrom;
+			this.internStrings = internStrings;
+			this.nextBackslash = 0;
+			this.FindNextBackslash();
 		}
 
 		public static void StaticReset()
@@ -166,36 +166,36 @@ namespace StaRTS.Utils.Json
 			JsonTokens jsonTokens = this.LookAhead();
 			switch (jsonTokens)
 			{
-			case JsonTokens.ObjectOpen:
-				return this.ParseObject();
-			case JsonTokens.ObjectClose:
-			case JsonTokens.ArrayClose:
-			case JsonTokens.Colon:
-			case JsonTokens.Comma:
-				IL_2F:
+			case JsonTokens.WordFirst:
+				this.lookAheadToken = JsonTokens.None;
+				return true;
+			case JsonTokens.False:
+				this.lookAheadToken = JsonTokens.None;
+				return false;
+			case JsonTokens.Null:
+				this.lookAheadToken = JsonTokens.None;
+				return null;
+			default:
 				switch (jsonTokens)
 				{
-				case JsonTokens.WordFirst:
-					this.lookAheadToken = JsonTokens.None;
-					return true;
-				case JsonTokens.False:
-					this.lookAheadToken = JsonTokens.None;
-					return false;
-				case JsonTokens.Null:
-					this.lookAheadToken = JsonTokens.None;
-					return null;
-				default:
-					return null;
+				case JsonTokens.ObjectOpen:
+					return this.ParseObject();
+				case JsonTokens.ObjectClose:
+					IL_30:
+					if (jsonTokens == JsonTokens.String)
+					{
+						return this.ParseString();
+					}
+					if (jsonTokens != JsonTokens.Number)
+					{
+						return null;
+					}
+					return this.ParseNumber();
+				case JsonTokens.ArrayOpen:
+					return this.ParseArray();
 				}
-				break;
-			case JsonTokens.ArrayOpen:
-				return this.ParseArray();
-			case JsonTokens.String:
-				return this.ParseString();
-			case JsonTokens.Number:
-				return this.ParseNumber();
+				goto IL_30;
 			}
-			goto IL_2F;
 		}
 
 		private void FindNextBackslash()
@@ -265,14 +265,11 @@ namespace StaRTS.Utils.Json
 					char c2 = this.json[this.index++];
 					switch (c2)
 					{
-					case 'n':
-						this.sb.Append('\n');
+					case 'r':
+						this.sb.Append('\r');
 						continue;
-					case 'o':
-					case 'p':
-					case 'q':
 					case 's':
-						IL_1BD:
+						IL_1AD:
 						if (c2 == '"')
 						{
 							this.sb.Append('"');
@@ -293,14 +290,16 @@ namespace StaRTS.Utils.Json
 							this.sb.Append('\b');
 							continue;
 						}
-						if (c2 != 'f')
+						if (c2 == 'f')
+						{
+							this.sb.Append('\f');
+							continue;
+						}
+						if (c2 != 'n')
 						{
 							continue;
 						}
-						this.sb.Append('\f');
-						continue;
-					case 'r':
-						this.sb.Append('\r');
+						this.sb.Append('\n');
 						continue;
 					case 't':
 						this.sb.Append('\t');
@@ -317,7 +316,7 @@ namespace StaRTS.Utils.Json
 						continue;
 					}
 					}
-					goto IL_1BD;
+					goto IL_1AD;
 				}
 			}
 			this.FindNextBackslash();

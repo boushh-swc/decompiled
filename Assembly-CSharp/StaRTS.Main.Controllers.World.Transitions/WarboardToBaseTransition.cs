@@ -31,21 +31,21 @@ namespace StaRTS.Main.Controllers.World.Transitions
 
 		public override EatResponse OnEvent(EventId id, object cookie)
 		{
-			if (id != EventId.WipeCameraSnapshotTaken)
+			if (id != EventId.WarBoardDestroyed)
 			{
-				if (id == EventId.WarBoardDestroyed)
+				if (id == EventId.WipeCameraSnapshotTaken)
 				{
-					Service.EventManager.UnregisterObserver(this, EventId.WarBoardDestroyed);
-					Service.CameraManager.WipeCamera.ContinueWipe();
+					Service.EventManager.UnregisterObserver(this, EventId.WipeCameraSnapshotTaken);
+					if (this.transitionToState != null)
+					{
+						Service.GameStateMachine.SetState(this.transitionToState);
+					}
 				}
 			}
 			else
 			{
-				Service.EventManager.UnregisterObserver(this, EventId.WipeCameraSnapshotTaken);
-				if (this.transitionToState != null)
-				{
-					Service.GameStateMachine.SetState(this.transitionToState);
-				}
+				Service.EventManager.UnregisterObserver(this, EventId.WarBoardDestroyed);
+				Service.CameraManager.WipeCamera.ContinueWipe();
 			}
 			return EatResponse.NotEaten;
 		}

@@ -50,10 +50,6 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		private const string STICKER_TAB_INNER_GLOW_FORMAT = "SpriteBkgInnerGlowTab{0}";
 
-		private const float DETAILS_ALPHA = 0.5f;
-
-		private const float INNER_GLOW_ALPHA = 0.4f;
-
 		private static readonly StoreTab[] STICKER_TABS = new StoreTab[]
 		{
 			StoreTab.Fragments,
@@ -62,6 +58,10 @@ namespace StaRTS.Main.Views.UX.Screens
 			StoreTab.Turrets,
 			StoreTab.Crystals
 		};
+
+		private const float DETAILS_ALPHA = 0.5f;
+
+		private const float INNER_GLOW_ALPHA = 0.4f;
 
 		private StoreScreen parentStoreScreen;
 
@@ -368,9 +368,6 @@ namespace StaRTS.Main.Views.UX.Screens
 			StickerType result = StickerType.Invalid;
 			switch (tab)
 			{
-			case StoreTab.Treasure:
-				result = StickerType.TreasureShop;
-				break;
 			case StoreTab.Crystals:
 				result = StickerType.CrystalShop;
 				break;
@@ -379,6 +376,12 @@ namespace StaRTS.Main.Views.UX.Screens
 				break;
 			case StoreTab.Structures:
 				result = StickerType.StructureShop;
+				break;
+			default:
+				if (tab == StoreTab.Treasure)
+				{
+					result = StickerType.TreasureShop;
+				}
 				break;
 			}
 			return result;

@@ -10,6 +10,8 @@ namespace StaRTS.Main.Views.Animations
 {
 	public class DroidMoment
 	{
+		private static readonly Vector3 RIG_OFFSET = new Vector3(2000f, 1000f, 0f);
+
 		private const string MODEL_ASSET = "workerdroidui_neu-ani";
 
 		private const string ASSET_STAGER = "AssetStager";
@@ -29,8 +31,6 @@ namespace StaRTS.Main.Views.Animations
 		private const int STATE_SHOWING = 1;
 
 		private const int STATE_HIDING = 2;
-
-		private static readonly Vector3 RIG_OFFSET = new Vector3(2000f, 1000f, 0f);
 
 		private int state;
 

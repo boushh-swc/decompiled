@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace StaRTS.Main.Models.ValueObjects
 {
-	public interface ITroopDeployableVO : IAssetVO, IDeployableVO, IGeometryVO, IUnlockableVO, IUpgradeableVO, IValueObject
+	public interface ITroopDeployableVO : IDeployableVO, IUpgradeableVO, IValueObject, IAssetVO, IGeometryVO, IUnlockableVO
 	{
 		TroopType Type
 		{

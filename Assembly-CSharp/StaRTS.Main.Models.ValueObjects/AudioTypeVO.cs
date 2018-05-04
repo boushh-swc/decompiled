@@ -5,7 +5,7 @@ using System;
 
 namespace StaRTS.Main.Models.ValueObjects
 {
-	public class AudioTypeVO : IAssetVO, IValueObject
+	public class AudioTypeVO : IValueObject, IAssetVO
 	{
 		public static int COLUMN_assetName
 		{

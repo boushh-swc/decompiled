@@ -61,9 +61,8 @@ namespace StaRTS.Externals.EnvironmentManager
 		private string GetBIAppropriateLocale(string deviceLocale)
 		{
 			string text = deviceLocale.Substring(0, 2);
-			string text2 = text;
 			string result;
-			switch (text2)
+			switch (text)
 			{
 			case "de":
 				result = "de_DE";

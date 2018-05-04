@@ -25,9 +25,13 @@ namespace StaRTS.Main.Views.World
 
 		private const float ROTATION_FACTOR = 4f;
 
+		private float inverseSpeedFactor;
+
 		private const string EFFECT_TEXTURE_UID = "effect_radius";
 
 		private const float EFFECT_ANIMATION_SPEED = 0f;
+
+		private Color EFFECT_COLOR = new Color(1f, 0f, 0f, 0.9f);
 
 		private const float EFFECT_TINT = 0.9f;
 
@@ -37,6 +41,8 @@ namespace StaRTS.Main.Views.World
 
 		private const float TRIGGER_ANIMATION_SPEED = 0f;
 
+		private Color TRIGGER_COLOR = new Color(0.4f, 0f, 0f, 0.7f);
+
 		private const float TRIGGER_TINT = 1f;
 
 		private const float TRIGGER_TILING = 1f;
@@ -44,12 +50,6 @@ namespace StaRTS.Main.Views.World
 		private const float TRIGGER_SCALE = 0.8f;
 
 		private const float TRIGGER_OFFSET = 0.1f;
-
-		private float inverseSpeedFactor;
-
-		private Color EFFECT_COLOR = new Color(1f, 0f, 0f, 0.9f);
-
-		private Color TRIGGER_COLOR = new Color(0.4f, 0f, 0f, 0.7f);
 
 		private static int LastIdentity;
 
@@ -96,24 +96,23 @@ namespace StaRTS.Main.Views.World
 			DynamicRadiusView.LastIdentity = 0;
 		}
 
-		public void ShowHighlight(Entity entity)
+		public void ShowHighlight(SmartEntity entity)
 		{
-			SmartEntity smartEntity = (SmartEntity)entity;
-			if (smartEntity.GameObjectViewComp == null)
+			if (entity.GameObjectViewComp == null)
 			{
 				return;
 			}
 			uint num = 0u;
 			uint minRange = 0u;
-			this.DetermineEffectRange(smartEntity, ref num, ref minRange);
+			this.DetermineEffectRange(entity, ref num, ref minRange);
 			this.GenerateEffectRadius(num, minRange);
 			uint num2 = 0u;
-			this.DetermineTriggerRange(smartEntity, ref num2);
+			this.DetermineTriggerRange(entity, ref num2);
 			this.GenerateTriggerRadius(num2);
 			this.inverseSpeedFactor = ((num2 <= 0u) ? 0f : (15f / num2));
 			this.UpdateDepths(num, num2);
 			this.radiusParent.SetActive(true);
-			this.govc = smartEntity.GameObjectViewComp;
+			this.govc = entity.GameObjectViewComp;
 			this.govc.AttachGameObject("dynamicRadius", this.radiusParent, new Vector3(0f, 0.04f, 0f), true, false);
 			this.showing = true;
 			Service.ViewTimeEngine.RegisterFrameTimeObserver(this);

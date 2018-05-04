@@ -426,7 +426,7 @@ namespace StaRTS.Main.Views.UX.Screens.Squads
 			if (selected)
 			{
 				btn.Selected = false;
-				this.curSortType = (SquadMemberSortType)((int)btn.Tag);
+				this.curSortType = (SquadMemberSortType)btn.Tag;
 				this.HandleMemberSortOptionClicked();
 				this.squadMemberGrid.RepositionItems();
 				this.UpdateMembers();
@@ -673,13 +673,13 @@ namespace StaRTS.Main.Views.UX.Screens.Squads
 			{
 				if (warManager.IsCurrentSquadMatchmaking())
 				{
-					UXLabel expr_222 = squadMemberElements.MemberRoleLabel;
-					expr_222.Text += this.lang.Get("WAR_IN_MATCHMAKING", new object[0]);
+					UXLabel expr_228 = squadMemberElements.MemberRoleLabel;
+					expr_228.Text += this.lang.Get("WAR_IN_MATCHMAKING", new object[0]);
 				}
 				else if (warManager.WarExists())
 				{
-					UXLabel expr_25F = squadMemberElements.MemberRoleLabel;
-					expr_25F.Text += this.lang.Get("WAR_IN_WAR", new object[0]);
+					UXLabel expr_265 = squadMemberElements.MemberRoleLabel;
+					expr_265.Text += this.lang.Get("WAR_IN_WAR", new object[0]);
 				}
 			}
 			squadMemberElements.MemberScoreLabel.Text = ((!(squadMember.MemberID == Service.CurrentPlayer.PlayerId)) ? this.lang.ThousandsSeparated(squadMember.Score) : this.lang.ThousandsSeparated(Service.CurrentPlayer.PlayerMedals));

@@ -38,6 +38,27 @@ public class UIKeyBinding : MonoBehaviour
 	[NonSerialized]
 	private bool mPress;
 
+	public string captionText
+	{
+		get
+		{
+			string text = NGUITools.KeyToCaption(this.keyCode);
+			if (this.modifier == UIKeyBinding.Modifier.Alt)
+			{
+				return "Alt+" + text;
+			}
+			if (this.modifier == UIKeyBinding.Modifier.Control)
+			{
+				return "Control+" + text;
+			}
+			if (this.modifier == UIKeyBinding.Modifier.Shift)
+			{
+				return "Shift+" + text;
+			}
+			return text;
+		}
+	}
+
 	public static bool IsBound(KeyCode key)
 	{
 		int i = 0;
@@ -84,32 +105,37 @@ public class UIKeyBinding : MonoBehaviour
 
 	protected virtual bool IsModifierActive()
 	{
-		if (this.modifier == UIKeyBinding.Modifier.Any)
+		return UIKeyBinding.IsModifierActive(this.modifier);
+	}
+
+	public static bool IsModifierActive(UIKeyBinding.Modifier modifier)
+	{
+		if (modifier == UIKeyBinding.Modifier.Any)
 		{
 			return true;
 		}
-		if (this.modifier == UIKeyBinding.Modifier.Alt)
+		if (modifier == UIKeyBinding.Modifier.Alt)
 		{
 			if (UICamera.GetKey(KeyCode.LeftAlt) || UICamera.GetKey(KeyCode.RightAlt))
 			{
 				return true;
 			}
 		}
-		else if (this.modifier == UIKeyBinding.Modifier.Control)
+		else if (modifier == UIKeyBinding.Modifier.Control)
 		{
 			if (UICamera.GetKey(KeyCode.LeftControl) || UICamera.GetKey(KeyCode.RightControl))
 			{
 				return true;
 			}
 		}
-		else if (this.modifier == UIKeyBinding.Modifier.Shift)
+		else if (modifier == UIKeyBinding.Modifier.Shift)
 		{
 			if (UICamera.GetKey(KeyCode.LeftShift) || UICamera.GetKey(KeyCode.RightShift))
 			{
 				return true;
 			}
 		}
-		else if (this.modifier == UIKeyBinding.Modifier.None)
+		else if (modifier == UIKeyBinding.Modifier.None)
 		{
 			return !UICamera.GetKey(KeyCode.LeftAlt) && !UICamera.GetKey(KeyCode.RightAlt) && !UICamera.GetKey(KeyCode.LeftControl) && !UICamera.GetKey(KeyCode.RightControl) && !UICamera.GetKey(KeyCode.LeftShift) && !UICamera.GetKey(KeyCode.RightShift);
 		}
@@ -118,7 +144,7 @@ public class UIKeyBinding : MonoBehaviour
 
 	protected virtual void Update()
 	{
-		if (UICamera.inputHasFocus)
+		if (this.keyCode != KeyCode.Numlock && UICamera.inputHasFocus)
 		{
 			return;
 		}
@@ -136,11 +162,13 @@ public class UIKeyBinding : MonoBehaviour
 		{
 			if (flag)
 			{
+				UICamera.currentTouchID = -1;
 				UICamera.currentKey = this.keyCode;
 				this.OnBindingPress(true);
 			}
 			if (this.mPress && flag2)
 			{
+				UICamera.currentTouchID = -1;
 				UICamera.currentKey = this.keyCode;
 				this.OnBindingPress(false);
 				this.OnBindingClick();
@@ -150,7 +178,7 @@ public class UIKeyBinding : MonoBehaviour
 		{
 			if (this.mIsInput)
 			{
-				if (!this.mIgnoreUp && !UICamera.inputHasFocus && this.mPress)
+				if (!this.mIgnoreUp && (this.keyCode == KeyCode.Numlock || !UICamera.inputHasFocus) && this.mPress)
 				{
 					UICamera.selectedObject = base.gameObject;
 				}
@@ -175,5 +203,74 @@ public class UIKeyBinding : MonoBehaviour
 	protected virtual void OnBindingClick()
 	{
 		UICamera.Notify(base.gameObject, "OnClick", null);
+	}
+
+	public override string ToString()
+	{
+		return UIKeyBinding.GetString(this.keyCode, this.modifier);
+	}
+
+	public static string GetString(KeyCode keyCode, UIKeyBinding.Modifier modifier)
+	{
+		return (modifier == UIKeyBinding.Modifier.None) ? keyCode.ToString() : (modifier + "+" + keyCode);
+	}
+
+	public static bool GetKeyCode(string text, out KeyCode key, out UIKeyBinding.Modifier modifier)
+	{
+		key = KeyCode.None;
+		modifier = UIKeyBinding.Modifier.None;
+		if (string.IsNullOrEmpty(text))
+		{
+			return false;
+		}
+		if (text.Contains("+"))
+		{
+			string[] array = text.Split(new char[]
+			{
+				'+'
+			});
+			try
+			{
+				modifier = (UIKeyBinding.Modifier)Enum.Parse(typeof(UIKeyBinding.Modifier), array[0]);
+				key = (KeyCode)Enum.Parse(typeof(KeyCode), array[1]);
+			}
+			catch (Exception)
+			{
+				bool result = false;
+				return result;
+			}
+		}
+		else
+		{
+			modifier = UIKeyBinding.Modifier.None;
+			try
+			{
+				key = (KeyCode)Enum.Parse(typeof(KeyCode), text);
+			}
+			catch (Exception)
+			{
+				bool result = false;
+				return result;
+			}
+		}
+		return true;
+	}
+
+	public static UIKeyBinding.Modifier GetActiveModifier()
+	{
+		UIKeyBinding.Modifier result = UIKeyBinding.Modifier.None;
+		if (UICamera.GetKey(KeyCode.LeftAlt) || UICamera.GetKey(KeyCode.RightAlt))
+		{
+			result = UIKeyBinding.Modifier.Alt;
+		}
+		else if (UICamera.GetKey(KeyCode.LeftShift) || UICamera.GetKey(KeyCode.RightShift))
+		{
+			result = UIKeyBinding.Modifier.Shift;
+		}
+		else if (UICamera.GetKey(KeyCode.LeftControl) || UICamera.GetKey(KeyCode.RightControl))
+		{
+			result = UIKeyBinding.Modifier.Control;
+		}
+		return result;
 	}
 }

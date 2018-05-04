@@ -1,7 +1,7 @@
-using Net.RichardLord.Ash.Core;
 using StaRTS.Main.Controllers;
 using StaRTS.Main.Controllers.Entities.Systems;
 using StaRTS.Main.Models;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.Entities.Components;
 using StaRTS.Main.Models.ValueObjects;
 using StaRTS.Utils;
@@ -67,14 +67,14 @@ namespace StaRTS.Main.Story.Actions
 		public override void Execute()
 		{
 			base.Execute();
-			List<Entity> buildingListByType = Service.BuildingLookupController.GetBuildingListByType(this.type);
+			List<SmartEntity> buildingListByType = Service.BuildingLookupController.GetBuildingListByType(this.type);
 			PostBattleRepairController postBattleRepairController = Service.PostBattleRepairController;
 			for (int i = 0; i < buildingListByType.Count; i++)
 			{
-				BuildingComponent buildingComponent = buildingListByType[i].Get<BuildingComponent>();
-				if (this.area.Contains(new Vector2((float)buildingComponent.BuildingTO.X, (float)buildingComponent.BuildingTO.Z)))
+				BuildingComponent buildingComp = buildingListByType[i].BuildingComp;
+				if (this.area.Contains(new Vector2((float)buildingComp.BuildingTO.X, (float)buildingComp.BuildingTO.Z)))
 				{
-					postBattleRepairController.ForceRepairOnBuilding(buildingComponent.Entity, this.repairPercent);
+					postBattleRepairController.ForceRepairOnBuilding(buildingComp.Entity, this.repairPercent);
 				}
 			}
 			Service.EntityController.GetViewSystem<HealthRenderSystem>().ForceUpdate();

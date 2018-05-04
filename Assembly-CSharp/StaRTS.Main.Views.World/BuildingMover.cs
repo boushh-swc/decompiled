@@ -25,7 +25,7 @@ using UnityEngine;
 
 namespace StaRTS.Main.Views.World
 {
-	public class BuildingMover : IEventObserver, IUserInputObserver
+	public class BuildingMover : IUserInputObserver, IEventObserver
 	{
 		private const float LIFT_DISTANCE_WORLD = 3f;
 
@@ -49,7 +49,7 @@ namespace StaRTS.Main.Views.World
 
 		private bool dragged;
 
-		private Entity pressedBuilding;
+		private SmartEntity pressedBuilding;
 
 		private bool moved;
 
@@ -106,7 +106,7 @@ namespace StaRTS.Main.Views.World
 			this.inhibitor = Service.UserInputInhibitor;
 		}
 
-		public void OnStartPurchaseBuilding(Entity buildingEntity, bool stampable)
+		public void OnStartPurchaseBuilding(SmartEntity buildingEntity, bool stampable)
 		{
 			this.EnsureLoweredLiftedBuilding();
 			this.buildingSelector.EnsureDeselectSelectedBuilding();
@@ -133,7 +133,7 @@ namespace StaRTS.Main.Views.World
 			this.LowerLiftedBuilding(DropKind.JustDrop, false, true, true, false);
 		}
 
-		public bool UnstashBuilding(Entity buildingEntity, Position pos, bool stampable, bool panToBuilding, bool playLoweredSound)
+		public bool UnstashBuilding(SmartEntity buildingEntity, Position pos, bool stampable, bool panToBuilding, bool playLoweredSound)
 		{
 			this.EnsureLoweredLiftedBuilding();
 			this.buildingSelector.EnsureDeselectSelectedBuilding();
@@ -221,39 +221,36 @@ namespace StaRTS.Main.Views.World
 
 		public EatResponse OnEvent(EventId id, object cookie)
 		{
-			if (id != EventId.BuildingViewReady)
+			if (id != EventId.UserWantedEditBaseState)
 			{
-				if (id != EventId.GameStateChanged)
+				if (id != EventId.BuildingViewReady)
 				{
-					if (id == EventId.UserWantedEditBaseState)
+					if (id == EventId.GameStateChanged)
 					{
-						if (!(bool)cookie)
+						Type type = (Type)cookie;
+						if (type == typeof(EditBaseState))
 						{
-							this.eatDrags = true;
+							this.EnsureLoweredLiftedBuilding();
 						}
 					}
 				}
 				else
 				{
-					Type type = (Type)cookie;
-					if (type == typeof(EditBaseState))
+					EntityViewParams entityViewParams = cookie as EntityViewParams;
+					if (this.lifted && this.buildingSelector.IsPartOfSelection(entityViewParams.Entity))
 					{
-						this.EnsureLoweredLiftedBuilding();
+						this.LiftSelectedBuilding(entityViewParams.Entity, false, false);
 					}
 				}
 			}
-			else
+			else if (!(bool)cookie)
 			{
-				EntityViewParams entityViewParams = cookie as EntityViewParams;
-				if (this.lifted && this.buildingSelector.IsPartOfSelection(entityViewParams.Entity))
-				{
-					this.LiftSelectedBuilding(entityViewParams.Entity, false, false);
-				}
+				this.eatDrags = true;
 			}
 			return EatResponse.NotEaten;
 		}
 
-		public void DeselectBuildingBeforeCombiningMesh(out Entity selectedBuilding, out Vector3 offset)
+		public void DeselectBuildingBeforeCombiningMesh(out SmartEntity selectedBuilding, out Vector3 offset)
 		{
 			selectedBuilding = this.buildingSelector.SelectedBuilding;
 			offset = this.buildingSelector.GrabPoint;
@@ -263,7 +260,7 @@ namespace StaRTS.Main.Views.World
 			}
 		}
 
-		public void SelectBuildingAfterCombiningMesh(Entity selectedBuilding, Vector3 offset)
+		public void SelectBuildingAfterCombiningMesh(SmartEntity selectedBuilding, Vector3 offset)
 		{
 			if (selectedBuilding != null)
 			{
@@ -278,18 +275,18 @@ namespace StaRTS.Main.Views.World
 				this.ClearPreviousAnchors();
 				for (int i = 0; i < this.buildingSelector.AdditionalSelectedBuildings.Count; i++)
 				{
-					Entity entity = this.buildingSelector.AdditionalSelectedBuildings[i];
-					this.LiftSelectedBuilding(entity, false, false);
-					Service.EventManager.SendEvent(EventId.UserLiftedBuilding, entity);
+					SmartEntity smartEntity = this.buildingSelector.AdditionalSelectedBuildings[i];
+					this.LiftSelectedBuilding(smartEntity, false, false);
+					Service.EventManager.SendEvent(EventId.UserLiftedBuilding, smartEntity);
 				}
 				this.LiftSelectedBuilding(this.buildingSelector.SelectedBuilding, true, false);
 				this.UpdateWallConnectorsInSelection(false);
 			}
 		}
 
-		private void SwitchAnchorBuildingInSelection(Entity pressedBuilding, Vector3 offset)
+		private void SwitchAnchorBuildingInSelection(SmartEntity pressedBuilding, Vector3 offset)
 		{
-			List<Entity> list = new List<Entity>(this.buildingSelector.AdditionalSelectedBuildings);
+			List<SmartEntity> list = new List<SmartEntity>(this.buildingSelector.AdditionalSelectedBuildings);
 			list.Add(this.buildingSelector.SelectedBuilding);
 			list.Remove(pressedBuilding);
 			this.buildingSelector.DeselectSelectedBuilding();
@@ -324,7 +321,7 @@ namespace StaRTS.Main.Views.World
 				return EatResponse.NotEaten;
 			}
 			this.ResetOnPress(screenPosition, groundPosition);
-			Entity buildingEntity = this.buildingSelector.GetBuildingEntity(target);
+			SmartEntity buildingEntity = this.buildingSelector.GetBuildingEntity(target);
 			if (buildingEntity == null)
 			{
 				return EatResponse.NotEaten;
@@ -346,9 +343,9 @@ namespace StaRTS.Main.Views.World
 					this.ClearPreviousAnchors();
 					for (int i = 0; i < this.buildingSelector.AdditionalSelectedBuildings.Count; i++)
 					{
-						Entity entity = this.buildingSelector.AdditionalSelectedBuildings[i];
-						this.LiftSelectedBuilding(entity, false, false);
-						Service.EventManager.SendEvent(EventId.UserLiftedBuilding, entity);
+						SmartEntity smartEntity = this.buildingSelector.AdditionalSelectedBuildings[i];
+						this.LiftSelectedBuilding(smartEntity, false, false);
+						Service.EventManager.SendEvent(EventId.UserLiftedBuilding, smartEntity);
 					}
 					this.LiftSelectedBuilding(this.buildingSelector.SelectedBuilding, true, false);
 					this.UpdateWallConnectorsInSelection(false);
@@ -365,7 +362,7 @@ namespace StaRTS.Main.Views.World
 				return;
 			}
 			WallConnector wallConnector = Service.EntityViewManager.WallConnector;
-			wallConnector.ConnectWallsInExclusiveSet(new List<Entity>(this.buildingSelector.AdditionalSelectedBuildings)
+			wallConnector.ConnectWallsInExclusiveSet(new List<SmartEntity>(this.buildingSelector.AdditionalSelectedBuildings)
 			{
 				this.buildingSelector.SelectedBuilding
 			}, alreadyLifted);
@@ -381,7 +378,7 @@ namespace StaRTS.Main.Views.World
 			{
 				this.dragged = true;
 			}
-			Entity buildingEntity = this.buildingSelector.GetBuildingEntity(target);
+			SmartEntity buildingEntity = this.buildingSelector.GetBuildingEntity(target);
 			if (buildingEntity == null)
 			{
 				return (!this.eatDrags) ? EatResponse.NotEaten : EatResponse.Eaten;
@@ -574,11 +571,11 @@ namespace StaRTS.Main.Views.World
 			SmartEntity smartEntity;
 			for (int i = 0; i < count; i++)
 			{
-				smartEntity = (SmartEntity)this.buildingSelector.AdditionalSelectedBuildings[i];
+				smartEntity = this.buildingSelector.AdditionalSelectedBuildings[i];
 				this.prevValidBoardAnchorX[smartEntity] = smartEntity.TransformComp.X;
 				this.prevValidBoardAnchorZ[smartEntity] = smartEntity.TransformComp.Z;
 			}
-			smartEntity = (SmartEntity)this.buildingSelector.SelectedBuilding;
+			smartEntity = this.buildingSelector.SelectedBuilding;
 			this.prevValidBoardAnchorX[smartEntity] = smartEntity.TransformComp.X;
 			this.prevValidBoardAnchorZ[smartEntity] = smartEntity.TransformComp.Z;
 		}
@@ -591,12 +588,12 @@ namespace StaRTS.Main.Views.World
 			this.prevBoardAnchorZ.Clear();
 		}
 
-		private void LiftSelectedBuilding(Entity buildingInSelection, bool sendLiftedEvent)
+		private void LiftSelectedBuilding(SmartEntity buildingInSelection, bool sendLiftedEvent)
 		{
 			this.LiftSelectedBuilding(buildingInSelection, sendLiftedEvent, true);
 		}
 
-		private void LiftSelectedBuilding(Entity buildingInSelection, bool sendLiftedEvent, bool clearPreviousAnchorPos)
+		private void LiftSelectedBuilding(SmartEntity buildingInSelection, bool sendLiftedEvent, bool clearPreviousAnchorPos)
 		{
 			this.lifted = true;
 			if (buildingInSelection == this.buildingSelector.SelectedBuilding)
@@ -630,8 +627,8 @@ namespace StaRTS.Main.Views.World
 			{
 				this.ClearPreviousAnchors();
 			}
-			TransformComponent transformComponent = this.buildingSelector.SelectedBuilding.Get<TransformComponent>();
-			Vector3 worldGroundPosition = new Vector3(Units.BoardToWorldX(transformComponent.X), 0f, Units.BoardToWorldZ(transformComponent.Z));
+			TransformComponent transformComp = this.buildingSelector.SelectedBuilding.TransformComp;
+			Vector3 worldGroundPosition = new Vector3(Units.BoardToWorldX(transformComp.X), 0f, Units.BoardToWorldZ(transformComp.Z));
 			if (sendLiftedEvent)
 			{
 				Service.EventManager.SendEvent(EventId.UserLiftedBuilding, buildingInSelection);
@@ -645,7 +642,7 @@ namespace StaRTS.Main.Views.World
 			this.MoveLiftedBuilding(buildingInSelection, worldGroundPosition);
 			Service.EntityViewManager.SetCollider(buildingInSelection, false);
 			this.buildingSelector.ApplySelectedEffect(buildingInSelection);
-			Service.BuildingTooltipController.HideBuildingTooltip((SmartEntity)buildingInSelection);
+			Service.BuildingTooltipController.HideBuildingTooltip(buildingInSelection);
 		}
 
 		private void MoveLiftedBuilding(Entity building, Vector3 worldGroundPosition)
@@ -750,7 +747,7 @@ namespace StaRTS.Main.Views.World
 
 		private void LowerLiftedBuilding(DropKind dropKind, bool affectBoard, bool sendLoweredEvent, bool playLoweredSound, bool showContextButtons)
 		{
-			Entity selectedBuilding = this.buildingSelector.SelectedBuilding;
+			SmartEntity selectedBuilding = this.buildingSelector.SelectedBuilding;
 			if (selectedBuilding == null)
 			{
 				this.lifted = false;
@@ -764,7 +761,7 @@ namespace StaRTS.Main.Views.World
 			}
 			if (affectBoard && dropKind == DropKind.ConfirmPurchase)
 			{
-				BuildingTypeVO buildingType = selectedBuilding.Get<BuildingComponent>().BuildingType;
+				BuildingTypeVO buildingType = selectedBuilding.BuildingComp.BuildingType;
 				int credits = buildingType.Credits;
 				int materials = buildingType.Materials;
 				int contraband = buildingType.Contraband;
@@ -919,7 +916,7 @@ namespace StaRTS.Main.Views.World
 			return result;
 		}
 
-		private bool LowerLiftedBuildingHelper(Entity buildingInSelection, DropKind dropKind, bool affectBoard, bool sendLoweredEvent, bool playLoweredSound, bool showContextButtons, string tag)
+		private bool LowerLiftedBuildingHelper(SmartEntity buildingInSelection, DropKind dropKind, bool affectBoard, bool sendLoweredEvent, bool playLoweredSound, bool showContextButtons, string tag)
 		{
 			this.lifted = false;
 			this.moved = false;
@@ -1023,7 +1020,7 @@ namespace StaRTS.Main.Views.World
 			{
 				Service.UXController.HUD.ShowContextButtons(buildingInSelection);
 			}
-			Service.BuildingTooltipController.EnsureBuildingTooltip((SmartEntity)buildingInSelection);
+			Service.BuildingTooltipController.EnsureBuildingTooltip(buildingInSelection);
 			return true;
 		}
 	}

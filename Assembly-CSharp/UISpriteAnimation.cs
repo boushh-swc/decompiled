@@ -5,6 +5,8 @@ using UnityEngine;
 [AddComponentMenu("NGUI/UI/Sprite Animation"), ExecuteInEditMode, RequireComponent(typeof(UISprite))]
 public class UISpriteAnimation : MonoBehaviour
 {
+	public int frameIndex;
+
 	[HideInInspector, SerializeField]
 	protected int mFPS = 30;
 
@@ -20,8 +22,6 @@ public class UISpriteAnimation : MonoBehaviour
 	protected UISprite mSprite;
 
 	protected float mDelta;
-
-	protected int mIndex;
 
 	protected bool mActive = true;
 
@@ -92,19 +92,19 @@ public class UISpriteAnimation : MonoBehaviour
 	{
 		if (this.mActive && this.mSpriteNames.Count > 1 && Application.isPlaying && this.mFPS > 0)
 		{
-			this.mDelta += RealTime.deltaTime;
+			this.mDelta += Mathf.Min(1f, RealTime.deltaTime);
 			float num = 1f / (float)this.mFPS;
-			if (num < this.mDelta)
+			while (num < this.mDelta)
 			{
 				this.mDelta = ((num <= 0f) ? 0f : (this.mDelta - num));
-				if (++this.mIndex >= this.mSpriteNames.Count)
+				if (++this.frameIndex >= this.mSpriteNames.Count)
 				{
-					this.mIndex = 0;
+					this.frameIndex = 0;
 					this.mActive = this.mLoop;
 				}
 				if (this.mActive)
 				{
-					this.mSprite.spriteName = this.mSpriteNames[this.mIndex];
+					this.mSprite.spriteName = this.mSpriteNames[this.frameIndex];
 					if (this.mSnap)
 					{
 						this.mSprite.MakePixelPerfect();
@@ -152,10 +152,10 @@ public class UISpriteAnimation : MonoBehaviour
 	public void ResetToBeginning()
 	{
 		this.mActive = true;
-		this.mIndex = 0;
+		this.frameIndex = 0;
 		if (this.mSprite != null && this.mSpriteNames.Count > 0)
 		{
-			this.mSprite.spriteName = this.mSpriteNames[this.mIndex];
+			this.mSprite.spriteName = this.mSpriteNames[this.frameIndex];
 			if (this.mSnap)
 			{
 				this.mSprite.MakePixelPerfect();

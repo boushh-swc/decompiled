@@ -48,7 +48,7 @@ namespace StaRTS.Main.Controllers.Startup
 			this.useRealAuthentication = !AppServerEnvironmentController.IsLocalServer();
 			this.hasSecondary = true;
 			new QuietCorrectionController();
-			new ServerAPI(Service.AppServerEnvironmentController.Server, Convert.ToUInt32("75"), Service.ViewTimerManager, Service.Engine, new ServerAPI.DesynHandler(this.OnDesync), new ServerAPI.MessageHandler(this.MessageHandler));
+			new ServerAPI(Service.AppServerEnvironmentController.Server, Convert.ToUInt32("77"), Service.ViewTimerManager, Service.Engine, new ServerAPI.DesynHandler(this.OnDesync), new ServerAPI.MessageHandler(this.MessageHandler));
 			new ServerController();
 			new GameIdleController();
 			this.FigureOutAuth();
@@ -281,20 +281,20 @@ namespace StaRTS.Main.Controllers.Startup
 			string message = string.Empty;
 			Lang lang = Service.Lang;
 			ProtocolResult protocolResult = this.protocolResult;
-			if (protocolResult != ProtocolResult.Higher)
+			if (protocolResult != ProtocolResult.Lower)
 			{
-				if (protocolResult == ProtocolResult.Lower)
+				if (protocolResult == ProtocolResult.Higher)
 				{
-					title = lang.Get("FORCED_UPDATE_TITLE", new object[0]);
-					message = lang.Get("FORCED_UPDATE_MESSAGE", new object[0]);
-					UpdateClientScreen.ShowModal(title, message, new OnScreenModalResult(this.OnUpdateWindowClosed), null);
+					title = lang.Get("UPDATE_COMING_TITLE", new object[0]);
+					message = lang.Get("UPDATE_COMING_MESSAGE", new object[0]);
+					AlertScreen.ShowModal(true, title, message, null, null);
 				}
 			}
 			else
 			{
-				title = lang.Get("UPDATE_COMING_TITLE", new object[0]);
-				message = lang.Get("UPDATE_COMING_MESSAGE", new object[0]);
-				AlertScreen.ShowModal(true, title, message, null, null);
+				title = lang.Get("FORCED_UPDATE_TITLE", new object[0]);
+				message = lang.Get("FORCED_UPDATE_MESSAGE", new object[0]);
+				UpdateClientScreen.ShowModal(title, message, new OnScreenModalResult(this.OnUpdateWindowClosed), null);
 			}
 			this.KillStartup();
 		}

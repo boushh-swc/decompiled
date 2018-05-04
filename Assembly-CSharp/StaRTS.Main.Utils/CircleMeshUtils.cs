@@ -60,7 +60,7 @@ namespace StaRTS.Main.Utils
 				list3.Add(up);
 				list3.Add(up);
 				list3.Add(up);
-				list2.Add(0 + num5);
+				list2.Add(num5);
 				list2.Add(1 + num5);
 				list2.Add(2 + num5);
 				list2.Add(1 + num5);

@@ -1,4 +1,3 @@
-using Net.RichardLord.Ash.Core;
 using StaRTS.Main.Controllers;
 using StaRTS.Main.Models;
 using StaRTS.Main.Models.Entities;
@@ -206,7 +205,7 @@ namespace StaRTS.Main.Views.UX.Screens
 			}
 		}
 
-		public EquipmentInfoScreen(EquipmentVO selectedEquipment, List<EquipmentVO> equipmentList, Entity selectedBuilding, bool forResearchLab, bool forArmoryScreen) : base("gui_troop_info", selectedBuilding)
+		public EquipmentInfoScreen(EquipmentVO selectedEquipment, List<EquipmentVO> equipmentList, SmartEntity selectedBuilding, bool forResearchLab, bool forArmoryScreen) : base("gui_troop_info", selectedBuilding)
 		{
 			this.wantsTransition = false;
 			this.shouldCloseParent = true;
@@ -357,7 +356,7 @@ namespace StaRTS.Main.Views.UX.Screens
 			Contract contract = null;
 			if (this.selectedBuilding != null)
 			{
-				BuildingComponent buildingComp = ((SmartEntity)this.selectedBuilding).BuildingComp;
+				BuildingComponent buildingComp = this.selectedBuilding.BuildingComp;
 				contract = Service.ISupportController.FindCurrentContract(buildingComp.BuildingTO.Key);
 			}
 			if (contract != null)
@@ -877,7 +876,7 @@ namespace StaRTS.Main.Views.UX.Screens
 				return;
 			}
 			Service.ISupportController.BuyOutCurrentBuildingContract(this.selectedBuilding, true);
-			BuildingComponent buildingComp = ((SmartEntity)this.selectedBuilding).BuildingComp;
+			BuildingComponent buildingComp = this.selectedBuilding.BuildingComp;
 			if (buildingComp != null)
 			{
 				BuildingTypeVO buildingType = buildingComp.BuildingType;

@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace StaRTS.Main.Views.UX.Screens
 {
-	public class HolocommScreen : ScreenBase, IEventObserver, IUserInputObserver
+	public class HolocommScreen : ScreenBase, IUserInputObserver, IEventObserver
 	{
 		public delegate void HoloCallback();
 

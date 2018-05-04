@@ -17,11 +17,11 @@ namespace StaRTS.Main.Story.Actions
 
 		private const string GREET = "greet";
 
-		private const float SECONDS_DELAY_AFTER_TRANSITION = 1.5f;
-
 		private bool greet;
 
 		private uint timerId;
+
+		private const float SECONDS_DELAY_AFTER_TRANSITION = 1.5f;
 
 		public string Character
 		{
@@ -92,27 +92,30 @@ namespace StaRTS.Main.Story.Actions
 
 		public EatResponse OnEvent(EventId id, object cookie)
 		{
-			if (id != EventId.WorldInTransitionComplete)
+			if (id != EventId.ShowHologramComplete)
 			{
-				if (id != EventId.GameStateChanged)
+				if (id != EventId.WorldInTransitionComplete)
 				{
-					if (id == EventId.ShowHologramComplete)
+					if (id == EventId.GameStateChanged)
 					{
-						Service.EventManager.UnregisterObserver(this, EventId.ShowHologramComplete);
-						this.TryPlayGreet();
-						this.parent.ChildComplete(this);
+						if (!(Service.GameStateMachine.CurrentState is IntroCameraState))
+						{
+							Service.EventManager.UnregisterObserver(this, EventId.GameStateChanged);
+							this.timerId = Service.ViewTimerManager.CreateViewTimer(1.5f, false, new TimerDelegate(this.ExecuteAfterDelay), null);
+						}
 					}
 				}
-				else if (!(Service.GameStateMachine.CurrentState is IntroCameraState))
+				else
 				{
-					Service.EventManager.UnregisterObserver(this, EventId.GameStateChanged);
+					Service.EventManager.UnregisterObserver(this, EventId.WorldInTransitionComplete);
 					this.timerId = Service.ViewTimerManager.CreateViewTimer(1.5f, false, new TimerDelegate(this.ExecuteAfterDelay), null);
 				}
 			}
 			else
 			{
-				Service.EventManager.UnregisterObserver(this, EventId.WorldInTransitionComplete);
-				this.timerId = Service.ViewTimerManager.CreateViewTimer(1.5f, false, new TimerDelegate(this.ExecuteAfterDelay), null);
+				Service.EventManager.UnregisterObserver(this, EventId.ShowHologramComplete);
+				this.TryPlayGreet();
+				this.parent.ChildComplete(this);
 			}
 			return EatResponse.NotEaten;
 		}

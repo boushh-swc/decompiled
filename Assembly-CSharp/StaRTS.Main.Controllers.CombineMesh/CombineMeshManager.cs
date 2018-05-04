@@ -64,101 +64,103 @@ namespace StaRTS.Main.Controllers.CombineMesh
 		{
 			switch (id)
 			{
-			case EventId.WorldLoadComplete:
-				if ((!this.IsCurrentWorldHome() || this.isStartupTasksCompleted) && !this.IsCurrentWorldUserWarBase())
+			case EventId.BuildingLevelUpgraded:
+			case EventId.BuildingSwapped:
+				if (!this.IsFueInProgress() && this.IsCurrentWorldHome())
 				{
-					this.CombineAllMeshTypes();
+					SmartEntity entity = ((ContractEventData)cookie).Entity;
+					this.GetCurrentCombineMeshHelper().BuildingObjectDestroyed(entity, this.meshCombiners, false);
 				}
-				return EatResponse.NotEaten;
-			case EventId.WorldInTransitionComplete:
-			case EventId.WorldOutTransitionComplete:
-				IL_1D:
-				switch (id)
+				break;
+			case EventId.BuildingConstructed:
+				break;
+			default:
+			{
+				if (id != EventId.BuildingViewReady && id != EventId.BuildingViewFailed)
 				{
-				case EventId.ClearableCleared:
-					if (!this.IsFueInProgress())
-					{
-						this.GetCurrentCombineMeshHelper().BuildingObjectDestroyed(BuildingType.Clearable, this.meshCombiners, true);
-					}
-					return EatResponse.NotEaten;
-				case EventId.ClearableStarted:
-					IL_33:
 					switch (id)
 					{
-					case EventId.BuildingLevelUpgraded:
-					case EventId.BuildingSwapped:
-						if (!this.IsFueInProgress() && this.IsCurrentWorldHome())
+					case EventId.ClearableCleared:
+						if (!this.IsFueInProgress())
 						{
-							SmartEntity buildingEntity = (SmartEntity)((ContractEventData)cookie).Entity;
-							this.GetCurrentCombineMeshHelper().BuildingObjectDestroyed(buildingEntity, this.meshCombiners, false);
+							this.GetCurrentCombineMeshHelper().BuildingObjectDestroyed(BuildingType.Clearable, this.meshCombiners, true);
 						}
 						return EatResponse.NotEaten;
-					case EventId.BuildingConstructed:
-						return EatResponse.NotEaten;
-					default:
-						if (id == EventId.BuildingViewReady || id == EventId.BuildingViewFailed)
+					case EventId.ClearableStarted:
+						IL_38:
+						switch (id)
 						{
-							SmartEntity entity = ((EntityViewParams)cookie).Entity;
-							if (!this.IsFueInProgress() && this.isStartupTasksCompleted && Service.WorldTransitioner.IsEverythingLoaded() && this.IsCurrentWorldHome())
+						case EventId.WorldLoadComplete:
+							if ((!this.IsCurrentWorldHome() || this.isStartupTasksCompleted) && !this.IsCurrentWorldUserWarBase())
 							{
-								this.GetCurrentCombineMeshHelper().BuildingObjectAdded(entity, this.meshCombiners);
+								this.CombineAllMeshTypes();
 							}
 							return EatResponse.NotEaten;
-						}
-						if (id == EventId.PostBuildingEntityKilled)
-						{
-							BuildingType buildingType = (BuildingType)((int)cookie);
-							if (!this.IsFueInProgress())
+						case EventId.WorldInTransitionComplete:
+						case EventId.WorldOutTransitionComplete:
+							IL_51:
+							if (id == EventId.PostBuildingEntityKilled)
 							{
-								this.GetCurrentCombineMeshHelper().BuildingObjectDestroyed(buildingType, this.meshCombiners, true);
-							}
-							return EatResponse.NotEaten;
-						}
-						if (id == EventId.GameStateChanged)
-						{
-							IState currentState = Service.GameStateMachine.CurrentState;
-							Type previousStateType = (Type)cookie;
-							if (currentState is HomeState)
-							{
-								if (!this.isStartupTasksCompleted)
+								BuildingType buildingType = (BuildingType)cookie;
+								if (!this.IsFueInProgress())
 								{
-									this.CombineAllMeshTypes();
+									this.GetCurrentCombineMeshHelper().BuildingObjectDestroyed(buildingType, this.meshCombiners, true);
 								}
-								else if (this.IsPreviousStateEditMode(previousStateType))
-								{
-									this.CombineAllMeshTypes();
-								}
+								return EatResponse.NotEaten;
 							}
-							else if (this.DidJustTransitionFromHomeToEditState(previousStateType, currentState))
+							if (id == EventId.GameStateChanged)
 							{
-								this.UncombineAllMeshTypes(false);
+								IState currentState = Service.GameStateMachine.CurrentState;
+								Type previousStateType = (Type)cookie;
+								if (currentState is HomeState)
+								{
+									if (!this.isStartupTasksCompleted)
+									{
+										this.CombineAllMeshTypes();
+									}
+									else if (this.IsPreviousStateEditMode(previousStateType))
+									{
+										this.CombineAllMeshTypes();
+									}
+								}
+								else if (this.DidJustTransitionFromHomeToEditState(previousStateType, currentState))
+								{
+									this.UncombineAllMeshTypes(false);
+								}
+								return EatResponse.NotEaten;
+							}
+							if (id != EventId.ShaderResetOnEntity)
+							{
+								return EatResponse.NotEaten;
+							}
+							if ((!this.IsCurrentWorldHome() || this.isStartupTasksCompleted) && !this.IsCurrentWorldUserWarBase())
+							{
+								this.CombineAllMeshTypes();
+							}
+							return EatResponse.NotEaten;
+						case EventId.WorldReset:
+							if (this.isSomeMeshesCombined)
+							{
+								this.UncombineAllMeshTypes(true);
 							}
 							return EatResponse.NotEaten;
 						}
-						if (id != EventId.ShaderResetOnEntity)
-						{
-							return EatResponse.NotEaten;
-						}
-						if ((!this.IsCurrentWorldHome() || this.isStartupTasksCompleted) && !this.IsCurrentWorldUserWarBase())
-						{
-							this.CombineAllMeshTypes();
-						}
+						goto IL_51;
+					case EventId.StartupTasksCompleted:
+						this.isStartupTasksCompleted = true;
 						return EatResponse.NotEaten;
 					}
-					break;
-				case EventId.StartupTasksCompleted:
-					this.isStartupTasksCompleted = true;
-					return EatResponse.NotEaten;
+					goto IL_38;
 				}
-				goto IL_33;
-			case EventId.WorldReset:
-				if (this.isSomeMeshesCombined)
+				SmartEntity entity2 = ((EntityViewParams)cookie).Entity;
+				if (!this.IsFueInProgress() && this.isStartupTasksCompleted && Service.WorldTransitioner.IsEverythingLoaded() && this.IsCurrentWorldHome())
 				{
-					this.UncombineAllMeshTypes(true);
+					this.GetCurrentCombineMeshHelper().BuildingObjectAdded(entity2, this.meshCombiners);
 				}
-				return EatResponse.NotEaten;
+				break;
 			}
-			goto IL_1D;
+			}
+			return EatResponse.NotEaten;
 		}
 
 		private bool IsPreviousStateEditMode(Type previousStateType)

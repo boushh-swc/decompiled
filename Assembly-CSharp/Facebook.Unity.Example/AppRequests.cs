@@ -37,8 +37,7 @@ namespace Facebook.Unity.Example
 		{
 			if (base.Button("Select - Filter None"))
 			{
-				FacebookDelegate<IAppRequestResult> callback = new FacebookDelegate<IAppRequestResult>(base.HandleResult);
-				FB.AppRequest("Test Message", null, null, null, null, string.Empty, string.Empty, callback);
+				FB.AppRequest("Test Message", null, null, null, null, string.Empty, string.Empty, new FacebookDelegate<IAppRequestResult>(base.HandleResult));
 			}
 			if (base.Button("Select - Filter app_users"))
 			{

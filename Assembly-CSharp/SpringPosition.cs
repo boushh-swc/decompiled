@@ -41,6 +41,11 @@ public class SpringPosition : MonoBehaviour
 		}
 	}
 
+	private void OnEnable()
+	{
+		this.mThreshold = 0f;
+	}
+
 	private void Update()
 	{
 		float deltaTime = (!this.ignoreTimeScale) ? Time.deltaTime : RealTime.deltaTime;
@@ -104,7 +109,6 @@ public class SpringPosition : MonoBehaviour
 		springPosition.onFinished = null;
 		if (!springPosition.enabled)
 		{
-			springPosition.mThreshold = 0f;
 			springPosition.enabled = true;
 		}
 		return springPosition;

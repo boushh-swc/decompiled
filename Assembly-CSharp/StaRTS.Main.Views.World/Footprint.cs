@@ -9,11 +9,11 @@ namespace StaRTS.Main.Views.World
 	{
 		public const float TILE_Y_OFFSET = 0.01f;
 
+		private static readonly Color32 invalidColor = new Color32(204, 0, 0, 255);
+
 		private const string TILES_NAME = "Tiles";
 
 		private const string SECONDARY_TILES_NAME = "Secondary Tiles";
-
-		private static readonly Color32 invalidColor = new Color32(204, 0, 0, 255);
 
 		private FootprintMesh mesh;
 

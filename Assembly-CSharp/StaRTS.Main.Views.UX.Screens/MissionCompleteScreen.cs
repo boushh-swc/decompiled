@@ -24,13 +24,13 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		private const string REWARD_ICONS_PREFIX = "RewardIcon";
 
-		private const float ANIMATION_TIME = 3f;
-
 		private Dictionary<string, string> rewardIconMap;
 
 		private UXLabel titleLabel;
 
 		private UXTable rewardTable;
+
+		private const float ANIMATION_TIME = 3f;
 
 		private CampaignMissionVO missionVO;
 

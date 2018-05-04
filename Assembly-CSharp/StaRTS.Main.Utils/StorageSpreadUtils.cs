@@ -2,6 +2,7 @@ using Net.RichardLord.Ash.Core;
 using StaRTS.DataStructures;
 using StaRTS.Main.Controllers;
 using StaRTS.Main.Models;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.Entities.Components;
 using StaRTS.Main.Models.Entities.Nodes;
 using StaRTS.Main.Models.Player;
@@ -11,26 +12,42 @@ using StaRTS.Main.Utils.Events;
 using StaRTS.Utils.Core;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace StaRTS.Main.Utils
 {
 	public static class StorageSpreadUtils
 	{
+		[CompilerGenerated]
+		private static Comparison<StorageNode> <>f__mg$cache0;
+
+		[CompilerGenerated]
+		private static Comparison<TroopTypeVO> <>f__mg$cache1;
+
+		[CompilerGenerated]
+		private static Comparison<StarportNode> <>f__mg$cache2;
+
 		public static int CalculateAssumedCurrencyInStorage(CurrencyType currencyType, Entity targetBuilding)
 		{
 			int num = 0;
 			GamePlayer worldOwner = GameUtils.GetWorldOwner();
-			switch (currencyType)
+			if (currencyType != CurrencyType.Credits)
 			{
-			case CurrencyType.Credits:
+				if (currencyType != CurrencyType.Materials)
+				{
+					if (currencyType == CurrencyType.Contraband)
+					{
+						num = worldOwner.CurrentContrabandAmount;
+					}
+				}
+				else
+				{
+					num = worldOwner.CurrentMaterialsAmount;
+				}
+			}
+			else
+			{
 				num = worldOwner.CurrentCreditsAmount;
-				break;
-			case CurrencyType.Materials:
-				num = worldOwner.CurrentMaterialsAmount;
-				break;
-			case CurrencyType.Contraband:
-				num = worldOwner.CurrentContrabandAmount;
-				break;
 			}
 			List<StorageNode> list = new List<StorageNode>();
 			NodeList<StorageNode> storageNodeList = Service.BuildingLookupController.StorageNodeList;
@@ -42,7 +59,12 @@ namespace StaRTS.Main.Utils
 					list.Add(storageNode);
 				}
 			}
-			list.Sort(new Comparison<StorageNode>(StorageSpreadUtils.CompareStorageNode));
+			List<StorageNode> arg_B5_0 = list;
+			if (StorageSpreadUtils.<>f__mg$cache0 == null)
+			{
+				StorageSpreadUtils.<>f__mg$cache0 = new Comparison<StorageNode>(StorageSpreadUtils.CompareStorageNode);
+			}
+			arg_B5_0.Sort(StorageSpreadUtils.<>f__mg$cache0);
 			int num2 = (targetBuilding != null) ? targetBuilding.Get<BuildingComponent>().BuildingType.Storage : 0;
 			int num3 = 0;
 			int num4 = -1;
@@ -93,19 +115,29 @@ namespace StaRTS.Main.Utils
 			NodeList<StarportNode> starportNodeList = Service.BuildingLookupController.StarportNodeList;
 			for (StarportNode starportNode = starportNodeList.Head; starportNode != null; starportNode = starportNode.Next)
 			{
-				if (!ContractUtils.IsBuildingConstructing(starportNode.BuildingComp.Entity))
+				if (!ContractUtils.IsBuildingConstructing((SmartEntity)starportNode.BuildingComp.Entity))
 				{
 					list2.Add(starportNode);
 				}
 			}
-			list.Sort(new Comparison<TroopTypeVO>(StorageSpreadUtils.CompareTroop));
+			List<TroopTypeVO> arg_DE_0 = list;
+			if (StorageSpreadUtils.<>f__mg$cache1 == null)
+			{
+				StorageSpreadUtils.<>f__mg$cache1 = new Comparison<TroopTypeVO>(StorageSpreadUtils.CompareTroop);
+			}
+			arg_DE_0.Sort(StorageSpreadUtils.<>f__mg$cache1);
 			int count = list.Count;
 			int[] array = new int[count];
 			for (int i = 0; i < count; i++)
 			{
 				array[i] = internalStorage[list[i].Uid].Amount;
 			}
-			list2.Sort(new Comparison<StarportNode>(StorageSpreadUtils.CompareStarportNode));
+			List<StarportNode> arg_147_0 = list2;
+			if (StorageSpreadUtils.<>f__mg$cache2 == null)
+			{
+				StorageSpreadUtils.<>f__mg$cache2 = new Comparison<StarportNode>(StorageSpreadUtils.CompareStarportNode);
+			}
+			arg_147_0.Sort(StorageSpreadUtils.<>f__mg$cache2);
 			int num = 0;
 			int count2 = list2.Count;
 			Int32PriorityList int32PriorityList = new Int32PriorityList();
@@ -168,40 +200,40 @@ namespace StaRTS.Main.Utils
 				BuildingComponent buildingComp = list2[l].BuildingComp;
 				int storage2 = buildingComp.BuildingType.Storage;
 				int num10 = storage2 - array2[l];
-				Entity entity = buildingComp.Entity;
-				StorageSpreadUtils.SetStarportFullnessPercent(entity, (float)num10 / (float)storage2);
-				StorageSpreadUtils.SetStarportFillSize(entity, num10);
+				SmartEntity starport = (SmartEntity)buildingComp.Entity;
+				StorageSpreadUtils.SetStarportFullnessPercent(starport, (float)num10 / (float)storage2);
+				StorageSpreadUtils.SetStarportFillSize(starport, num10);
 			}
 		}
 
-		public static Entity FindLeastFullStarport()
+		public static SmartEntity FindLeastFullStarport()
 		{
 			float num = 0f;
 			int num2 = 0;
-			Entity entity = null;
+			SmartEntity smartEntity = null;
 			NodeList<StarportNode> starportNodeList = Service.BuildingLookupController.StarportNodeList;
 			for (StarportNode starportNode = starportNodeList.Head; starportNode != null; starportNode = starportNode.Next)
 			{
 				BuildingComponent buildingComp = starportNode.BuildingComp;
-				Entity entity2 = buildingComp.Entity;
-				if (!ContractUtils.IsBuildingConstructing(entity2))
+				SmartEntity smartEntity2 = (SmartEntity)buildingComp.Entity;
+				if (!ContractUtils.IsBuildingConstructing(smartEntity2))
 				{
-					int starportFillSize = StorageSpreadUtils.GetStarportFillSize(entity2);
+					int starportFillSize = StorageSpreadUtils.GetStarportFillSize(smartEntity2);
 					int storage = buildingComp.BuildingType.Storage;
-					if (entity == null || (float)starportFillSize < num || ((float)starportFillSize == num && storage < num2))
+					if (smartEntity == null || (float)starportFillSize < num || ((float)starportFillSize == num && storage < num2))
 					{
 						num = (float)starportFillSize;
 						num2 = storage;
-						entity = entity2;
+						smartEntity = smartEntity2;
 					}
 				}
 			}
-			return entity;
+			return smartEntity;
 		}
 
-		public static void AddTroopToStarportVisually(Entity starport, TroopTypeVO troop)
+		public static void AddTroopToStarportVisually(SmartEntity starport, TroopTypeVO troop)
 		{
-			if (starport != null && starport.Get<BuildingComponent>() != null && troop != null)
+			if (starport != null && starport.BuildingComp != null && troop != null)
 			{
 				float num = StorageSpreadUtils.GetStarportFullnessPercent(starport);
 				int storage = starport.Get<BuildingComponent>().BuildingType.Storage;
@@ -217,7 +249,7 @@ namespace StaRTS.Main.Utils
 			}
 		}
 
-		public static void AddTroopToStarportReserve(Entity starport, TroopTypeVO troop)
+		public static void AddTroopToStarportReserve(SmartEntity starport, TroopTypeVO troop)
 		{
 			if (starport != null)
 			{
@@ -227,34 +259,34 @@ namespace StaRTS.Main.Utils
 			}
 		}
 
-		private static float GetStarportFullnessPercent(Entity starport)
+		private static float GetStarportFullnessPercent(SmartEntity starport)
 		{
-			MeterShaderComponent meterShaderComponent = starport.Get<MeterShaderComponent>();
-			return (meterShaderComponent != null) ? meterShaderComponent.Percentage : 0f;
+			MeterShaderComponent meterShaderComp = starport.MeterShaderComp;
+			return (meterShaderComp != null) ? meterShaderComp.Percentage : 0f;
 		}
 
-		private static int GetStarportFillSize(Entity starport)
+		private static int GetStarportFillSize(SmartEntity starport)
 		{
-			MeterShaderComponent meterShaderComponent = starport.Get<MeterShaderComponent>();
-			return (meterShaderComponent != null) ? meterShaderComponent.FillSize : 0;
+			MeterShaderComponent meterShaderComp = starport.MeterShaderComp;
+			return (meterShaderComp != null) ? meterShaderComp.FillSize : 0;
 		}
 
-		private static void SetStarportFullnessPercent(Entity starport, float percent)
+		private static void SetStarportFullnessPercent(SmartEntity starport, float percent)
 		{
-			MeterShaderComponent meterShaderComponent = starport.Get<MeterShaderComponent>();
-			if (meterShaderComponent != null)
+			MeterShaderComponent meterShaderComp = starport.MeterShaderComp;
+			if (meterShaderComp != null)
 			{
-				meterShaderComponent.UpdatePercentage(percent);
-				Service.EventManager.SendEvent(EventId.StarportMeterUpdated, meterShaderComponent);
+				meterShaderComp.UpdatePercentage(percent);
+				Service.EventManager.SendEvent(EventId.StarportMeterUpdated, meterShaderComp);
 			}
 		}
 
-		private static void SetStarportFillSize(Entity starport, int fillSize)
+		private static void SetStarportFillSize(SmartEntity starport, int fillSize)
 		{
-			MeterShaderComponent meterShaderComponent = starport.Get<MeterShaderComponent>();
-			if (meterShaderComponent != null)
+			MeterShaderComponent meterShaderComp = starport.MeterShaderComp;
+			if (meterShaderComp != null)
 			{
-				meterShaderComponent.FillSize = fillSize;
+				meterShaderComp.FillSize = fillSize;
 			}
 		}
 

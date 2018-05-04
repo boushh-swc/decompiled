@@ -17,7 +17,7 @@ using System.Text;
 
 namespace StaRTS.Main.Controllers
 {
-	public class BattleRecordController : IPerformanceObserver, IEventObserver
+	public class BattleRecordController : IEventObserver, IPerformanceObserver
 	{
 		private delegate void HandleEvent(object cookie);
 

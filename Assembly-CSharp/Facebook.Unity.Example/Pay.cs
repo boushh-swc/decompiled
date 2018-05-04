@@ -19,8 +19,7 @@ namespace Facebook.Unity.Example
 
 		private void CallFBPay()
 		{
-			FacebookDelegate<IPayResult> callback = new FacebookDelegate<IPayResult>(base.HandleResult);
-			FB.Canvas.Pay(this.payProduct, "purchaseitem", 1, null, null, null, null, null, callback);
+			FB.Canvas.Pay(this.payProduct, "purchaseitem", 1, null, null, null, null, null, new FacebookDelegate<IPayResult>(base.HandleResult));
 		}
 	}
 }

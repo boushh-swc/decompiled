@@ -1,6 +1,6 @@
-using Net.RichardLord.Ash.Core;
 using StaRTS.Main.Controllers;
 using StaRTS.Main.Models;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.Entities.Components;
 using StaRTS.Main.Models.Player;
 using StaRTS.Main.Models.Player.World;
@@ -215,7 +215,7 @@ namespace StaRTS.Main.Views.UX.Screens
 			}
 		}
 
-		public TroopUpgradeScreen(Entity trainingBuilding) : base("gui_upgrade_troops", trainingBuilding)
+		public TroopUpgradeScreen(SmartEntity trainingBuilding) : base("gui_upgrade_troops", trainingBuilding)
 		{
 			this.dataController = Service.StaticDataController;
 			this.troopUpgradeCatalog = Service.TroopUpgradeCatalog;
@@ -448,17 +448,17 @@ namespace StaRTS.Main.Views.UX.Screens
 			{
 				while (enumerator.MoveNext())
 				{
-					EquipmentTab equipmentTab = (EquipmentTab)((int)enumerator.Current);
-					string text = equipmentTab.ToString();
+					EquipmentTab key = (EquipmentTab)enumerator.Current;
+					string text = key.ToString();
 					StringBuilder stringBuilder = new StringBuilder("EQUIPMENT_TAB_");
 					stringBuilder.Append(text.ToUpper());
-					dictionary.Add((int)equipmentTab, this.lang.Get(stringBuilder.ToString(), new object[0]));
+					dictionary.Add((int)key, this.lang.Get(stringBuilder.ToString(), new object[0]));
 				}
 			}
 			finally
 			{
-				IDisposable disposable = enumerator as IDisposable;
-				if (disposable != null)
+				IDisposable disposable;
+				if ((disposable = (enumerator as IDisposable)) != null)
 				{
 					disposable.Dispose();
 				}

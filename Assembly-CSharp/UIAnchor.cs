@@ -42,14 +42,14 @@ public class UIAnchor : MonoBehaviour
 
 	private bool mStarted;
 
-	private void Awake()
+	private void OnEnable()
 	{
 		this.mTrans = base.transform;
 		this.mAnim = base.GetComponent<Animation>();
 		UICamera.onScreenResize = (UICamera.OnScreenResize)Delegate.Combine(UICamera.onScreenResize, new UICamera.OnScreenResize(this.ScreenSizeChanged));
 	}
 
-	private void OnDestroy()
+	private void OnDisable()
 	{
 		UICamera.onScreenResize = (UICamera.OnScreenResize)Delegate.Remove(UICamera.onScreenResize, new UICamera.OnScreenResize(this.ScreenSizeChanged));
 	}
@@ -81,6 +81,10 @@ public class UIAnchor : MonoBehaviour
 	private void Update()
 	{
 		if (this.mAnim != null && this.mAnim.enabled && this.mAnim.isPlaying)
+		{
+			return;
+		}
+		if (this.mTrans == null)
 		{
 			return;
 		}

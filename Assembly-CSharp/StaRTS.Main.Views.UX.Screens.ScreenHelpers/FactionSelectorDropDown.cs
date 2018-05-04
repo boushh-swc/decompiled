@@ -2,6 +2,7 @@ using StaRTS.Main.Views.UX.Elements;
 using StaRTS.Utils;
 using StaRTS.Utils.Core;
 using System;
+using System.Threading;
 
 namespace StaRTS.Main.Views.UX.Screens.ScreenHelpers
 {
@@ -63,7 +64,31 @@ namespace StaRTS.Main.Views.UX.Screens.ScreenHelpers
 
 		protected FactionToggle selectedFaction;
 
-		public event Action<FactionToggle> FactionSelectCallBack;
+		public event Action<FactionToggle> FactionSelectCallBack
+		{
+			add
+			{
+				Action<FactionToggle> action = this.FactionSelectCallBack;
+				Action<FactionToggle> action2;
+				do
+				{
+					action2 = action;
+					action = Interlocked.CompareExchange<Action<FactionToggle>>(ref this.FactionSelectCallBack, (Action<FactionToggle>)Delegate.Combine(action2, value), action);
+				}
+				while (action != action2);
+			}
+			remove
+			{
+				Action<FactionToggle> action = this.FactionSelectCallBack;
+				Action<FactionToggle> action2;
+				do
+				{
+					action2 = action;
+					action = Interlocked.CompareExchange<Action<FactionToggle>>(ref this.FactionSelectCallBack, (Action<FactionToggle>)Delegate.Remove(action2, value), action);
+				}
+				while (action != action2);
+			}
+		}
 
 		public FactionSelectorDropDown(UXFactory uxFactory)
 		{
@@ -145,15 +170,15 @@ namespace StaRTS.Main.Views.UX.Screens.ScreenHelpers
 			case FactionToggle.Empire:
 				uXLabel = this.empireBtnLabel;
 				element = this.uxFactory.GetElement<UXSprite>("SpriteBtnEmpireSymbol");
-				goto IL_77;
+				goto IL_75;
 			case FactionToggle.Rebel:
 				uXLabel = this.rebelBtnLabel;
 				element = this.uxFactory.GetElement<UXSprite>("SpriteBtnRebelSymbol");
-				goto IL_77;
+				goto IL_75;
 			}
 			uXLabel = this.bothBtnLabel;
 			element = this.uxFactory.GetElement<UXSprite>("SpriteBtnBothSymbol");
-			IL_77:
+			IL_75:
 			this.filterBtnLabel.Text = uXLabel.Text;
 			this.filterSprite.SpriteName = element.SpriteName;
 			this.filterSprite.Color = element.Color;

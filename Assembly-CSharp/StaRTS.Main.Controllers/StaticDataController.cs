@@ -73,7 +73,7 @@ namespace StaRTS.Main.Controllers
 				foreach (KeyValuePair<string, Row> current in allRows)
 				{
 					Row value = current.Value;
-					T vo = (default(T) == null) ? Activator.CreateInstance<T>() : default(T);
+					T vo = Activator.CreateInstance<T>();
 					vo.ReadRow(value);
 					value.Invalidate();
 					this.Add<T>(current.Key, vo);

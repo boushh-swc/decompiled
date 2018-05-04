@@ -38,9 +38,8 @@ namespace StaRTS.Main.Views.UX.Screens
 			FactionType faction = Service.CurrentPlayer.Faction;
 			UXLabel element2 = base.GetElement<UXLabel>("LabelWhatNext");
 			element2.Text = LangUtils.ProcessStringWithNewlines(this.lang.Get("s_WhatsNextDescription_" + faction.ToString(), new object[0]));
-			FactionType factionType = faction;
 			string assetName;
-			if (factionType != FactionType.Empire)
+			if (faction != FactionType.Empire)
 			{
 				assetName = "WhatsNextRebel";
 			}

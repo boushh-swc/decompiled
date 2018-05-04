@@ -1,4 +1,4 @@
-using Net.RichardLord.Ash.Core;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.Entities.Components;
 using StaRTS.Main.Models.ValueObjects;
 using System;
@@ -25,7 +25,7 @@ namespace StaRTS.Main.Models
 			private set;
 		}
 
-		public Entity Entity
+		public SmartEntity Entity
 		{
 			get;
 			private set;
@@ -43,24 +43,24 @@ namespace StaRTS.Main.Models
 			set;
 		}
 
-		public ContractEventData(Contract contract, Entity entity, bool silent, bool sendBILog)
+		public ContractEventData(Contract contract, SmartEntity entity, bool silent, bool sendBILog)
 		{
 			this.Contract = contract;
 			this.Entity = entity;
-			BuildingComponent buildingComponent = entity.Get<BuildingComponent>();
-			this.BuildingVO = buildingComponent.BuildingType;
-			this.BuildingKey = buildingComponent.BuildingTO.Key;
+			BuildingComponent buildingComp = entity.BuildingComp;
+			this.BuildingVO = buildingComp.BuildingType;
+			this.BuildingKey = buildingComp.BuildingTO.Key;
 			this.Silent = silent;
 			this.SendBILog = sendBILog;
 		}
 
-		public ContractEventData(Contract contract, Entity entity, bool silent)
+		public ContractEventData(Contract contract, SmartEntity entity, bool silent)
 		{
 			this.Contract = contract;
 			this.Entity = entity;
-			BuildingComponent buildingComponent = entity.Get<BuildingComponent>();
-			this.BuildingVO = buildingComponent.BuildingType;
-			this.BuildingKey = buildingComponent.BuildingTO.Key;
+			BuildingComponent buildingComp = entity.BuildingComp;
+			this.BuildingVO = buildingComp.BuildingType;
+			this.BuildingKey = buildingComp.BuildingTO.Key;
 			this.Silent = silent;
 			this.SendBILog = true;
 		}

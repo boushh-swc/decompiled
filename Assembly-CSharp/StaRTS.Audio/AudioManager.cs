@@ -40,7 +40,7 @@ namespace StaRTS.Audio
 
 		private Dictionary<AudioTypeVO, AudioData> loadedAudio;
 
-		private Logger logger;
+		private StaRTS.Utils.Diagnostics.Logger logger;
 
 		private StaticDataController sdc;
 
@@ -390,10 +390,10 @@ namespace StaRTS.Audio
 					audioSource.loop = audioVO.Loop;
 					audioSource.Play();
 				}
-				goto IL_F9;
+				goto IL_F5;
 			}
 			audioSource.PlayOneShot(audioData.Clip);
-			IL_F9:
+			IL_F5:
 			return audioData.Clip.length;
 		}
 

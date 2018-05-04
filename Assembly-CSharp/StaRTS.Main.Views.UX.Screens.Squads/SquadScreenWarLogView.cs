@@ -16,7 +16,7 @@ using System.Collections.Generic;
 
 namespace StaRTS.Main.Views.UX.Screens.Squads
 {
-	public class SquadScreenWarLogView : AbstractSquadScreenViewModule, IEventObserver, IViewFrameTimeObserver
+	public class SquadScreenWarLogView : AbstractSquadScreenViewModule, IViewFrameTimeObserver, IEventObserver
 	{
 		private const string CONTAINER_NAME = "WarlogContainer";
 

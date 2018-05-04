@@ -13,8 +13,6 @@ namespace StaRTS.Main.Models.Battle
 {
 	public class Bullet
 	{
-		private const float STARSHIP_TARGET_OFFSET = 1f;
-
 		public SmartEntity Owner;
 
 		private int beamSegment;
@@ -34,6 +32,8 @@ namespace StaRTS.Main.Models.Battle
 		private int beamRadius;
 
 		private int beamTrail;
+
+		private const float STARSHIP_TARGET_OFFSET = 1f;
 
 		public HealthFragment HealthFrag
 		{

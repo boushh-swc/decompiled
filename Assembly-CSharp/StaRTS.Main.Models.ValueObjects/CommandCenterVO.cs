@@ -7,7 +7,7 @@ using System.Globalization;
 
 namespace StaRTS.Main.Models.ValueObjects
 {
-	public class CommandCenterVO : ITimestamped, ICallToAction, IValueObject
+	public class CommandCenterVO : ITimestamped, IValueObject, ICallToAction
 	{
 		public List<AudienceCondition> AudienceConditions;
 

@@ -14,6 +14,16 @@ namespace StaRTS.Main.Views.UX.Screens
 {
 	public class TournamentEndedScreen : ClosableScreen
 	{
+		private Tournament tournament;
+
+		private TournamentVO tournamentVO;
+
+		private TournamentTierVO tierVO;
+
+		private TournamentRank playerRank;
+
+		private uint timerId;
+
 		private const string LABEL_TITLE = "DialogTournamentsTitle";
 
 		private const string REWARD_MESSAGE = "LabelBody";
@@ -45,16 +55,6 @@ namespace StaRTS.Main.Views.UX.Screens
 		private const string ANIM_SHOW = "Show";
 
 		private const float ANIM_DELAY = 0.5f;
-
-		private Tournament tournament;
-
-		private TournamentVO tournamentVO;
-
-		private TournamentTierVO tierVO;
-
-		private TournamentRank playerRank;
-
-		private uint timerId;
 
 		protected override bool IsFullScreen
 		{

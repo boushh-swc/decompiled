@@ -334,52 +334,52 @@ namespace StaRTS.Main.Utils
 			{
 			case 2300u:
 				text = "ALREADY_IN_A_GUILD";
-				goto IL_89;
+				goto IL_87;
 			case 2301u:
-				IL_2C:
+				IL_2A:
 				if (status != 2321u)
 				{
-					goto IL_89;
+					goto IL_87;
 				}
 				text = "PLAYER_IS_IN_SQUAD_WAR";
-				goto IL_89;
+				goto IL_87;
 			case 2302u:
 				text = "GUILD_IS_FULL";
-				goto IL_89;
+				goto IL_87;
 			case 2303u:
 				text = "GUILD_IS_NOT_OPEN_ENROLLMENT";
-				goto IL_89;
+				goto IL_87;
 			case 2304u:
 				text = "GUILD_SCORE_REQUIREMENT_NOT_MET";
-				goto IL_89;
+				goto IL_87;
 			case 2305u:
 				text = "IN_WRONG_FACTION";
-				goto IL_89;
+				goto IL_87;
 			case 2306u:
 				text = "NOT_IN_GUILD";
-				goto IL_89;
+				goto IL_87;
 			}
-			goto IL_2C;
-			IL_89:
+			goto IL_2A;
+			IL_87:
 			switch (actionType)
 			{
 			case SquadAction.Create:
 				if (text == null)
 				{
-					if (status != 701u)
+					if (status != 2301u)
 					{
-						if (status != 2301u)
+						if (status != 701u)
 						{
 							text = "GENERIC_SQUAD_CREATE_ISSUE";
 						}
 						else
 						{
-							text = "GUILD_NAME_ALREADY_TAKEN";
+							text = "INVALID_SQUAD_NAME";
 						}
 					}
 					else
 					{
-						text = "INVALID_SQUAD_NAME";
+						text = "GUILD_NAME_ALREADY_TAKEN";
 					}
 				}
 				return text;
@@ -415,27 +415,27 @@ namespace StaRTS.Main.Utils
 				{
 				case 2300u:
 					text = "SQUAD_INVITE_ALREADY_IN_A_GUILD";
-					goto IL_248;
+					goto IL_23C;
 				case 2301u:
 				case 2303u:
 				case 2304u:
-					IL_201:
+					IL_1F5:
 					if (status != 2309u)
 					{
 						text = "SQUAD_INVITE_FAILED";
-						goto IL_248;
+						goto IL_23C;
 					}
 					text = "SQUAD_INVITE_NOT_ENOUGH_GUILD_RANK";
-					goto IL_248;
+					goto IL_23C;
 				case 2302u:
 					text = "SQUAD_INVITE_GUILD_IS_FULL";
-					goto IL_248;
+					goto IL_23C;
 				case 2305u:
 					text = "SQUAD_INVITE_WRONG_FACTION";
-					goto IL_248;
+					goto IL_23C;
 				}
-				goto IL_201;
-				IL_248:
+				goto IL_1F5;
+				IL_23C:
 				return text;
 			case SquadAction.RejectInviteToJoin:
 				text = "SQUAD_INVITE_REJECT_FAILED";
@@ -446,19 +446,19 @@ namespace StaRTS.Main.Utils
 				{
 				case 2315u:
 					text = "NOT_IN_SAME_GUILD";
-					goto IL_1D6;
+					goto IL_1CC;
 				case 2316u:
 					text = "CANNOT_DEDUCT_NEGATIVE_AMOUNTS";
-					goto IL_1D6;
+					goto IL_1CC;
 				case 2318u:
 					text = "CAN_ONLY_DONATE_TROOPS";
-					goto IL_1D6;
+					goto IL_1CC;
 				case 2319u:
 					text = "NOT_ENOUGH_GUILD_TROOP_CAPACITY";
-					goto IL_1D6;
+					goto IL_1CC;
 				}
 				text = "GENERIC_DONATE_ISSUE";
-				IL_1D6:
+				IL_1CC:
 				return text;
 			}
 			text = "GENERIC_SQUAD_ISSUE";

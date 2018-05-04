@@ -133,8 +133,7 @@ namespace StaRTS.Main.Views.UX.Screens
 			this.rewardsGrid.SetTemplateItem("RewardItem");
 			RewardVO rewardVO = Service.StaticDataController.Get<RewardVO>(this.meta.Reward);
 			List<RewardComponentTag> rewardComponents = RewardUtils.GetRewardComponents(rewardVO);
-			int i = 0;
-			while (i < rewardComponents.Count)
+			for (int i = 0; i < rewardComponents.Count; i++)
 			{
 				RewardComponentTag rewardComponentTag = rewardComponents[i];
 				string itemUid = rewardVO.Uid + i;
@@ -142,28 +141,20 @@ namespace StaRTS.Main.Views.UX.Screens
 				uXElement.Tag = rewardComponentTag;
 				UXLabel subElement = this.rewardsGrid.GetSubElement<UXLabel>(itemUid, "LabelRewardCount");
 				subElement.Text = rewardComponentTag.Quantity;
+				RewardType type = rewardComponentTag.Type;
 				UXSprite subElement2;
-				switch (rewardComponentTag.Type)
+				if (type != RewardType.Building && type != RewardType.Currency)
 				{
-				case RewardType.Currency:
-				case RewardType.Building:
-					subElement2 = this.rewardsGrid.GetSubElement<UXSprite>(itemUid, "SpriteReward");
-					break;
-				case RewardType.Troop:
-					goto IL_D9;
-				default:
-					goto IL_D9;
+					subElement2 = this.rewardsGrid.GetSubElement<UXSprite>(itemUid, "SpriteTroop");
 				}
-				IL_F2:
+				else
+				{
+					subElement2 = this.rewardsGrid.GetSubElement<UXSprite>(itemUid, "SpriteReward");
+				}
 				RewardUtils.SetRewardIcon(subElement2, rewardComponentTag.RewardGeometryConfig, AnimationPreference.NoAnimation);
 				this.rewardsGrid.AddItem(uXElement, rewardComponentTag.Order);
 				this.rewardsGrid.RepositionItems();
 				this.rewardsGrid.Scroll(0.5f);
-				i++;
-				continue;
-				IL_D9:
-				subElement2 = this.rewardsGrid.GetSubElement<UXSprite>(itemUid, "SpriteTroop");
-				goto IL_F2;
 			}
 			this.rewardsGrid.RepositionItems();
 			this.rewardsGrid.Scroll(0.5f);

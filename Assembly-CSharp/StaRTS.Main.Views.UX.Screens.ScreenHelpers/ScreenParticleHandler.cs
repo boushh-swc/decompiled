@@ -50,24 +50,26 @@ namespace StaRTS.Main.Views.UX.Screens.ScreenHelpers
 		public EatResponse OnEvent(EventId id, object cookie)
 		{
 			ScreenBase screenBase = (ScreenBase)cookie;
-			switch (id)
+			if (id != EventId.ScreenLoaded)
 			{
-			case EventId.ScreenClosing:
-				screenBase = (ScreenBase)cookie;
-				if (this.screen != screenBase && !Service.ScreenController.IsFatalAlertActive())
+				if (id == EventId.ScreenClosing)
 				{
-					this.canShowParticles = true;
-					this.ShowAllParticleElements();
+					screenBase = (ScreenBase)cookie;
+					if (this.screen != screenBase && !Service.ScreenController.IsFatalAlertActive())
+					{
+						this.canShowParticles = true;
+						this.ShowAllParticleElements();
+					}
 				}
-				break;
-			case EventId.ScreenLoaded:
+			}
+			else
+			{
 				screenBase = (ScreenBase)cookie;
 				if (screenBase != this.screen)
 				{
 					this.canShowParticles = false;
 					this.HideAllParticleElements();
 				}
-				break;
 			}
 			return EatResponse.NotEaten;
 		}

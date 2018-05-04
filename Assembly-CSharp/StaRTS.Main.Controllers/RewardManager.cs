@@ -16,12 +16,6 @@ namespace StaRTS.Main.Controllers
 	{
 		public delegate void SuccessCallback(object cookie);
 
-		private const string CRYSTAL_REWARD = "specialoffers";
-
-		private const string LVL_DISPLAY_STRING_ID = "lcfly_level";
-
-		private const string AMOUNT_AND_NAME = "AMOUNT_AND_NAME";
-
 		private Dictionary<int, RewardTag> rewardTags;
 
 		private CurrentPlayer cp;
@@ -31,6 +25,12 @@ namespace StaRTS.Main.Controllers
 		private Lang lang;
 
 		private int callbackCounter;
+
+		private const string CRYSTAL_REWARD = "specialoffers";
+
+		private const string LVL_DISPLAY_STRING_ID = "lcfly_level";
+
+		private const string AMOUNT_AND_NAME = "AMOUNT_AND_NAME";
 
 		public RewardManager()
 		{

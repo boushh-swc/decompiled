@@ -1,7 +1,9 @@
 using System;
+using System.Runtime.InteropServices;
 
 namespace StaRTS.Main.Models
 {
+	[StructLayout(LayoutKind.Sequential, Size = 1)]
 	public struct ActionMessageBIData
 	{
 		public string Action
@@ -18,6 +20,7 @@ namespace StaRTS.Main.Models
 
 		public ActionMessageBIData(string action, string message)
 		{
+			this = default(ActionMessageBIData);
 			this.Action = action;
 			this.Message = message;
 		}

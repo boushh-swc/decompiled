@@ -16,9 +16,9 @@ namespace StaRTS.Main.Views.Projectors
 
 		private const string CAMERA_FORMAT = "Projector Camera ({0})";
 
-		private const float INDEX_OFFSET = 250f;
-
 		protected int projectorIndex;
+
+		private const float INDEX_OFFSET = 250f;
 
 		protected GameObject cameraGameObject;
 

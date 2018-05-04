@@ -82,6 +82,8 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		private bool largeObjectivesShowing;
 
+		private bool planetDetailsShowing;
+
 		public PlanetDetailsChaptersViewModule chaptersView;
 
 		public PlanetDetailsFeaturedViewModule featuredView;
@@ -218,7 +220,7 @@ namespace StaRTS.Main.Views.UX.Screens
 			this.featuredView.RefreshScreenForPlanetChange();
 			this.planetInfoView.RefreshScreenForPlanetChange();
 			this.relocateView.RefreshScreenForPlanetChange();
-			if (!this.largeObjectivesShowing)
+			if (!this.largeObjectivesShowing && !this.planetDetailsShowing)
 			{
 				this.GoToMainSelectScreen();
 			}
@@ -297,6 +299,7 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		public void ShowPlanetInfoUI()
 		{
+			this.planetDetailsShowing = true;
 			if (base.Root != null)
 			{
 				base.Root.GetComponent<Animator>().SetTrigger("ShowObjectives");
@@ -309,6 +312,7 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		public void HidePlanetInfoUI()
 		{
+			this.planetDetailsShowing = false;
 			if (base.Root != null && this.CurrentPlanet.PlanetGameObject != null)
 			{
 				if (this.animDelayTimerId != 0u)

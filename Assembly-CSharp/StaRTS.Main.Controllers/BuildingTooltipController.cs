@@ -426,7 +426,7 @@ namespace StaRTS.Main.Controllers
 			return result;
 		}
 
-		private bool ShouldShowProgress(Contract contract, bool homeState, bool editState, bool baseLayoutState, Entity building)
+		private bool ShouldShowProgress(Contract contract, bool homeState, bool editState, bool baseLayoutState, SmartEntity building)
 		{
 			if (contract.TotalTime == 0)
 			{

@@ -2,6 +2,7 @@ using SwrveUnityMiniJSON;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace SwrveUnity.Messaging
 {
@@ -14,6 +15,9 @@ namespace SwrveUnity.Messaging
 		private string eventName;
 
 		private SwrveConditions conditions;
+
+		[CompilerGenerated]
+		private static Func<object, SwrveTrigger> <>f__mg$cache0;
 
 		public string GetEventName()
 		{
@@ -72,8 +76,11 @@ namespace SwrveUnity.Messaging
 		{
 			try
 			{
-				return from dict in triggers
-				select SwrveTrigger.LoadFromJson(dict) into dict
+				if (SwrveTrigger.<>f__mg$cache0 == null)
+				{
+					SwrveTrigger.<>f__mg$cache0 = new Func<object, SwrveTrigger>(SwrveTrigger.LoadFromJson);
+				}
+				return from dict in triggers.Select(SwrveTrigger.<>f__mg$cache0)
 				where dict != null
 				select dict;
 			}

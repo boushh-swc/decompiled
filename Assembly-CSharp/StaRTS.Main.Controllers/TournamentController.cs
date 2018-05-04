@@ -17,12 +17,15 @@ using StaRTS.Utils.Core;
 using StaRTS.Utils.Scheduling;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace StaRTS.Main.Controllers
 {
 	public class TournamentController : IEventObserver, IViewFrameTimeObserver
 	{
 		public delegate void PlayerRankUpdatedCallback(TournamentRank oldRank, TournamentRank rank, string tournamentUId);
+
+		private static List<TournamentTierVO> tiers;
 
 		public const string LANG_LOOT_BONUS = "LOOT_BONUS";
 
@@ -33,8 +36,6 @@ namespace StaRTS.Main.Controllers
 		private const string PARAM_TOURNAMENT_ID = "tournamentId";
 
 		private const string PARAM_CALLBACK = "callback";
-
-		private static List<TournamentTierVO> tiers;
 
 		private Dictionary<string, bool> viewedTournaments;
 
@@ -49,6 +50,9 @@ namespace StaRTS.Main.Controllers
 		private bool conflictPointPopupShown;
 
 		private bool showConflictPopup;
+
+		[CompilerGenerated]
+		private static Comparison<TournamentTierVO> <>f__mg$cache0;
 
 		public TournamentVO NotifyEndForTournamentVO
 		{
@@ -615,20 +619,20 @@ namespace StaRTS.Main.Controllers
 						flag = TimedEventUtils.IsTimedEventActive(current);
 						break;
 					case TournamentFilter.All:
-						goto IL_76;
+						goto IL_72;
 					default:
-						goto IL_76;
+						goto IL_72;
 					}
-					IL_7E:
+					IL_7A:
 					if (flag)
 					{
 						list.Add(current);
 						continue;
 					}
 					continue;
-					IL_76:
+					IL_72:
 					flag = true;
-					goto IL_7E;
+					goto IL_7A;
 				}
 			}
 			return list;
@@ -683,7 +687,12 @@ namespace StaRTS.Main.Controllers
 			{
 				TournamentController.tiers.Add(current);
 			}
-			TournamentController.tiers.Sort(new Comparison<TournamentTierVO>(TournamentController.CompareTiers));
+			List<TournamentTierVO> arg_75_0 = TournamentController.tiers;
+			if (TournamentController.<>f__mg$cache0 == null)
+			{
+				TournamentController.<>f__mg$cache0 = new Comparison<TournamentTierVO>(TournamentController.CompareTiers);
+			}
+			arg_75_0.Sort(TournamentController.<>f__mg$cache0);
 		}
 
 		private static int CompareTiers(TournamentTierVO a, TournamentTierVO b)

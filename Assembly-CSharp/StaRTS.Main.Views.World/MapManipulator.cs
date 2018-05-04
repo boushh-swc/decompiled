@@ -13,7 +13,7 @@ using UnityEngine;
 
 namespace StaRTS.Main.Views.World
 {
-	public class MapManipulator : IEventObserver, IUserInputObserver, IViewPhysicsTimeObserver
+	public class MapManipulator : IUserInputObserver, IEventObserver, IViewPhysicsTimeObserver
 	{
 		private const float MAP_CAMERA_MIN_Y_ULTRA = 0f;
 
@@ -926,7 +926,7 @@ namespace StaRTS.Main.Views.World
 
 		public void OnScreenSizeChanged(int width, int height)
 		{
-			UnityEngine.Object obj = this.screenLock;
+			object obj = this.screenLock;
 			lock (obj)
 			{
 				this.AbandonAnchor();

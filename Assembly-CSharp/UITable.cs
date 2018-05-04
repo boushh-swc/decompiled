@@ -1,10 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 [AddComponentMenu("NGUI/Interaction/Table")]
 public class UITable : UIWidgetContainer
 {
+	public delegate void OnReposition();
+
 	public enum Direction
 	{
 		Down = 0,
@@ -19,8 +22,6 @@ public class UITable : UIWidgetContainer
 		Vertical = 3,
 		Custom = 4
 	}
-
-	public delegate void OnReposition();
 
 	public int columns;
 
@@ -47,6 +48,18 @@ public class UITable : UIWidgetContainer
 	protected bool mInitDone;
 
 	protected bool mReposition;
+
+	[CompilerGenerated]
+	private static Comparison<Transform> <>f__mg$cache0;
+
+	[CompilerGenerated]
+	private static Comparison<Transform> <>f__mg$cache1;
+
+	[CompilerGenerated]
+	private static Comparison<Transform> <>f__mg$cache2;
+
+	[CompilerGenerated]
+	private static Comparison<Transform> <>f__mg$cache3;
 
 	public bool repositionNow
 	{
@@ -76,15 +89,30 @@ public class UITable : UIWidgetContainer
 		{
 			if (this.sorting == UITable.Sorting.Alphabetic)
 			{
-				list.Sort(new Comparison<Transform>(UIGrid.SortByName));
+				List<Transform> arg_8E_0 = list;
+				if (UITable.<>f__mg$cache0 == null)
+				{
+					UITable.<>f__mg$cache0 = new Comparison<Transform>(UIGrid.SortByName);
+				}
+				arg_8E_0.Sort(UITable.<>f__mg$cache0);
 			}
 			else if (this.sorting == UITable.Sorting.Horizontal)
 			{
-				list.Sort(new Comparison<Transform>(UIGrid.SortHorizontal));
+				List<Transform> arg_C2_0 = list;
+				if (UITable.<>f__mg$cache1 == null)
+				{
+					UITable.<>f__mg$cache1 = new Comparison<Transform>(UIGrid.SortHorizontal);
+				}
+				arg_C2_0.Sort(UITable.<>f__mg$cache1);
 			}
 			else if (this.sorting == UITable.Sorting.Vertical)
 			{
-				list.Sort(new Comparison<Transform>(UIGrid.SortVertical));
+				List<Transform> arg_F6_0 = list;
+				if (UITable.<>f__mg$cache2 == null)
+				{
+					UITable.<>f__mg$cache2 = new Comparison<Transform>(UIGrid.SortVertical);
+				}
+				arg_F6_0.Sort(UITable.<>f__mg$cache2);
 			}
 			else if (this.onCustomSort != null)
 			{
@@ -100,7 +128,11 @@ public class UITable : UIWidgetContainer
 
 	protected virtual void Sort(List<Transform> list)
 	{
-		list.Sort(new Comparison<Transform>(UIGrid.SortByName));
+		if (UITable.<>f__mg$cache3 == null)
+		{
+			UITable.<>f__mg$cache3 = new Comparison<Transform>(UIGrid.SortByName);
+		}
+		list.Sort(UITable.<>f__mg$cache3);
 	}
 
 	protected virtual void Start()
@@ -211,10 +243,12 @@ public class UITable : UIWidgetContainer
 				SpringPosition component = child.GetComponent<SpringPosition>();
 				if (component != null)
 				{
-					SpringPosition expr_49C_cp_0 = component;
-					expr_49C_cp_0.target.x = expr_49C_cp_0.target.x - num7;
-					SpringPosition expr_4B1_cp_0 = component;
-					expr_4B1_cp_0.target.y = expr_4B1_cp_0.target.y - num8;
+					component.enabled = false;
+					SpringPosition expr_4A9_cp_0 = component;
+					expr_4A9_cp_0.target.x = expr_4A9_cp_0.target.x - num7;
+					SpringPosition expr_4BE_cp_0 = component;
+					expr_4BE_cp_0.target.y = expr_4BE_cp_0.target.y - num8;
+					component.enabled = true;
 				}
 				else
 				{

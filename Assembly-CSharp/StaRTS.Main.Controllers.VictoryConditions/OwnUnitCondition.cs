@@ -107,30 +107,33 @@ namespace StaRTS.Main.Controllers.VictoryConditions
 			if (!this.any)
 			{
 				List<TroopTypeVO> list = new List<TroopTypeVO>();
-				switch (this.matchType)
+				ConditionMatchType conditionMatchType = this.matchType;
+				if (conditionMatchType != ConditionMatchType.Id)
 				{
-				case ConditionMatchType.Uid:
-				{
-					TroopTypeVO troopTypeVO = Service.StaticDataController.Get<TroopTypeVO>(this.unitId);
-					list = Service.TroopUpgradeCatalog.GetUpgradeGroupLevels(troopTypeVO.UpgradeGroup);
-					break;
-				}
-				case ConditionMatchType.Id:
-					list = Service.TroopUpgradeCatalog.GetUpgradeGroupLevels(this.unitId);
-					break;
-				case ConditionMatchType.Type:
-				{
-					StaticDataController staticDataController = Service.StaticDataController;
-					TroopType troopType2 = StringUtils.ParseEnum<TroopType>(this.unitId);
-					foreach (TroopTypeVO current2 in staticDataController.GetAll<TroopTypeVO>())
+					if (conditionMatchType != ConditionMatchType.Uid)
 					{
-						if (current2.Type == troopType2 && current2.Lvl >= this.level && inventoryStorage.HasItem(current2.Uid))
+						if (conditionMatchType == ConditionMatchType.Type)
 						{
-							current += inventoryStorage.GetItemAmount(current2.Uid);
+							StaticDataController staticDataController = Service.StaticDataController;
+							TroopType troopType2 = StringUtils.ParseEnum<TroopType>(this.unitId);
+							foreach (TroopTypeVO current2 in staticDataController.GetAll<TroopTypeVO>())
+							{
+								if (current2.Type == troopType2 && current2.Lvl >= this.level && inventoryStorage.HasItem(current2.Uid))
+								{
+									current += inventoryStorage.GetItemAmount(current2.Uid);
+								}
+							}
 						}
 					}
-					break;
+					else
+					{
+						TroopTypeVO troopTypeVO = Service.StaticDataController.Get<TroopTypeVO>(this.unitId);
+						list = Service.TroopUpgradeCatalog.GetUpgradeGroupLevels(troopTypeVO.UpgradeGroup);
+					}
 				}
+				else
+				{
+					list = Service.TroopUpgradeCatalog.GetUpgradeGroupLevels(this.unitId);
 				}
 				int i = 0;
 				int count = list.Count;

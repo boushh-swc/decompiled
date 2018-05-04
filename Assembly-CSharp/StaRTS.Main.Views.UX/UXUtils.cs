@@ -11,7 +11,9 @@ using StaRTS.Main.Views.UX.Screens.ScreenHelpers.Planets;
 using StaRTS.Utils;
 using StaRTS.Utils.Core;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 using UnityEngine;
 
@@ -47,30 +49,6 @@ namespace StaRTS.Main.Views.UX
 
 		private const int REWARD_DEFAULT_NUM = 3;
 
-		public const string COLOR_EMPIRE_STRING = "c0d0ff";
-
-		public const string COLOR_REBEL_STRING = "f0dfc1";
-
-		private const string UPLINK_ACTIVE_SPRITE = "icoVictoryPoint";
-
-		private const string UPLINK_DISABLED_SPRITE = "AnimUplinkC";
-
-		private const string CRATE_INVENTORY_CRATE_NO_EXPIRATION_TIMER = "CRATE_INVENTORY_CRATE_NO_EXPIRATION_TIMER";
-
-		private const string CRATE_INVENTORY_CRATE_EXPIRATION_TIMER = "CRATE_INVENTORY_CRATE_EXPIRATION_TIMER";
-
-		private const string CRATE_FLYOUT_LEI_EXPIRATION_TIMER = "CRATE_FLYOUT_LEI_EXPIRATION_TIMER";
-
-		private const string COMPENSATION_TITLE = "comp_popup_title";
-
-		private const string COMPENSATION_MESSAGE = "comp_popup_body";
-
-		private const string COMPENSATION_CTA = "comp_popup_cta";
-
-		private const string FRAGMENT_SPRITE_FORMAT = "icoDataFragQ{0}";
-
-		private const string EXPIRES_IN = "expires_in";
-
 		public static readonly Color COLOR_COST_CANNOT_AFFORD = new Color(0.956862748f, 0f, 0f);
 
 		public static readonly Color COLOR_COST_LOCKED = new Color(0.156862751f, 0.156862751f, 0.156862751f);
@@ -103,9 +81,36 @@ namespace StaRTS.Main.Views.UX
 
 		public static readonly Color COLOR_SHARD_COMPLETE = new Color(0.380392164f, 0.65882355f, 0.164705887f);
 
+		public const string COLOR_EMPIRE_STRING = "c0d0ff";
+
+		public const string COLOR_REBEL_STRING = "f0dfc1";
+
+		private const string UPLINK_ACTIVE_SPRITE = "icoVictoryPoint";
+
+		private const string UPLINK_DISABLED_SPRITE = "AnimUplinkC";
+
 		private static readonly Color UPLINK_ACTIVE_TINT = Color.white;
 
 		private static readonly Color UPLINK_DISABLED_TINT = new Color(0.06f, 0.33f, 0.48f);
+
+		private const string CRATE_INVENTORY_CRATE_NO_EXPIRATION_TIMER = "CRATE_INVENTORY_CRATE_NO_EXPIRATION_TIMER";
+
+		private const string CRATE_INVENTORY_CRATE_EXPIRATION_TIMER = "CRATE_INVENTORY_CRATE_EXPIRATION_TIMER";
+
+		private const string CRATE_FLYOUT_LEI_EXPIRATION_TIMER = "CRATE_FLYOUT_LEI_EXPIRATION_TIMER";
+
+		private const string COMPENSATION_TITLE = "comp_popup_title";
+
+		private const string COMPENSATION_MESSAGE = "comp_popup_body";
+
+		private const string COMPENSATION_CTA = "comp_popup_cta";
+
+		private const string FRAGMENT_SPRITE_FORMAT = "icoDataFragQ{0}";
+
+		private const string EXPIRES_IN = "expires_in";
+
+		[CompilerGenerated]
+		private static OnScreenModalResult <>f__mg$cache0;
 
 		public static string FormatNameToOriginalName(string currentName, string appendedName)
 		{
@@ -760,13 +765,26 @@ namespace StaRTS.Main.Views.UX
 
 		public static void HideGridQualityCards(UXGrid grid, string itemUid, string cardName)
 		{
-			foreach (int num in Enum.GetValues(typeof(ShardQuality)))
+			IEnumerator enumerator = Enum.GetValues(typeof(ShardQuality)).GetEnumerator();
+			try
 			{
-				string name = string.Format(cardName, num);
-				UXElement optionalSubElement = grid.GetOptionalSubElement<UXElement>(itemUid, name);
-				if (optionalSubElement != null)
+				while (enumerator.MoveNext())
 				{
-					optionalSubElement.Visible = false;
+					int num = (int)enumerator.Current;
+					string name = string.Format(cardName, num);
+					UXElement optionalSubElement = grid.GetOptionalSubElement<UXElement>(itemUid, name);
+					if (optionalSubElement != null)
+					{
+						optionalSubElement.Visible = false;
+					}
+				}
+			}
+			finally
+			{
+				IDisposable disposable;
+				if ((disposable = (enumerator as IDisposable)) != null)
+				{
+					disposable.Dispose();
 				}
 			}
 		}
@@ -778,13 +796,26 @@ namespace StaRTS.Main.Views.UX
 			{
 				optionalElement.Visible = false;
 			}
-			foreach (int num in Enum.GetValues(typeof(ShardQuality)))
+			IEnumerator enumerator = Enum.GetValues(typeof(ShardQuality)).GetEnumerator();
+			try
 			{
-				string name = string.Format(qualityCardFormat, num);
-				UXElement optionalElement2 = factory.GetOptionalElement<UXElement>(name);
-				if (optionalElement2 != null)
+				while (enumerator.MoveNext())
 				{
-					optionalElement2.Visible = false;
+					int num = (int)enumerator.Current;
+					string name = string.Format(qualityCardFormat, num);
+					UXElement optionalElement2 = factory.GetOptionalElement<UXElement>(name);
+					if (optionalElement2 != null)
+					{
+						optionalElement2.Visible = false;
+					}
+				}
+			}
+			finally
+			{
+				IDisposable disposable;
+				if ((disposable = (enumerator as IDisposable)) != null)
+				{
+					disposable.Dispose();
 				}
 			}
 		}
@@ -966,7 +997,14 @@ namespace StaRTS.Main.Views.UX
 			uint serverTime = Service.ServerAPI.ServerTime;
 			if (serverTime - pref > 86400u)
 			{
-				AlertScreen alertScreen = AlertScreen.ShowModal(false, Service.Lang.Get("comp_popup_title", new object[0]), Service.Lang.Get("comp_popup_body", new object[0]), new OnScreenModalResult(UXUtils.OnGoToCrates), null);
+				bool arg_8E_0 = false;
+				string arg_8E_1 = Service.Lang.Get("comp_popup_title", new object[0]);
+				string arg_8E_2 = Service.Lang.Get("comp_popup_body", new object[0]);
+				if (UXUtils.<>f__mg$cache0 == null)
+				{
+					UXUtils.<>f__mg$cache0 = new OnScreenModalResult(UXUtils.OnGoToCrates);
+				}
+				AlertScreen alertScreen = AlertScreen.ShowModal(arg_8E_0, arg_8E_1, arg_8E_2, UXUtils.<>f__mg$cache0, null);
 				alertScreen.SetPrimaryLabelText(Service.Lang.Get("comp_popup_cta", new object[0]));
 				Service.SharedPlayerPrefs.SetPref("CompensationMsgLastViewTime", serverTime.ToString());
 				return true;

@@ -46,10 +46,9 @@ namespace StaRTS.Main.Views.UX.Screens.Leaderboard
 			subElement3.Text = Service.Lang.Get("SQUAD_CREATE_DESC", new object[0]);
 			UXSprite subElement4 = this.grid.GetSubElement<UXSprite>(this.id, "SpriteFacebookIcon");
 			FactionType faction = Service.CurrentPlayer.Faction;
-			FactionType factionType = faction;
-			if (factionType != FactionType.Empire)
+			if (faction != FactionType.Empire)
 			{
-				if (factionType == FactionType.Rebel)
+				if (faction == FactionType.Rebel)
 				{
 					subElement4.SpriteName = "FactionRebel";
 				}

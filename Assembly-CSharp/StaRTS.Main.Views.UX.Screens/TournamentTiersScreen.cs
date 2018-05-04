@@ -21,8 +21,18 @@ using UnityEngine;
 
 namespace StaRTS.Main.Views.UX.Screens
 {
-	public class TournamentTiersScreen : ClosableScreen, IEventObserver, IViewClockTimeObserver
+	public class TournamentTiersScreen : ClosableScreen, IViewClockTimeObserver, IEventObserver
 	{
+		private TournamentVO currentTournamentVO;
+
+		private List<TournamentTierVO> tiers;
+
+		private TournamentRank currentPlayerRank;
+
+		private UXGrid tierGrid;
+
+		private UXLabel countdownLabel;
+
 		private const string GRID = "LeagueGrid";
 
 		private const string GRID_TEMPLATE = "LeagueTemplate";
@@ -118,16 +128,6 @@ namespace StaRTS.Main.Views.UX.Screens
 		private const string CONFLICT_PRIZE_CRATE_MULTIPLIER = "CONFLICT_PRIZE_CRATE_MULTIPLIER";
 
 		private const int REWARD_DISPLAY_COUNT_MAX = 5;
-
-		private TournamentVO currentTournamentVO;
-
-		private List<TournamentTierVO> tiers;
-
-		private TournamentRank currentPlayerRank;
-
-		private UXGrid tierGrid;
-
-		private UXLabel countdownLabel;
 
 		private uint scrollCallbackTimerId;
 
@@ -542,10 +542,9 @@ namespace StaRTS.Main.Views.UX.Screens
 			int num = 0;
 			string text = null;
 			TimedEventState state = TimedEventUtils.GetState(this.currentTournamentVO);
-			TimedEventState timedEventState = state;
-			if (timedEventState != TimedEventState.Upcoming)
+			if (state != TimedEventState.Upcoming)
 			{
-				if (timedEventState == TimedEventState.Live)
+				if (state == TimedEventState.Live)
 				{
 					text = "CAMPAIGN_ENDS_IN";
 					num = TimedEventUtils.GetSecondsRemaining(this.currentTournamentVO);
@@ -607,30 +606,28 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		public override EatResponse OnEvent(EventId id, object cookie)
 		{
-			switch (id)
+			if (id != EventId.ScreenLoaded)
 			{
-			case EventId.ScreenClosing:
-			{
-				ScreenBase screenBase = (ScreenBase)cookie;
-				if (screenBase is TournamentTiersScreen)
+				if (id == EventId.ScreenClosing)
 				{
-					Service.UXController.HUD.SetSquadScreenVisibility(true);
+					ScreenBase screenBase = (ScreenBase)cookie;
+					if (screenBase is TournamentTiersScreen)
+					{
+						Service.UXController.HUD.SetSquadScreenVisibility(true);
+					}
+					if (screenBase is DeployableInfoScreen || screenBase is EquipmentInfoScreen)
+					{
+						this.ShowHeaderFooter();
+					}
 				}
-				if (screenBase is DeployableInfoScreen || screenBase is EquipmentInfoScreen)
-				{
-					this.ShowHeaderFooter();
-				}
-				break;
 			}
-			case EventId.ScreenLoaded:
+			else
 			{
 				ScreenBase screenBase = (ScreenBase)cookie;
 				if (screenBase is TournamentTiersScreen)
 				{
 					Service.UXController.HUD.SetSquadScreenVisibility(false);
 				}
-				break;
-			}
 			}
 			return base.OnEvent(id, cookie);
 		}

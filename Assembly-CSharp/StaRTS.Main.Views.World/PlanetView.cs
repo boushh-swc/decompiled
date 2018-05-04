@@ -24,16 +24,6 @@ namespace StaRTS.Main.Views.World
 
 		private const float DEFAULT_GROUND_SIZE = 500f;
 
-		private const string LOCATOR_NEAR_L = "locator_lowerLeft";
-
-		private const string LOCATOR_NEAR_R = "locator_lowerRight";
-
-		private const string LOCATOR_FAR_L = "locator_upperLeft";
-
-		private const string LOCATOR_FAR_R = "locator_upperRight";
-
-		private const string GRID_ASSET = "visible_grid_plane";
-
 		private static readonly Vector3 MAP_CORNER_NEAR_L = new Vector3(-0.43f, 0f, -0.02f);
 
 		private static readonly Vector3 MAP_CORNER_NEAR_R = new Vector3(-0.02f, 0f, -0.43f);
@@ -49,6 +39,16 @@ namespace StaRTS.Main.Views.World
 			PlanetView.MAP_CORNER_FAR_L * 500f,
 			PlanetView.MAP_CORNER_FAR_R * 500f
 		};
+
+		private const string LOCATOR_NEAR_L = "locator_lowerLeft";
+
+		private const string LOCATOR_NEAR_R = "locator_lowerRight";
+
+		private const string LOCATOR_FAR_L = "locator_upperLeft";
+
+		private const string LOCATOR_FAR_R = "locator_upperRight";
+
+		private const string GRID_ASSET = "visible_grid_plane";
 
 		private AssetHandle planetAssetHandle;
 
@@ -190,7 +190,7 @@ namespace StaRTS.Main.Views.World
 			Transform transform = gameObject.transform;
 			transform.position = Vector3.zero;
 			transform.rotation = Quaternion.AngleAxis(-90f, Vector3.up);
-			if (!flag && transform.FindChild("terrainInnerMesh"))
+			if (!flag && transform.Find("terrainInnerMesh"))
 			{
 				Service.TerrainBlendController.IndexTerrainMesh(gameObject);
 			}

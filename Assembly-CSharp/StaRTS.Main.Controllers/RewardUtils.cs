@@ -1,5 +1,6 @@
 using Net.RichardLord.Ash.Core;
 using StaRTS.Main.Models;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.Entities.Components;
 using StaRTS.Main.Models.Entities.Nodes;
 using StaRTS.Main.Models.Player;
@@ -772,18 +773,19 @@ namespace StaRTS.Main.Controllers
 									BuildingTypeVO byLevel = buildingUpgradeCatalog.GetByLevel(buildingType.UpgradeGroup, num);
 									if (byLevel != null && byLevel.PlayerFacing)
 									{
+										SmartEntity smartEntity = (SmartEntity)buildingNode.Entity;
 										if (!string.IsNullOrEmpty(buildingTypeVO.LinkedUnit))
 										{
-											if (ContractUtils.IsChampionRepairing(buildingNode.Entity))
+											if (ContractUtils.IsChampionRepairing(smartEntity))
 											{
-												iSupportController.FinishCurrentContract(buildingNode.Entity, true);
+												iSupportController.FinishCurrentContract(smartEntity, true);
 											}
 											if (cp.Inventory.Champion.GetItemAmount(buildingTypeVO.LinkedUnit) == 0)
 											{
 												cp.OnChampionRepaired(buildingTypeVO.LinkedUnit);
 											}
 										}
-										iSupportController.StartBuildingUpgrade(byLevel, buildingNode.Entity, true);
+										iSupportController.StartBuildingUpgrade(byLevel, smartEntity, true);
 										int boardX = buildingNode.Entity.Get<BoardItemComponent>().BoardItem.BoardX;
 										int boardZ = buildingNode.Entity.Get<BoardItemComponent>().BoardItem.BoardZ;
 										float x;

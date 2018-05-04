@@ -19,6 +19,7 @@ using StaRTS.Utils.Json;
 using StaRTS.Utils.Scheduling;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace StaRTS.Externals.IAP
 {
@@ -45,6 +46,9 @@ namespace StaRTS.Externals.IAP
 		private Dictionary<string, InAppPurchaseProductInfo> products;
 
 		private Dictionary<string, InAppPurchaseTypeVO> validIAPTypes;
+
+		[CompilerGenerated]
+		private static Comparison<InAppPurchaseTypeVO> <>f__mg$cache0;
 
 		public bool AreProductIdsReady
 		{
@@ -86,10 +90,10 @@ namespace StaRTS.Externals.IAP
 			case EventId.InitializeWorldStart:
 			case EventId.InitializeWorldEnd:
 			{
-				IL_1E:
+				IL_1C:
 				if (id == EventId.StoreCategorySelected)
 				{
-					StoreTab storeTab = (StoreTab)((int)cookie);
+					StoreTab storeTab = (StoreTab)cookie;
 					if (storeTab == StoreTab.Treasure && this.products.Count == 0)
 					{
 						Service.BILoggingController.TrackGameAction("iap", "get_products_treasure_empty", "no_valid_products", string.Empty);
@@ -144,7 +148,7 @@ namespace StaRTS.Externals.IAP
 				Service.InAppPurchaseController.OnApplicationResume();
 				return EatResponse.NotEaten;
 			}
-			goto IL_1E;
+			goto IL_1C;
 		}
 
 		private void ReserveTargetBundleOnServer(string productId)
@@ -511,7 +515,12 @@ namespace StaRTS.Externals.IAP
 					list.Add(current.Value);
 				}
 			}
-			list.Sort(new Comparison<InAppPurchaseTypeVO>(InAppPurchaseController.CompareIAPs));
+			List<InAppPurchaseTypeVO> arg_7A_0 = list;
+			if (InAppPurchaseController.<>f__mg$cache0 == null)
+			{
+				InAppPurchaseController.<>f__mg$cache0 = new Comparison<InAppPurchaseTypeVO>(InAppPurchaseController.CompareIAPs);
+			}
+			arg_7A_0.Sort(InAppPurchaseController.<>f__mg$cache0);
 			return list;
 		}
 

@@ -1,7 +1,5 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using UnityEngine;
 
 [AddComponentMenu("NGUI/Interaction/Drag and Drop Item")]
@@ -167,7 +165,7 @@ public class UIDragDropItem : MonoBehaviour
 			if (this.cloneOnDrag)
 			{
 				this.mPressed = false;
-				GameObject gameObject = NGUITools.AddChild(base.transform.parent.gameObject, base.gameObject);
+				GameObject gameObject = base.transform.parent.gameObject.AddChild(base.gameObject);
 				gameObject.transform.localPosition = base.transform.localPosition;
 				gameObject.transform.localRotation = base.transform.localRotation;
 				gameObject.transform.localScale = base.transform.localScale;
@@ -220,7 +218,14 @@ public class UIDragDropItem : MonoBehaviour
 		{
 			return;
 		}
-		this.OnDragDropMove(delta * this.mRoot.pixelSizeAdjustment);
+		if (this.mRoot != null)
+		{
+			this.OnDragDropMove(delta * this.mRoot.pixelSizeAdjustment);
+		}
+		else
+		{
+			this.OnDragDropMove(delta);
+		}
 	}
 
 	protected virtual void OnDragEnd()
@@ -236,7 +241,7 @@ public class UIDragDropItem : MonoBehaviour
 		this.StopDragging(UICamera.hoveredObject);
 	}
 
-	public void StopDragging(GameObject go)
+	public void StopDragging(GameObject go = null)
 	{
 		if (this.mDragging)
 		{
@@ -301,13 +306,20 @@ public class UIDragDropItem : MonoBehaviour
 
 	protected virtual void OnDragDropMove(Vector2 delta)
 	{
-		this.mTrans.localPosition += delta;
+		this.mTrans.localPosition += this.mTrans.InverseTransformDirection(delta);
 	}
 
 	protected virtual void OnDragDropRelease(GameObject surface)
 	{
 		if (!this.cloneOnDrag)
 		{
+			UIDragScrollView[] componentsInChildren = base.GetComponentsInChildren<UIDragScrollView>();
+			UIDragScrollView[] array = componentsInChildren;
+			for (int i = 0; i < array.Length; i++)
+			{
+				UIDragScrollView uIDragScrollView = array[i];
+				uIDragScrollView.scrollView = null;
+			}
 			if (this.mButton != null)
 			{
 				this.mButton.isEnabled = true;
@@ -337,7 +349,7 @@ public class UIDragDropItem : MonoBehaviour
 			this.mTable = NGUITools.FindInParents<UITable>(this.mParent);
 			if (this.mDragScrollView != null)
 			{
-				base.StartCoroutine(this.EnableDragScrollView());
+				base.Invoke("EnableDragScrollView", 0.001f);
 			}
 			NGUITools.MarkParentAsChanged(base.gameObject);
 			if (this.mTable != null)
@@ -349,11 +361,16 @@ public class UIDragDropItem : MonoBehaviour
 				this.mGrid.repositionNow = true;
 			}
 		}
-		else
-		{
-			NGUITools.Destroy(base.gameObject);
-		}
 		this.OnDragDropEnd();
+		if (this.cloneOnDrag)
+		{
+			this.DestroySelf();
+		}
+	}
+
+	protected virtual void DestroySelf()
+	{
+		NGUITools.Destroy(base.gameObject);
 	}
 
 	protected virtual void OnDragDropEnd()
@@ -361,14 +378,19 @@ public class UIDragDropItem : MonoBehaviour
 		UIDragDropItem.draggedItems.Remove(this);
 	}
 
-	[DebuggerHidden]
-	protected IEnumerator EnableDragScrollView()
+	protected void EnableDragScrollView()
 	{
-		yield return new WaitForEndOfFrame();
 		if (this.mDragScrollView != null)
 		{
 			this.mDragScrollView.enabled = true;
 		}
-		yield break;
+	}
+
+	protected void OnApplicationFocus(bool focus)
+	{
+		if (!focus)
+		{
+			this.StopDragging(null);
+		}
 	}
 }

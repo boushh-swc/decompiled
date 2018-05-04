@@ -230,14 +230,21 @@ namespace StaRTS.GameBoard.Pathfinding
 			this.pathingComp.CurrentPath = new Path(startCell, endCell, endCell, -1, new PathTroopParams
 			{
 				TroopWidth = size,
+				DPS = 0,
+				MinRange = 0u,
 				MaxRange = 1u,
 				MaxSpeed = walkerComp.SpeedVO.MaxSpeed,
 				PathSearchWidth = pathSearchWidth,
 				IsMelee = true,
+				IsOverWall = false,
+				IsHealer = false,
+				CrushesWalls = false,
+				IsTargetShield = false,
 				TargetInRangeModifier = 1u
 			}, new PathBoardParams
 			{
-				IgnoreWall = ignoreWall
+				IgnoreWall = ignoreWall,
+				Destructible = false
 			});
 			bool flag;
 			this.pathingComp.CurrentPath.CalculatePath(out flag);
@@ -247,14 +254,21 @@ namespace StaRTS.GameBoard.Pathfinding
 				this.pathingComp.CurrentPath = new Path(startCell, endCell, endCell, -1, new PathTroopParams
 				{
 					TroopWidth = size,
+					DPS = 0,
+					MinRange = 0u,
 					MaxRange = 1u,
 					MaxSpeed = walkerComp.SpeedVO.MaxSpeed,
 					PathSearchWidth = pathSearchWidth,
 					IsMelee = true,
+					IsOverWall = false,
+					IsHealer = false,
+					CrushesWalls = false,
+					IsTargetShield = false,
 					TargetInRangeModifier = 1u
 				}, new PathBoardParams
 				{
-					IgnoreWall = true
+					IgnoreWall = true,
+					Destructible = false
 				});
 				this.pathingComp.CurrentPath.CalculatePath(out flag);
 			}
@@ -396,26 +410,24 @@ namespace StaRTS.GameBoard.Pathfinding
 			{
 				return EatResponse.NotEaten;
 			}
-			switch (id)
+			if (id != EventId.EntityDestroyed)
 			{
-			case EventId.EntityKilled:
-			{
-				SmartEntity smartEntity = (SmartEntity)cookie;
-				if (smartEntity == this.target || smartEntity == this.troop)
+				if (id == EventId.EntityKilled)
 				{
-					this.pathingComp = null;
+					SmartEntity smartEntity = (SmartEntity)cookie;
+					if (smartEntity == this.target || smartEntity == this.troop)
+					{
+						this.pathingComp = null;
+					}
 				}
-				break;
 			}
-			case EventId.EntityDestroyed:
+			else
 			{
 				uint num = (uint)cookie;
 				if (num == this.target.ID || num == this.troop.ID)
 				{
 					this.pathingComp = null;
 				}
-				break;
-			}
 			}
 			return EatResponse.NotEaten;
 		}

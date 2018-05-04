@@ -1,10 +1,23 @@
 using StaRTS.Utils.MetaData;
 using System;
+using System.Runtime.CompilerServices;
 
 namespace StaRTS.Main.Models.ValueObjects
 {
 	public class EpisodePointScaleVO : IValueObject
 	{
+		[CompilerGenerated]
+		private static Converter<string, int> <>f__mg$cache0;
+
+		[CompilerGenerated]
+		private static Converter<string, int> <>f__mg$cache1;
+
+		[CompilerGenerated]
+		private static Converter<string, int> <>f__mg$cache2;
+
+		[CompilerGenerated]
+		private static Converter<string, int> <>f__mg$cache3;
+
 		public static int COLUMN_uid
 		{
 			get;
@@ -69,13 +82,33 @@ namespace StaRTS.Main.Models.ValueObjects
 		{
 			this.Uid = row.Uid;
 			string[] array = row.TryGetStringArray(EpisodePointScaleVO.COLUMN_objective);
-			this.Objective = Array.ConvertAll<string, int>(array, new Converter<string, int>(int.Parse));
+			string[] arg_37_0 = array;
+			if (EpisodePointScaleVO.<>f__mg$cache0 == null)
+			{
+				EpisodePointScaleVO.<>f__mg$cache0 = new Converter<string, int>(int.Parse);
+			}
+			this.Objective = Array.ConvertAll<string, int>(arg_37_0, EpisodePointScaleVO.<>f__mg$cache0);
 			array = row.TryGetStringArray(EpisodePointScaleVO.COLUMN_raid);
-			this.Raid = Array.ConvertAll<string, int>(array, new Converter<string, int>(int.Parse));
+			string[] arg_6C_0 = array;
+			if (EpisodePointScaleVO.<>f__mg$cache1 == null)
+			{
+				EpisodePointScaleVO.<>f__mg$cache1 = new Converter<string, int>(int.Parse);
+			}
+			this.Raid = Array.ConvertAll<string, int>(arg_6C_0, EpisodePointScaleVO.<>f__mg$cache1);
 			array = row.TryGetStringArray(EpisodePointScaleVO.COLUMN_conflict);
-			this.Conflict = Array.ConvertAll<string, int>(array, new Converter<string, int>(int.Parse));
+			string[] arg_A1_0 = array;
+			if (EpisodePointScaleVO.<>f__mg$cache2 == null)
+			{
+				EpisodePointScaleVO.<>f__mg$cache2 = new Converter<string, int>(int.Parse);
+			}
+			this.Conflict = Array.ConvertAll<string, int>(arg_A1_0, EpisodePointScaleVO.<>f__mg$cache2);
 			array = row.TryGetStringArray(EpisodePointScaleVO.COLUMN_pvp);
-			this.PvP = Array.ConvertAll<string, int>(array, new Converter<string, int>(int.Parse));
+			string[] arg_D6_0 = array;
+			if (EpisodePointScaleVO.<>f__mg$cache3 == null)
+			{
+				EpisodePointScaleVO.<>f__mg$cache3 = new Converter<string, int>(int.Parse);
+			}
+			this.PvP = Array.ConvertAll<string, int>(arg_D6_0, EpisodePointScaleVO.<>f__mg$cache3);
 		}
 	}
 }

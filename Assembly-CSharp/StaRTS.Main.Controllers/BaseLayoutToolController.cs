@@ -4,6 +4,7 @@ using StaRTS.Main.Controllers.GameStates;
 using StaRTS.Main.Models;
 using StaRTS.Main.Models.Commands.Player.Building.Move;
 using StaRTS.Main.Models.Commands.TransferObjects;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.Entities.Components;
 using StaRTS.Main.Models.Player.World;
 using StaRTS.Main.Utils;
@@ -19,11 +20,11 @@ namespace StaRTS.Main.Controllers
 {
 	public class BaseLayoutToolController : IEventObserver
 	{
-		private const string NO_VALID_POSITION_FOR_UNSTASH = "NO_VALID_POSITION_FOR_UNSTASH";
-
 		private PositionMap lastSavedMap;
 
-		public Dictionary<string, List<Entity>> stashedBuildingMap;
+		public Dictionary<string, List<SmartEntity>> stashedBuildingMap;
+
+		private const string NO_VALID_POSITION_FOR_UNSTASH = "NO_VALID_POSITION_FOR_UNSTASH";
 
 		public bool IsBaseLayoutModeActive
 		{
@@ -77,42 +78,42 @@ namespace StaRTS.Main.Controllers
 
 		public EatResponse OnEvent(EventId id, object cookie)
 		{
-			if (id != EventId.BuildingViewReady)
+			if (id != EventId.BuildingQuickStashed)
 			{
-				if (id != EventId.BuildingQuickStashed)
+				if (id != EventId.UserLoweredBuilding)
 				{
-					if (id == EventId.UserLoweredBuilding)
+					if (id == EventId.BuildingViewReady)
 					{
-						Entity entity = (Entity)cookie;
-						if (entity != null)
+						EntityViewParams entityViewParams = (EntityViewParams)cookie;
+						if (this.IsBuildingStashed(entityViewParams.Entity))
 						{
-							Building buildingTO = entity.Get<BuildingComponent>().BuildingTO;
-							Position position = this.lastSavedMap.GetPosition(buildingTO.Key);
-							if ((position != null && this.HasBuildingMoved(buildingTO, position)) || (Service.GameStateMachine.CurrentState is WarBaseEditorState && position == null))
-							{
-								this.ShouldRevertMap = true;
-							}
+							GameObjectViewComponent gameObjectViewComp = entityViewParams.Entity.GameObjectViewComp;
+							TransformComponent transformComp = entityViewParams.Entity.TransformComp;
+							gameObjectViewComp.SetXYZ(Units.BoardToWorldX(transformComp.CenterX()), -1000f, Units.BoardToWorldZ(transformComp.CenterZ()));
 						}
 					}
 				}
-				else if (this.IsQuickStashModeEnabled)
+				else
 				{
-					Entity entity2 = (Entity)cookie;
-					this.StashBuilding(entity2);
-					string uid = entity2.Get<BuildingComponent>().BuildingTO.Uid;
-					Service.BuildingController.EnsureDeselectSelectedBuilding();
-					Service.UXController.HUD.BaseLayoutToolView.RefreshStashedBuildingCount(uid);
+					Entity entity = (Entity)cookie;
+					if (entity != null)
+					{
+						Building buildingTO = entity.Get<BuildingComponent>().BuildingTO;
+						Position position = this.lastSavedMap.GetPosition(buildingTO.Key);
+						if ((position != null && this.HasBuildingMoved(buildingTO, position)) || (Service.GameStateMachine.CurrentState is WarBaseEditorState && position == null))
+						{
+							this.ShouldRevertMap = true;
+						}
+					}
 				}
 			}
-			else
+			else if (this.IsQuickStashModeEnabled)
 			{
-				EntityViewParams entityViewParams = (EntityViewParams)cookie;
-				if (this.IsBuildingStashed(entityViewParams.Entity))
-				{
-					GameObjectViewComponent gameObjectViewComp = entityViewParams.Entity.GameObjectViewComp;
-					TransformComponent transformComp = entityViewParams.Entity.TransformComp;
-					gameObjectViewComp.SetXYZ(Units.BoardToWorldX(transformComp.CenterX()), -1000f, Units.BoardToWorldZ(transformComp.CenterZ()));
-				}
+				SmartEntity smartEntity = (SmartEntity)cookie;
+				this.StashBuilding(smartEntity);
+				string uid = smartEntity.BuildingComp.BuildingTO.Uid;
+				Service.BuildingController.EnsureDeselectSelectedBuilding();
+				Service.UXController.HUD.BaseLayoutToolView.RefreshStashedBuildingCount(uid);
 			}
 			return EatResponse.NotEaten;
 		}
@@ -127,20 +128,20 @@ namespace StaRTS.Main.Controllers
 			return this.lastSavedMap.GetPosition(buildingKey).Z;
 		}
 
-		public bool IsBuildingStashed(Entity buildingEntity)
+		public bool IsBuildingStashed(SmartEntity buildingEntity)
 		{
-			GameObjectViewComponent gameObjectViewComponent = buildingEntity.Get<GameObjectViewComponent>();
-			if (gameObjectViewComponent != null && gameObjectViewComponent.MainTransform.position.y < 0f)
+			GameObjectViewComponent gameObjectViewComp = buildingEntity.GameObjectViewComp;
+			if (gameObjectViewComp != null && gameObjectViewComp.MainTransform.position.y < 0f)
 			{
 				return true;
 			}
 			if (this.stashedBuildingMap != null)
 			{
-				if (!buildingEntity.Has<BuildingComponent>())
+				if (buildingEntity.BuildingComp != null)
 				{
 					return false;
 				}
-				string uid = buildingEntity.Get<BuildingComponent>().BuildingType.Uid;
+				string uid = buildingEntity.BuildingComp.BuildingType.Uid;
 				if (this.stashedBuildingMap.ContainsKey(uid) && this.stashedBuildingMap[uid].Contains(buildingEntity))
 				{
 					return true;
@@ -155,9 +156,9 @@ namespace StaRTS.Main.Controllers
 			{
 				return true;
 			}
-			foreach (KeyValuePair<string, List<Entity>> current in this.stashedBuildingMap)
+			foreach (KeyValuePair<string, List<SmartEntity>> current in this.stashedBuildingMap)
 			{
-				List<Entity> value = current.Value;
+				List<SmartEntity> value = current.Value;
 				if (value.Count > 0)
 				{
 					return false;
@@ -173,15 +174,15 @@ namespace StaRTS.Main.Controllers
 
 		public void PauseContractsOnAllBuildings()
 		{
-			List<Entity> buildingListByType = Service.BuildingLookupController.GetBuildingListByType(BuildingType.Any);
+			List<SmartEntity> buildingListByType = Service.BuildingLookupController.GetBuildingListByType(BuildingType.Any);
 			int i = 0;
 			int count = buildingListByType.Count;
 			while (i < count)
 			{
 				if (!this.IsBuildingClearable(buildingListByType[i]))
 				{
-					BuildingComponent buildingComponent = buildingListByType[i].Get<BuildingComponent>();
-					Service.ISupportController.PauseBuilding(buildingComponent.BuildingTO.Key);
+					BuildingComponent buildingComp = buildingListByType[i].BuildingComp;
+					Service.ISupportController.PauseBuilding(buildingComp.BuildingTO.Key);
 				}
 				i++;
 			}
@@ -196,12 +197,12 @@ namespace StaRTS.Main.Controllers
 		{
 			Service.BuildingController.EnsureLoweredLiftedBuilding();
 			Service.BuildingController.EnsureDeselectSelectedBuilding();
-			List<Entity> buildingListByType = Service.BuildingLookupController.GetBuildingListByType(BuildingType.Any);
+			List<SmartEntity> buildingListByType = Service.BuildingLookupController.GetBuildingListByType(BuildingType.Any);
 			int i = 0;
 			int count = buildingListByType.Count;
 			while (i < count)
 			{
-				Entity buildingEntity = buildingListByType[i];
+				SmartEntity buildingEntity = buildingListByType[i];
 				if (!this.IsBuildingClearable(buildingEntity))
 				{
 					if (!this.IsBuildingStashed(buildingEntity))
@@ -216,17 +217,17 @@ namespace StaRTS.Main.Controllers
 
 		private void StashAllMovedBuildings()
 		{
-			List<Entity> buildingListByType = Service.BuildingLookupController.GetBuildingListByType(BuildingType.Any);
+			List<SmartEntity> buildingListByType = Service.BuildingLookupController.GetBuildingListByType(BuildingType.Any);
 			int i = 0;
 			int count = buildingListByType.Count;
 			while (i < count)
 			{
-				Entity entity = buildingListByType[i];
-				BuildingComponent buildingComponent = entity.Get<BuildingComponent>();
-				Building buildingTO = buildingComponent.BuildingTO;
-				if (buildingComponent.BuildingType.Type != BuildingType.Clearable)
+				SmartEntity smartEntity = buildingListByType[i];
+				BuildingComponent buildingComp = smartEntity.BuildingComp;
+				Building buildingTO = buildingComp.BuildingTO;
+				if (buildingComp.BuildingType.Type != BuildingType.Clearable)
 				{
-					if (!this.IsBuildingStashed(entity))
+					if (!this.IsBuildingStashed(smartEntity))
 					{
 						string key = buildingTO.Key;
 						Position position = this.lastSavedMap.GetPosition(key);
@@ -236,7 +237,7 @@ namespace StaRTS.Main.Controllers
 						}
 						else if (this.HasBuildingMoved(buildingTO, position))
 						{
-							this.StashBuilding(entity);
+							this.StashBuilding(smartEntity);
 						}
 					}
 				}
@@ -346,9 +347,9 @@ namespace StaRTS.Main.Controllers
 			{
 				return;
 			}
-			foreach (KeyValuePair<string, List<Entity>> current in this.stashedBuildingMap)
+			foreach (KeyValuePair<string, List<SmartEntity>> current in this.stashedBuildingMap)
 			{
-				List<Entity> value = current.Value;
+				List<SmartEntity> value = current.Value;
 				while (value.Count > 0)
 				{
 					this.UnstashBuildingByUID(current.Key, true, false, false, false);
@@ -367,12 +368,12 @@ namespace StaRTS.Main.Controllers
 			}
 		}
 
-		public void StashBuilding(Entity buildingEntity)
+		public void StashBuilding(SmartEntity buildingEntity)
 		{
 			this.StashBuilding(buildingEntity, true);
 		}
 
-		public void StashBuilding(Entity buildingEntity, bool allowRevert)
+		public void StashBuilding(SmartEntity buildingEntity, bool allowRevert)
 		{
 			BuildingComponent buildingComponent = buildingEntity.Get<BuildingComponent>();
 			if (buildingComponent.BuildingType.Type == BuildingType.Clearable)
@@ -383,24 +384,24 @@ namespace StaRTS.Main.Controllers
 			string uid = buildingComponent.BuildingTO.Uid;
 			if (this.stashedBuildingMap == null)
 			{
-				this.stashedBuildingMap = new Dictionary<string, List<Entity>>();
+				this.stashedBuildingMap = new Dictionary<string, List<SmartEntity>>();
 			}
 			if (!this.stashedBuildingMap.ContainsKey(uid))
 			{
-				this.stashedBuildingMap.Add(uid, new List<Entity>());
+				this.stashedBuildingMap.Add(uid, new List<SmartEntity>());
 			}
-			List<Entity> list = this.stashedBuildingMap[uid];
+			List<SmartEntity> list = this.stashedBuildingMap[uid];
 			if (!list.Contains(buildingEntity))
 			{
 				list.Add(buildingEntity);
 			}
-			GameObjectViewComponent gameObjectViewComponent = buildingEntity.Get<GameObjectViewComponent>();
-			if (gameObjectViewComponent != null)
+			GameObjectViewComponent gameObjectViewComp = buildingEntity.GameObjectViewComp;
+			if (gameObjectViewComp != null)
 			{
-				TransformComponent transformComponent = buildingEntity.Get<TransformComponent>();
-				gameObjectViewComponent.SetXYZ(Units.BoardToWorldX(transformComponent.CenterX()), -1000f, Units.BoardToWorldZ(transformComponent.CenterZ()));
+				TransformComponent transformComp = buildingEntity.TransformComp;
+				gameObjectViewComp.SetXYZ(Units.BoardToWorldX(transformComp.CenterX()), -1000f, Units.BoardToWorldZ(transformComp.CenterZ()));
 			}
-			if (buildingEntity.Has<HealthViewComponent>())
+			if (buildingEntity.HealthViewComp != null)
 			{
 				HealthViewComponent healthViewComponent = buildingEntity.Get<HealthViewComponent>();
 				healthViewComponent.TeardownElements();
@@ -427,18 +428,18 @@ namespace StaRTS.Main.Controllers
 				Service.Logger.Error("Can't unstash! No buildings of : " + buildingUID + " currently stashed");
 				return;
 			}
-			List<Entity> list = this.stashedBuildingMap[buildingUID];
-			Entity entity = list[0];
-			BuildingComponent buildingComponent = entity.Get<BuildingComponent>();
+			List<SmartEntity> list = this.stashedBuildingMap[buildingUID];
+			SmartEntity smartEntity = list[0];
+			BuildingComponent buildingComp = smartEntity.BuildingComp;
 			bool flag = false;
-			if (stampable && this.IsBuildingStampable(entity))
+			if (stampable && this.IsBuildingStampable(smartEntity))
 			{
 				flag = true;
 			}
 			Position pos = null;
 			if (returnToOriginalPosition)
 			{
-				pos = this.lastSavedMap.GetPosition(buildingComponent.BuildingTO.Key);
+				pos = this.lastSavedMap.GetPosition(buildingComp.BuildingTO.Key);
 				if (flag)
 				{
 					flag = false;
@@ -446,30 +447,30 @@ namespace StaRTS.Main.Controllers
 				}
 			}
 			BuildingController buildingController = Service.BuildingController;
-			GameObjectViewComponent gameObjectViewComponent = entity.Get<GameObjectViewComponent>();
-			TransformComponent transformComponent = entity.Get<TransformComponent>();
+			GameObjectViewComponent gameObjectViewComponent = smartEntity.Get<GameObjectViewComponent>();
+			TransformComponent transformComponent = smartEntity.Get<TransformComponent>();
 			if (gameObjectViewComponent != null)
 			{
 				gameObjectViewComponent.SetXYZ(Units.BoardToWorldX(transformComponent.CenterX()), 0f, Units.BoardToWorldZ(transformComponent.CenterZ()));
 			}
-			if (entity.Has<HealthViewComponent>())
+			if (smartEntity.Has<HealthViewComponent>())
 			{
-				HealthViewComponent healthViewComponent = entity.Get<HealthViewComponent>();
+				HealthViewComponent healthViewComponent = smartEntity.Get<HealthViewComponent>();
 				healthViewComponent.SetupElements();
 			}
-			List<Entity> list2 = this.stashedBuildingMap[buildingUID];
-			if (list2.Contains(entity))
+			List<SmartEntity> list2 = this.stashedBuildingMap[buildingUID];
+			if (list2.Contains(smartEntity))
 			{
-				list2.Remove(entity);
-				if (!buildingController.PositionUnstashedBuilding(entity, pos, flag, panToBuilding, playLoweredSound))
+				list2.Remove(smartEntity);
+				if (!buildingController.PositionUnstashedBuilding(smartEntity, pos, flag, panToBuilding, playLoweredSound))
 				{
 					Service.Logger.ErrorFormat("Unable to place building from stash.  Building {0} {1}", new object[]
 					{
-						entity.Get<BuildingComponent>().BuildingTO.Key,
-						entity.Get<BuildingComponent>().BuildingType.Uid
+						smartEntity.Get<BuildingComponent>().BuildingTO.Key,
+						smartEntity.Get<BuildingComponent>().BuildingType.Uid
 					});
 					Service.UXController.MiscElementsManager.ShowPlayerInstructionsError(Service.Lang.Get("NO_VALID_POSITION_FOR_UNSTASH", new object[0]));
-					this.StashBuilding(entity);
+					this.StashBuilding(smartEntity);
 				}
 			}
 		}

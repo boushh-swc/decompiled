@@ -13,11 +13,11 @@ namespace StaRTS.Main.Models.Planets
 {
 	public class Planet
 	{
-		private const int THRASH_CAP = 20;
-
 		private float THRASH_TIME;
 
 		private float THRASH_DELTA_PERCENT;
+
+		private const int THRASH_CAP = 20;
 
 		public AssetHandle Handle;
 

@@ -41,6 +41,8 @@ namespace SwrveUnity.Messaging
 
 		private const string END_DATE_KEY = "end_date";
 
+		protected readonly System.Random rnd = new System.Random();
+
 		protected const string WaitTimeFormat = "HH\\:mm\\:ss zzz";
 
 		protected const int DefaultDelayFirstMessage = 180;
@@ -48,8 +50,6 @@ namespace SwrveUnity.Messaging
 		protected const long DefaultMaxShows = 99999L;
 
 		protected const int DefaultMinDelay = 60;
-
-		protected readonly System.Random rnd = new System.Random();
 
 		public int Id;
 

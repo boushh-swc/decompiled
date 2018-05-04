@@ -83,18 +83,16 @@ public class UICenterOnChild : MonoBehaviour
 			if (this.mScrollView)
 			{
 				this.mScrollView.centerOnChild = this;
-				UIScrollView expr_94 = this.mScrollView;
-				expr_94.onDragFinished = (UIScrollView.OnDragNotification)Delegate.Combine(expr_94.onDragFinished, new UIScrollView.OnDragNotification(this.OnDragFinished));
 			}
 			if (this.mScrollView.horizontalScrollBar != null)
 			{
-				UIProgressBar expr_D6 = this.mScrollView.horizontalScrollBar;
-				expr_D6.onDragFinished = (UIProgressBar.OnDragFinished)Delegate.Combine(expr_D6.onDragFinished, new UIProgressBar.OnDragFinished(this.OnDragFinished));
+				UIProgressBar expr_AF = this.mScrollView.horizontalScrollBar;
+				expr_AF.onDragFinished = (UIProgressBar.OnDragFinished)Delegate.Combine(expr_AF.onDragFinished, new UIProgressBar.OnDragFinished(this.OnDragFinished));
 			}
 			if (this.mScrollView.verticalScrollBar != null)
 			{
-				UIProgressBar expr_118 = this.mScrollView.verticalScrollBar;
-				expr_118.onDragFinished = (UIProgressBar.OnDragFinished)Delegate.Combine(expr_118.onDragFinished, new UIProgressBar.OnDragFinished(this.OnDragFinished));
+				UIProgressBar expr_F1 = this.mScrollView.verticalScrollBar;
+				expr_F1.onDragFinished = (UIProgressBar.OnDragFinished)Delegate.Combine(expr_F1.onDragFinished, new UIProgressBar.OnDragFinished(this.OnDragFinished));
 			}
 		}
 		if (this.mScrollView.panel == null)
@@ -178,7 +176,7 @@ public class UICenterOnChild : MonoBehaviour
 				}
 				else
 				{
-					num7 = point.y;
+					num7 = -point.y;
 				}
 			}
 			else

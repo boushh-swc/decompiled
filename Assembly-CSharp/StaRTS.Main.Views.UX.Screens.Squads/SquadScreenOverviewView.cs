@@ -448,7 +448,7 @@ namespace StaRTS.Main.Views.UX.Screens.Squads
 
 		public EatResponse OnEvent(EventId id, object cookie)
 		{
-			if (id == EventId.SquadDetailsUpdated || id == EventId.SquadLeveledUp)
+			if (id == EventId.SquadLeveledUp || id == EventId.SquadDetailsUpdated)
 			{
 				this.RefreshView();
 			}

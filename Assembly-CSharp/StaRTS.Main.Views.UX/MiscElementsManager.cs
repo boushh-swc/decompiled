@@ -28,12 +28,13 @@ using StaRTS.Utils.Core;
 using StaRTS.Utils.Scheduling;
 using StaRTS.Utils.State;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace StaRTS.Main.Views.UX
 {
-	public class MiscElementsManager : UXFactory, IEventObserver, IUserInputObserver, IViewFrameTimeObserver
+	public class MiscElementsManager : UXFactory, IViewFrameTimeObserver, IUserInputObserver, IEventObserver
 	{
 		private const float HEIGHT_OFFSET = 4f;
 
@@ -44,6 +45,8 @@ namespace StaRTS.Main.Views.UX
 		private const float TOOL_TIP_OFFSET = 4f;
 
 		private const float SQUAD_LEVEL_TOOLTIP_OFFSET = 0.3f;
+
+		private static readonly Vector3 OFF_SCREEN_OFFSET = new Vector3(10000f, 10000f, 0f);
 
 		private const int FIRST_TICKER_INDEX = 0;
 
@@ -213,6 +216,14 @@ namespace StaRTS.Main.Views.UX
 
 		public const string ARROW_BOTTOM_LEFT = "bottomleft";
 
+		private bool startedHighlightAnim;
+
+		private uint hideHighlightTimerId;
+
+		private RegionHighlight regionHighlightMover;
+
+		private Transform buttonHighlightArrow;
+
 		private const string CURRENCY_TRAY = "CurrencyTray";
 
 		private const string CURRENCY_TRAY_BG = "CurrencyTrayBg";
@@ -239,9 +250,23 @@ namespace StaRTS.Main.Views.UX
 
 		private const string CURRENCY_REPUTATION = "Reputation";
 
+		public static readonly string[] CURRENCY_LIST = new string[]
+		{
+			"Credit",
+			"Alloy",
+			"Contraband",
+			"Points",
+			"Crystal",
+			"Reputation"
+		};
+
 		private const string NAME_TROOP_COUNTER = "TroopCount";
 
 		private const string NAME_TROOP_COUNTER_LABEL = "LabelTroopCount";
+
+		private UXElement troopCounter;
+
+		private UXLabel troopCounterLabel;
 
 		private const string PLANET_ANCHOR_TOP_RIGHT = "AnchorTopRight";
 
@@ -256,6 +281,10 @@ namespace StaRTS.Main.Views.UX
 		private const float TOURNAMENT_STATUS_TITLE_ANIMATION_LENGTH = 0.5f;
 
 		private const float TOURNAMENT_STATUS_SHOW_DELAY = 1f;
+
+		private uint ConflictStatusTitleTimerId;
+
+		private uint ConflictStatusShowTimerId;
 
 		private const string PLANET_HIGHLIGHT_BACK = "PlanetHighlightBack";
 
@@ -354,34 +383,6 @@ namespace StaRTS.Main.Views.UX
 		private const string HUD_BUFF_TOOLTIP_ITEM_BODY = "LabelBodyBuffsInfo";
 
 		private const string HUD_BUFF_TOOLTIP_BG = "SpriteBgBuffsInfo";
-
-		private static readonly Vector3 OFF_SCREEN_OFFSET = new Vector3(10000f, 10000f, 0f);
-
-		private bool startedHighlightAnim;
-
-		private uint hideHighlightTimerId;
-
-		private RegionHighlight regionHighlightMover;
-
-		private Transform buttonHighlightArrow;
-
-		public static readonly string[] CURRENCY_LIST = new string[]
-		{
-			"Credit",
-			"Alloy",
-			"Contraband",
-			"Points",
-			"Crystal",
-			"Reputation"
-		};
-
-		private UXElement troopCounter;
-
-		private UXLabel troopCounterLabel;
-
-		private uint ConflictStatusTitleTimerId;
-
-		private uint ConflictStatusShowTimerId;
 
 		private AssetsCompleteDelegate onCompleteCallback;
 
@@ -780,7 +781,7 @@ namespace StaRTS.Main.Views.UX
 			this.fingerAnimation.Visible = false;
 			this.fingerAnimation.Parent = Service.UXController.WorldAnchor;
 			this.buttonHighlight = base.GetElement<UXElement>("FUETileHighlight");
-			this.buttonHighlightArrow = this.buttonHighlight.Root.transform.FindChild("OuterArrowHolder");
+			this.buttonHighlightArrow = this.buttonHighlight.Root.transform.Find("OuterArrowHolder");
 			this.buttonHighlight.WidgetDepth = 9999;
 			this.buttonHighlight.Visible = false;
 			this.buttonHighlightTarget = null;
@@ -1556,22 +1557,19 @@ namespace StaRTS.Main.Views.UX
 		{
 			if (id != EventId.InventoryResourceUpdated)
 			{
-				if (id != EventId.ShowObjectiveToast)
+				if (id != EventId.SquadAdvancementTabSelected)
 				{
-					if (id == EventId.SquadAdvancementTabSelected)
+					if (id == EventId.ShowObjectiveToast)
 					{
-						if (cookie != null)
-						{
-							SquadScreenAdvancementView squadScreenAdvancementView = cookie as SquadScreenAdvancementView;
-							this.currencyTrayType = squadScreenAdvancementView.GetDisplayCurrencyTrayType();
-							this.UpdateCurrencyTrayContents(null);
-						}
+						this.checkPendingObjectiveToast = true;
+						this.EnableFrameTimeObserving(true);
 					}
 				}
-				else
+				else if (cookie != null)
 				{
-					this.checkPendingObjectiveToast = true;
-					this.EnableFrameTimeObserving(true);
+					SquadScreenAdvancementView squadScreenAdvancementView = cookie as SquadScreenAdvancementView;
+					this.currencyTrayType = squadScreenAdvancementView.GetDisplayCurrencyTrayType();
+					this.UpdateCurrencyTrayContents(null);
 				}
 			}
 			else
@@ -1638,11 +1636,24 @@ namespace StaRTS.Main.Views.UX
 					animatedAlpha.enabled = true;
 					animation = gameObject.AddComponent<Animation>();
 					animation.playAutomatically = false;
-					foreach (AnimationState animationState in component)
+					IEnumerator enumerator = component.GetEnumerator();
+					try
 					{
-						AnimationClip animationClip = UnityEngine.Object.Instantiate<AnimationClip>(animationState.clip);
-						animationClip.name = animationState.name;
-						animation.AddClip(animationClip, animationClip.name);
+						while (enumerator.MoveNext())
+						{
+							AnimationState animationState = (AnimationState)enumerator.Current;
+							AnimationClip animationClip = UnityEngine.Object.Instantiate<AnimationClip>(animationState.clip);
+							animationClip.name = animationState.name;
+							animation.AddClip(animationClip, animationClip.name);
+						}
+					}
+					finally
+					{
+						IDisposable disposable;
+						if ((disposable = (enumerator as IDisposable)) != null)
+						{
+							disposable.Dispose();
+						}
 					}
 				}
 			}
@@ -1818,9 +1829,22 @@ namespace StaRTS.Main.Views.UX
 			UXSprite element = base.GetElement<UXSprite>("Border");
 			UXSprite element2 = base.GetElement<UXSprite>("BorderCircular");
 			UXSprite element3 = base.GetElement<UXSprite>("BorderCircle");
-			foreach (Transform transform2 in element.Root.transform.parent)
+			IEnumerator enumerator = element.Root.transform.parent.GetEnumerator();
+			try
 			{
-				transform2.gameObject.SetActive(false);
+				while (enumerator.MoveNext())
+				{
+					Transform transform2 = (Transform)enumerator.Current;
+					transform2.gameObject.SetActive(false);
+				}
+			}
+			finally
+			{
+				IDisposable disposable;
+				if ((disposable = (enumerator as IDisposable)) != null)
+				{
+					disposable.Dispose();
+				}
 			}
 			string name = string.Format("{0}Highlight", button.Root.name);
 			GameObject gameObject = UnityUtils.FindGameObject(button.Root, name);
@@ -1929,9 +1953,22 @@ namespace StaRTS.Main.Views.UX
 			this.buttonHighlightArrow.localPosition = zero;
 			this.buttonHighlightArrow.localEulerAngles = Vector3.zero;
 			UXSprite element = base.GetElement<UXSprite>("Border");
-			foreach (Transform transform in element.Root.transform.parent)
+			IEnumerator enumerator = element.Root.transform.parent.GetEnumerator();
+			try
 			{
-				transform.gameObject.SetActive(false);
+				while (enumerator.MoveNext())
+				{
+					Transform transform = (Transform)enumerator.Current;
+					transform.gameObject.SetActive(false);
+				}
+			}
+			finally
+			{
+				IDisposable disposable;
+				if ((disposable = (enumerator as IDisposable)) != null)
+				{
+					disposable.Dispose();
+				}
 			}
 			if (this.regionHighlightMover != null)
 			{
@@ -2112,8 +2149,8 @@ namespace StaRTS.Main.Views.UX
 			}
 			else
 			{
-				float new_x = -((float)this.hudBuffToolTipBG.GetUIWidget.width - element.ColliderWidthUnscaled + element.ColliderXUnscaled + 4f);
-				this.hudBuffToolTipLocalOffsetPos.Set(new_x, 0f, 0f);
+				float newX = -((float)this.hudBuffToolTipBG.GetUIWidget.width - element.ColliderWidthUnscaled + element.ColliderXUnscaled + 4f);
+				this.hudBuffToolTipLocalOffsetPos.Set(newX, 0f, 0f);
 			}
 			this.hudBuffToolTip.Visible = true;
 			this.hudBuffToolTip.Root.transform.parent = element.Root.transform;

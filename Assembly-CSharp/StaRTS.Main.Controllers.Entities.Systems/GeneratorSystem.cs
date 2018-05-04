@@ -8,10 +8,6 @@ namespace StaRTS.Main.Controllers.Entities.Systems
 {
 	public class GeneratorSystem : ViewSystemBase
 	{
-		private const float VIEW_UPDATE_TIME = 1f;
-
-		private const float FULLNESS_UPDATE_TIME = 5f;
-
 		private EntityController entityController;
 
 		private ICurrencyController currencyController;
@@ -22,7 +18,11 @@ namespace StaRTS.Main.Controllers.Entities.Systems
 
 		private StorageEffects storageEffects;
 
+		private const float VIEW_UPDATE_TIME = 1f;
+
 		private float timeSinceViewUpdate;
+
+		private const float FULLNESS_UPDATE_TIME = 5f;
 
 		private float timeSinceFullnessUpdate;
 

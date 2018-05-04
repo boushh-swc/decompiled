@@ -19,14 +19,6 @@ namespace StaRTS.Main.Controllers.Planets
 {
 	public class PlanetRelocationController
 	{
-		private const string START_HYPERSPACE = "StartHyperspace";
-
-		private const string CURRENT_PLANET_ANCHOR = "HomePlanet";
-
-		private const string DESTINATION_PLANET_ANCHOR = "DestinationPlanet";
-
-		private const string PREFAB_LOAD_ERROR = "Invalid GameObject: ";
-
 		private AssetManager assetManager;
 
 		private AssetHandle hyperspaceHandle;
@@ -50,6 +42,14 @@ namespace StaRTS.Main.Controllers.Planets
 		private bool relocating;
 
 		private bool relocationInProgress;
+
+		private const string START_HYPERSPACE = "StartHyperspace";
+
+		private const string CURRENT_PLANET_ANCHOR = "HomePlanet";
+
+		private const string DESTINATION_PLANET_ANCHOR = "DestinationPlanet";
+
+		private const string PREFAB_LOAD_ERROR = "Invalid GameObject: ";
 
 		private TransitionVisuals transitionVisuals;
 

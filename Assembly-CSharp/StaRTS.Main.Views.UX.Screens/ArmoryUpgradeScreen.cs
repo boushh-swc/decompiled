@@ -1,4 +1,4 @@
-using Net.RichardLord.Ash.Core;
+using StaRTS.Main.Models.Entities;
 using System;
 
 namespace StaRTS.Main.Views.UX.Screens
@@ -13,7 +13,7 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		private const int EQUIPMENT_SLIDER_COUNT = 2;
 
-		public ArmoryUpgradeScreen(Entity armory, bool upgradeGroup) : base(armory, upgradeGroup)
+		public ArmoryUpgradeScreen(SmartEntity armory, bool upgradeGroup) : base(armory, upgradeGroup)
 		{
 		}
 

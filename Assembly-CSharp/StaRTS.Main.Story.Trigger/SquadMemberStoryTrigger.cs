@@ -65,23 +65,23 @@ namespace StaRTS.Main.Story.Trigger
 			else
 			{
 				SquadRole role = squadController.StateManager.Role;
-				switch (num)
+				if (num != 3)
 				{
-				case 1:
+					if (num != 2)
+					{
+						if (num == 1)
+						{
+							result = true;
+						}
+					}
+					else if (role == SquadRole.Owner || role == SquadRole.Officer)
+					{
+						result = true;
+					}
+				}
+				else if (role == SquadRole.Owner)
+				{
 					result = true;
-					break;
-				case 2:
-					if (role == SquadRole.Owner || role == SquadRole.Officer)
-					{
-						result = true;
-					}
-					break;
-				case 3:
-					if (role == SquadRole.Owner)
-					{
-						result = true;
-					}
-					break;
 				}
 			}
 			return result;

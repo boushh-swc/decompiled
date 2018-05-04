@@ -3,6 +3,7 @@ using StaRTS.Main.Utils;
 using StaRTS.Main.Views.UX.Elements;
 using StaRTS.Utils.Core;
 using System;
+using System.Runtime.CompilerServices;
 
 namespace StaRTS.Main.Views.UX.Screens.Squads
 {
@@ -64,6 +65,9 @@ namespace StaRTS.Main.Views.UX.Screens.Squads
 
 		protected UXLabel instructionsPerksLabel;
 
+		[CompilerGenerated]
+		private static UIInput.OnValidate <>f__mg$cache0;
+
 		public AbstractSquadRequestScreen() : base("gui_squad_request")
 		{
 		}
@@ -86,7 +90,12 @@ namespace StaRTS.Main.Views.UX.Screens.Squads
 			this.instructionsPerksLabel = base.GetElement<UXLabel>("LabelTroopIncrementPerks");
 			this.input = base.GetElement<UXInput>("LabelInputNameSquad");
 			UIInput uIInputComponent = this.input.GetUIInputComponent();
-			uIInputComponent.onValidate = new UIInput.OnValidate(LangUtils.OnValidateWNewLines);
+			UIInput arg_11F_0 = uIInputComponent;
+			if (AbstractSquadRequestScreen.<>f__mg$cache0 == null)
+			{
+				AbstractSquadRequestScreen.<>f__mg$cache0 = new UIInput.OnValidate(LangUtils.OnValidateWNewLines);
+			}
+			arg_11F_0.onValidate = AbstractSquadRequestScreen.<>f__mg$cache0;
 		}
 
 		protected override void InitButtons()

@@ -1,8 +1,8 @@
-using Net.RichardLord.Ash.Core;
 using StaRTS.Main.Controllers;
 using StaRTS.Main.Models;
 using StaRTS.Main.Models.Commands.Player.Building.Contracts;
 using StaRTS.Main.Models.Commands.Player.Building.Upgrade;
+using StaRTS.Main.Models.Entities;
 using StaRTS.Main.Models.Player;
 using StaRTS.Main.Models.ValueObjects;
 using StaRTS.Main.Utils;
@@ -31,13 +31,13 @@ namespace StaRTS.Main.Views.UX.Screens
 
 		private List<UXCheckbox> unlockablePlanetList = new List<UXCheckbox>();
 
-		public NavigationCenterUpgradeScreen(Entity selectedBuilding) : base(selectedBuilding)
+		public NavigationCenterUpgradeScreen(SmartEntity selectedBuilding) : base(selectedBuilding)
 		{
 			this.tutorialMode = false;
 			this.useUpgradeGroup = true;
 		}
 
-		public NavigationCenterUpgradeScreen(Entity selectedBuilding, BuildingTypeVO buildingTypeVO, OnScreenModalResult callback) : base(selectedBuilding)
+		public NavigationCenterUpgradeScreen(SmartEntity selectedBuilding, BuildingTypeVO buildingTypeVO, OnScreenModalResult callback) : base(selectedBuilding)
 		{
 			this.buildingInfo = buildingTypeVO;
 			this.callback = callback;

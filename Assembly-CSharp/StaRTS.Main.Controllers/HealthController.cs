@@ -149,44 +149,44 @@ namespace StaRTS.Main.Controllers
 		private void ProcBuffOnTarget(Buff buff, SmartEntity target)
 		{
 			BuffModify modify = buff.BuffType.Modify;
-			if (modify != BuffModify.Health)
+			if (modify != BuffModify.MaxHealth)
 			{
-				if (modify != BuffModify.Shield)
+				if (modify != BuffModify.Health)
 				{
-					if (modify == BuffModify.MaxHealth)
+					if (modify == BuffModify.Shield)
 					{
-						HealthComponent healthComp = target.HealthComp;
-						this.ApplyProcMaxHealthChange(healthComp, buff);
+						IHealthComponent healthComp = null;
+						if (target.ShieldBorderComp != null)
+						{
+							healthComp = target.HealthComp;
+						}
+						else if (target.TroopShieldComp != null && target.TroopShieldComp.IsActive())
+						{
+							healthComp = target.TroopShieldHealthComp;
+						}
+						this.ApplyProcHealthChange(healthComp, buff);
 					}
 				}
 				else
 				{
-					IHealthComponent healthComp2 = null;
-					if (target.ShieldBorderComp != null)
+					IHealthComponent arg_68_0;
+					if (target.TroopShieldComp != null && target.TroopShieldComp.IsActive())
 					{
-						healthComp2 = target.HealthComp;
+						IHealthComponent troopShieldHealthComp = target.TroopShieldHealthComp;
+						arg_68_0 = troopShieldHealthComp;
 					}
-					else if (target.TroopShieldComp != null && target.TroopShieldComp.IsActive())
+					else
 					{
-						healthComp2 = target.TroopShieldHealthComp;
+						arg_68_0 = target.HealthComp;
 					}
+					IHealthComponent healthComp2 = arg_68_0;
 					this.ApplyProcHealthChange(healthComp2, buff);
 				}
 			}
 			else
 			{
-				IHealthComponent arg_6A_0;
-				if (target.TroopShieldComp != null && target.TroopShieldComp.IsActive())
-				{
-					IHealthComponent troopShieldHealthComp = target.TroopShieldHealthComp;
-					arg_6A_0 = troopShieldHealthComp;
-				}
-				else
-				{
-					arg_6A_0 = target.HealthComp;
-				}
-				IHealthComponent healthComp3 = arg_6A_0;
-				this.ApplyProcHealthChange(healthComp3, buff);
+				HealthComponent healthComp3 = target.HealthComp;
+				this.ApplyProcMaxHealthChange(healthComp3, buff);
 			}
 		}
 

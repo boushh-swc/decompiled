@@ -16,7 +16,7 @@ public class UIDragCamera : MonoBehaviour
 
 	private void OnPress(bool isPressed)
 	{
-		if (base.enabled && NGUITools.GetActive(base.gameObject) && this.draggableCamera != null)
+		if (base.enabled && NGUITools.GetActive(base.gameObject) && this.draggableCamera != null && this.draggableCamera.enabled)
 		{
 			this.draggableCamera.Press(isPressed);
 		}
@@ -24,7 +24,7 @@ public class UIDragCamera : MonoBehaviour
 
 	private void OnDrag(Vector2 delta)
 	{
-		if (base.enabled && NGUITools.GetActive(base.gameObject) && this.draggableCamera != null)
+		if (base.enabled && NGUITools.GetActive(base.gameObject) && this.draggableCamera != null && this.draggableCamera.enabled)
 		{
 			this.draggableCamera.Drag(delta);
 		}
@@ -32,7 +32,7 @@ public class UIDragCamera : MonoBehaviour
 
 	private void OnScroll(float delta)
 	{
-		if (base.enabled && NGUITools.GetActive(base.gameObject) && this.draggableCamera != null)
+		if (base.enabled && NGUITools.GetActive(base.gameObject) && this.draggableCamera != null && this.draggableCamera.enabled)
 		{
 			this.draggableCamera.Scroll(delta);
 		}

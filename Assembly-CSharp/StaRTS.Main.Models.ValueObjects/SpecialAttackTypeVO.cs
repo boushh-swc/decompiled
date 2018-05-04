@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace StaRTS.Main.Models.ValueObjects
 {
-	public class SpecialAttackTypeVO : IAssetVO, IAudioVO, IDeployableVO, IGeometryVO, ISpeedVO, IUnlockableVO, IUpgradeableVO, IValueObject
+	public class SpecialAttackTypeVO : ISpeedVO, IAudioVO, IDeployableVO, IUpgradeableVO, IValueObject, IAssetVO, IGeometryVO, IUnlockableVO
 	{
 		public static int COLUMN_assetName
 		{
